@@ -1,0 +1,16 @@
+{
+  "app": "ingest-pipeline",
+  "summary": "A batch data pipeline that ingests dropped files, validates and de-duplicates the records, loads them idempotently into the warehouse, and alerts a human when a run fails.",
+  "stack": { "lang": "ts", "runtime": "node", "store": "postgres" },
+  "outcomes": [
+    { "id": "O-ingest", "statement": "files dropped into the inbox are picked up and ingested" },
+    { "id": "O-validate", "statement": "records that fail validation are rejected without poisoning the rest of the batch" },
+    { "id": "O-dedupe", "statement": "duplicate records (within a batch and against prior batches) are not loaded twice" },
+    { "id": "O-load", "statement": "valid, de-duplicated records are loaded into the warehouse, and re-running the same input does not double-load" },
+    { "id": "O-alert", "statement": "when a run fails, a human is alerted with enough context to act" }
+  ],
+  "notes": [
+    "Batch, not streaming: a run processes a set of files end to end.",
+    "Idempotency is a hard requirement — the same input file processed twice must not change the result."
+  ]
+}

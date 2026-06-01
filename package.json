@@ -1,0 +1,17 @@
+{
+  "name": "decomp",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Decomposition test-battery: empirically find the best way to decompose a plan into atomic work-packet beads.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "selftest": "node eval/selftest/run-all.mjs",
+    "battery": "node runner/battery.mjs",
+    "battery:mock": "node runner/battery.mjs --mode mock",
+    "battery:live": "node runner/battery.mjs --mode live",
+    "leaderboard": "node runner/leaderboard.mjs"
+  }
+}

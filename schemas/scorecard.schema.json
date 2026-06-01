@@ -1,0 +1,60 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decomp/schemas/scorecard.schema.json",
+  "title": "Scorecard",
+  "description": "One scored run: a (strategy, fixture, repeat) tuple scored on every axis. The battery runner emits one per run; the leaderboard aggregates them.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["strategy", "fixture", "fixtureHash", "repeat", "thin", "axes", "cost"],
+  "properties": {
+    "strategy": { "type": "string" },
+    "variant": { "type": "string", "description": "the swept identity of this run: `${strategy}@${model}` for generative methods (so e.g. swarm@haiku and swarm@sonnet are distinct), or just the strategy name for pure-code controls (which ignore the model knob and run once). The leaderboard groups by this." },
+    "fixture": { "type": "string" },
+    "fixtureHash": { "type": "string", "description": "sha256(plan.lock.json) — runs only compare within a hash" },
+    "repeat": { "type": "integer", "minimum": 0 },
+    "thin": { "type": "boolean", "description": "true iff the fixture lock is THIN (lock has no `features` map ⇒ lock ⊊ manifest). On a thin fixture the GENERATIVE leap is the test, so the leaderboard's fidelity composite leans on generativeCoverage instead of build-completeness (whose planKey matching cannot see invented beads)." },
+    "axes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fidelity", "generativeCoverage", "buildCompleteness", "catchRate"],
+      "properties": {
+        "fidelity": { "type": "number", "minimum": 0, "maximum": 100, "description": "parametric expansion-fidelity" },
+        "generativeCoverage": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "thin-input coverage: mechanical STATED-outcome coverage + bounded-judgment LATENT requirement/edge coverage. The axis that measures the GENERATIVE leap (CHARTER §8) build-completeness's planKey matching cannot see.",
+          "required": ["requirementCoverage", "edgeCoverage", "outcomeCoverage", "overall", "presenceRequirement", "presenceEdge", "presenceOverall"],
+          "properties": {
+            "requirementCoverage": { "type": "number", "minimum": 0, "maximum": 1, "description": "SUFFICIENCY fraction of LATENT requirements judged specified well enough to build (bounded judgment)" },
+            "edgeCoverage": { "type": "number", "minimum": 0, "maximum": 1, "description": "SUFFICIENCY fraction of LATENT required edges judged realized well enough to deliver (bounded judgment)" },
+            "outcomeCoverage": { "type": "number", "minimum": 0, "maximum": 1, "description": "fraction of STATED outcomes carried by a bead's provenance.outcomeIds (mechanical)" },
+            "overall": { "type": "number", "minimum": 0, "maximum": 1, "description": "combined SUFFICIENCY generative-coverage score" },
+            "presenceRequirement": { "type": "number", "minimum": 0, "maximum": 1, "description": "PRESENCE fraction of LATENT requirements for which a packet of the RIGHT SCOPE exists, regardless of how complete its acceptance criteria are. >= requirementCoverage (sufficiency) — the gap is the present-but-thin set." },
+            "presenceEdge": { "type": "number", "minimum": 0, "maximum": 1, "description": "PRESENCE fraction of LATENT required edges for which a realized dependency edge of the right scope exists. >= edgeCoverage (sufficiency)." },
+            "presenceOverall": { "type": "number", "minimum": 0, "maximum": 1, "description": "combined PRESENCE generative-coverage score (pooled reqs+edges). >= overall (sufficiency); the GAP between them is the calibration finding this phase reports." }
+          }
+        },
+        "buildCompleteness": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["buildComplete", "edgeCoverage", "beadPresence", "buildReadiness"],
+          "properties": {
+            "buildComplete": { "type": "boolean" },
+            "edgeCoverage": { "type": "number", "minimum": 0, "maximum": 1 },
+            "beadPresence": { "type": "number", "minimum": 0, "maximum": 1 },
+            "buildReadiness": { "type": "number", "minimum": 0, "maximum": 1 }
+          }
+        },
+        "catchRate": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "recall": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+            "falsePositives": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "cost": { "$ref": "https://decomp/schemas/cost-record.schema.json" }
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "fixture": "quicklist",
+  "outcomes": [
+    { "id": "O-see", "statement": "a user sees the current list of items", "satisfiedByAnyOf": ["list-view"] },
+    { "id": "O-add", "statement": "a user can add an item and it appears", "satisfiedByAnyOf": ["add-item"] },
+    { "id": "O-toggle", "statement": "a user can mark an item done and undo it", "satisfiedByAnyOf": ["toggle-done"] }
+  ],
+  "requirements": [
+    { "id": "R-schema", "planKey": "schema", "description": "items table + db connection" },
+    { "id": "R-list", "planKey": "list-view", "description": "render all items (api + view)" },
+    { "id": "R-add", "planKey": "add-item", "description": "create an item (api + form)" },
+    { "id": "R-toggle", "planKey": "toggle-done", "description": "flip done flag (api + view)" }
+  ],
+  "surfaces": [
+    { "id": "S-db", "kind": "db-schema", "requiredByOutcome": ["O-see", "O-add", "O-toggle"] },
+    { "id": "S-api", "kind": "api-route", "requiredByOutcome": ["O-see", "O-add", "O-toggle"] },
+    { "id": "S-ui", "kind": "ui-view", "requiredByOutcome": ["O-see", "O-add", "O-toggle"] }
+  ],
+  "concerns": [
+    { "id": "input-validation", "status": "required" }
+  ],
+  "mustHaves": [
+    { "id": "M-add", "planKey": "add-item", "statement": "a user can add an item" },
+    { "id": "M-list", "planKey": "list-view", "statement": "a user can see all items" }
+  ],
+  "requiredEdges": [
+    { "fromPlanKey": "list-view", "toPlanKey": "schema", "why": "list reads the items table" },
+    { "fromPlanKey": "add-item", "toPlanKey": "schema", "why": "add writes the items table" },
+    { "fromPlanKey": "toggle-done", "toPlanKey": "schema", "why": "toggle updates the items table" },
+    { "fromPlanKey": "toggle-done", "toPlanKey": "list-view", "why": "toggle renders inside the list" }
+  ]
+}

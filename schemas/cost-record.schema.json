@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decomp/schemas/cost-record.schema.json",
+  "title": "CostRecord",
+  "description": "What one decomposition run cost. Emitted by the adapter alongside the snapshot; feeds the Cost-effectiveness and Efficiency axes.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["outputTokens", "agents", "wallClockSec"],
+  "properties": {
+    "outputTokens": { "type": "number", "minimum": 0, "description": "0 for a pure deterministic run" },
+    "agents": { "type": "integer", "minimum": 0, "description": "subagents spawned; 0 = deterministic / single-call" },
+    "wallClockSec": { "type": "number", "minimum": 0 },
+    "usd": { "type": ["number", "null"], "description": "optional measured/estimated dollar cost" },
+    "model": { "type": ["string", "null"] },
+    "effort": { "type": ["string", "null"] }
+  }
+}

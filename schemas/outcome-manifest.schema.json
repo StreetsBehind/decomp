@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decomp/schemas/outcome-manifest.schema.json",
+  "title": "OutcomeManifest",
+  "description": "The oracle ground truth for a fixture: what a correct decomposition MUST contain to achieve this plan's outcomes. This is what makes 'were all the edges caught?' and 'is every needed bead present?' falsifiable. Hand-authored alongside the fixture, hash-pinned, never seen by a strategy.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fixture", "outcomes", "requirements", "surfaces", "concerns", "mustHaves", "requiredEdges"],
+  "properties": {
+    "fixture": { "type": "string", "description": "fixture name, must match the directory" },
+    "outcomes": {
+      "type": "array",
+      "description": "the end-states the plan promises; each must be reachable to >=1 buildable bead",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "statement"],
+        "properties": {
+          "id": { "type": "string" },
+          "statement": { "type": "string" },
+          "satisfiedByAnyOf": {
+            "type": "array",
+            "description": "planKeys/requirement-ids any of which, if covered by a bead, satisfies this outcome",
+            "items": { "type": "string" }
+          }
+        }
+      }
+    },
+    "requirements": {
+      "type": "array",
+      "description": "must-exist work units derived from outcomes; each must be covered by >=1 bead",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "planKey"],
+        "properties": {
+          "id": { "type": "string" },
+          "planKey": { "type": "string", "description": "the provenance key a covering bead must carry" },
+          "description": { "type": "string" }
+        }
+      }
+    },
+    "surfaces": {
+      "type": "array",
+      "description": "the surfaces this plan must touch (e.g. db-schema, api-route, ui-view, worker, deploy, tests, docs)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "kind"],
+        "properties": {
+          "id": { "type": "string" },
+          "kind": { "type": "string" },
+          "requiredByOutcome": { "type": "array", "items": { "type": "string" } }
+        }
+      }
+    },
+    "concerns": {
+      "type": "array",
+      "description": "cross-cutting concerns (e.g. auth, validation, error-handling) that must be addressed (or explicitly excluded)",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "status"],
+        "properties": {
+          "id": { "type": "string" },
+          "status": { "type": "string", "enum": ["required", "excluded"] },
+          "reason": { "type": "string", "description": "required for excluded concerns — anti-rubber-stamp" }
+        }
+      }
+    },
+    "mustHaves": {
+      "type": "array",
+      "description": "explicit must-have features; each must map to >=1 delivering bead",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "planKey"],
+        "properties": {
+          "id": { "type": "string" },
+          "planKey": { "type": "string" },
+          "statement": { "type": "string" }
+        }
+      }
+    },
+    "requiredEdges": {
+      "type": "array",
+      "description": "the COMPLETE expected ordering-dependency set, expressed between planKeys (not bead ids). Every one of these must be realized as a real (transitive) edge in the snapshot. Missing one = a caught/uncaught-edge defect.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["fromPlanKey", "toPlanKey"],
+        "properties": {
+          "fromPlanKey": { "type": "string", "description": "the dependent work" },
+          "toPlanKey": { "type": "string", "description": "the prerequisite work" },
+          "why": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "app": "sso-greenfield",
+  "summary": "A greenfield web app whose only authentication is single sign-on: a user can log in with an external identity provider and log out again.",
+  "stack": { "lang": "ts", "runtime": "node", "store": "postgres" },
+  "outcomes": [
+    { "id": "O-login", "statement": "a user can log in via an external SSO identity provider" },
+    { "id": "O-session", "statement": "a logged-in user stays logged in across requests without re-authenticating each time" },
+    { "id": "O-logout", "statement": "a logged-in user can log out and their session ends" }
+  ],
+  "notes": [
+    "Greenfield: there is no existing auth, user table, or session handling to build on.",
+    "SSO is the ONLY way in — there is no local password login to fall back to."
+  ]
+}

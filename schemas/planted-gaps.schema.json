@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decomp/schemas/planted-gaps.schema.json",
+  "title": "PlantedGaps",
+  "description": "Deliberately seeded defects in a VARIANT fixture, used to measure a method's omission catch-rate (did it DETECT the defect). A clean fixture ships an empty `gaps: []` as the false-positive control.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["fixture", "gaps"],
+  "properties": {
+    "fixture": { "type": "string" },
+    "control": { "type": "boolean", "default": false, "description": "true = clean fixture, gaps MUST be empty; any flag raised is a false positive" },
+    "gaps": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["id", "class", "expectedSignal"],
+        "properties": {
+          "id": { "type": "string" },
+          "class": {
+            "type": "string",
+            "enum": [
+              "missing-requirement",
+              "dropped-edge",
+              "embedded-decision",
+              "write-collision",
+              "unverified-musthave",
+              "missing-concern",
+              "oversized-session",
+              "formula-gap"
+            ]
+          },
+          "expectedSignal": { "type": "string", "description": "what a method that catches this should emit (the gap class + the offending node/edge)" },
+          "location": { "type": "string", "description": "planKey/outcome/edge the defect was planted at" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decomp/schemas/snapshot.schema.json",
+  "title": "Snapshot",
+  "description": "Normalized bead-graph a strategy emits after decomposing a fixture. The single shape every scorer reads, so strategies are compared blind. Equivalent to `bd list --status=all --json` flattened + an explicit dep-edge list + the ready set.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["beads", "edges", "ready"],
+  "properties": {
+    "beads": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": true,
+        "required": ["id", "type"],
+        "properties": {
+          "id": { "type": "string" },
+          "type": { "type": "string", "enum": ["epic", "feature", "task", "bug"] },
+          "title": { "type": "string" },
+          "status": { "type": "string" },
+          "parent": { "type": ["string", "null"], "description": "parent-child (epic) link, NOT an ordering edge" },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true,
+            "description": "build-readiness payload",
+            "properties": {
+              "filesTouched": { "type": "array", "items": { "type": "string" } },
+              "acceptanceCriteria": { "type": "array", "items": { "type": "string" } },
+              "testPlanFile": { "type": ["string", "null"] },
+              "testPlanCases": { "type": "array", "items": { "type": "string" } },
+              "provenance": {
+                "type": "object",
+                "description": "stable trace back to the plan entry this bead serves — resolve by planKey, NEVER by title",
+                "properties": { "planKey": { "type": "string" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "description": "dependency edges (ordering). `from` depends on / is blocked by `to`.",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["from", "to"],
+        "properties": {
+          "from": { "type": "string" },
+          "to": { "type": "string" },
+          "kind": { "type": "string", "default": "blocks" }
+        }
+      }
+    },
+    "ready": {
+      "type": "array",
+      "description": "ids of beads launch-ready (no open blockers) at decomposition time",
+      "items": { "type": "string" }
+    }
+  }
+}

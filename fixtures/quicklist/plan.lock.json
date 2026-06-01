@@ -1,0 +1,45 @@
+{
+  "app": "quicklist",
+  "summary": "A minimal shared to-do list: a user can view items, add an item, and check one off.",
+  "stack": { "lang": "ts", "runtime": "node", "store": "sqlite" },
+  "featureOrder": ["schema", "list-view", "add-item", "toggle-done"],
+  "features": {
+    "schema": {
+      "tier": "foundation",
+      "planKey": "schema",
+      "summary": "items table + db connection",
+      "surfaces": ["db-schema"]
+    },
+    "list-view": {
+      "tier": "core",
+      "planKey": "list-view",
+      "summary": "render all items",
+      "surfaces": ["api-route", "ui-view"]
+    },
+    "add-item": {
+      "tier": "core",
+      "planKey": "add-item",
+      "summary": "create a new item",
+      "surfaces": ["api-route", "ui-view"]
+    },
+    "toggle-done": {
+      "tier": "feature",
+      "planKey": "toggle-done",
+      "summary": "mark an item done / not done",
+      "surfaces": ["api-route", "ui-view"]
+    }
+  },
+  "mustHaves": [
+    { "planKey": "add-item", "statement": "a user can add an item" },
+    { "planKey": "list-view", "statement": "a user can see all items" }
+  ],
+  "concerns": [
+    { "id": "input-validation", "status": "required", "appliesTo": ["add-item"] }
+  ],
+  "crossFeatureDependencies": [
+    { "from": "list-view", "to": "schema" },
+    { "from": "add-item", "to": "schema" },
+    { "from": "toggle-done", "to": "schema" },
+    { "from": "toggle-done", "to": "list-view" }
+  ]
+}

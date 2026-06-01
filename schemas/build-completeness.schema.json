@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://decomp/schemas/build-completeness.schema.json",
+  "title": "BuildCompletenessReport",
+  "description": "The KEYSTONE oracle's output. Answers: if a build agent built every bead, would the plan's outcomes be achieved? Three sub-scores + localized missing[] evidence. Produced by eval/build-completeness.mjs from a snapshot + an outcome manifest.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["edgeCoverage", "beadPresence", "buildReadiness", "buildComplete", "verdict"],
+  "properties": {
+    "edgeCoverage": {
+      "$ref": "#/$defs/subScore",
+      "description": "every requiredEdge realized as a real (transitive) edge"
+    },
+    "beadPresence": {
+      "$ref": "#/$defs/subScore",
+      "description": "every outcome/requirement/surface/concern/must-have covered; no orphan; no scope-drift"
+    },
+    "buildReadiness": {
+      "$ref": "#/$defs/subScore",
+      "description": "every bead carries the info a build agent needs (tier-0 mechanical; tier-1 bounded judgment)"
+    },
+    "buildComplete": { "type": "boolean", "description": "true iff all three sub-scores meet their thresholds" },
+    "verdict": { "type": "string", "enum": ["BUILD-COMPLETE", "INCOMPLETE"] },
+    "tier": { "type": "integer", "enum": [0, 1, 2], "description": "highest oracle tier that ran" }
+  },
+  "$defs": {
+    "subScore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["score", "missing"],
+      "properties": {
+        "score": { "type": "number", "minimum": 0, "maximum": 1 },
+        "missing": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["what", "evidence"],
+            "properties": {
+              "ref": { "type": "string", "description": "the outcome/edge/bead this is about" },
+              "what": { "type": "string", "description": "what is missing/wrong" },
+              "evidence": { "type": "string" },
+              "tier": { "type": "integer", "enum": [0, 1, 2] }
+            }
+          }
+        }
+      }
+    }
+  }
+}

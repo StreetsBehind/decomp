@@ -1,0 +1,6 @@
+node_modules/
+# Run outputs — reproducible from fixtures, not source of truth. Keep the dir, ignore contents.
+runs/*
+!runs/.gitkeep
+*.log
+.DS_Store

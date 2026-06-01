@@ -1,0 +1,63 @@
+{
+  "fixture": "sso-greenfield",
+  "outcomes": [
+    { "id": "O-login", "statement": "a user can log in via an external SSO identity provider", "satisfiedByAnyOf": ["login-route", "callback-handler", "session-store"] },
+    { "id": "O-session", "statement": "a logged-in user stays logged in across requests without re-authenticating each time", "satisfiedByAnyOf": ["session-store", "session-middleware", "token-refresh"] },
+    { "id": "O-logout", "statement": "a logged-in user can log out and their session ends", "satisfiedByAnyOf": ["logout-route"] }
+  ],
+  "requirements": [
+    { "id": "R-provider-config", "planKey": "provider-config", "description": "register the app with the SSO identity provider and configure client id/secret, issuer, scopes, and the allowed redirect/callback URL" },
+    { "id": "R-user-store", "planKey": "user-store", "description": "a persisted user/identity record (db schema) keyed by the provider subject, created on first successful login" },
+    { "id": "R-login-route", "planKey": "login-route", "description": "an initiate-login route that redirects the browser to the provider authorize endpoint with state + nonce" },
+    { "id": "R-callback-handler", "planKey": "callback-handler", "description": "the redirect/callback route that exchanges the authorization code for tokens, validates state/nonce, and establishes the session" },
+    { "id": "R-token-validation", "planKey": "token-validation", "description": "validate the ID token signature, issuer, audience, and expiry against the provider's keys before trusting any claim" },
+    { "id": "R-session-store", "planKey": "session-store", "description": "a server-side session store that issues a session on login and can look one up on each request" },
+    { "id": "R-session-middleware", "planKey": "session-middleware", "description": "middleware that reads the session cookie on each request and attaches the authenticated user, so users stay logged in" },
+    { "id": "R-token-refresh", "planKey": "token-refresh", "description": "refresh the access/ID token using the refresh token before expiry so the session does not silently break" },
+    { "id": "R-logout-route", "planKey": "logout-route", "description": "a logout route that destroys the server session, clears the cookie, and optionally hits the provider end-session endpoint" },
+    { "id": "R-account-linking", "planKey": "account-linking", "description": "on callback, link the provider identity to an existing user (or create one) so a returning user maps to one stable account" },
+    { "id": "R-csrf-protection", "planKey": "csrf-protection", "description": "CSRF/state protection on the auth flow: an unguessable state param issued at login and verified at callback" },
+    { "id": "R-secret-management", "planKey": "secret-management", "description": "the client secret and signing/session keys are loaded from configuration/secrets, never hard-coded or committed" },
+    { "id": "R-error-states", "planKey": "error-states", "description": "user-facing handling for the auth failure paths: provider error, denied consent, state mismatch, expired/invalid token, callback without a pending login" }
+  ],
+  "surfaces": [
+    { "id": "S-db", "kind": "db-schema", "requiredByOutcome": ["O-login", "O-session"] },
+    { "id": "S-api", "kind": "api-route", "requiredByOutcome": ["O-login", "O-logout"] },
+    { "id": "S-middleware", "kind": "middleware", "requiredByOutcome": ["O-session"] },
+    { "id": "S-config", "kind": "config", "requiredByOutcome": ["O-login"] },
+    { "id": "S-ui", "kind": "ui-view", "requiredByOutcome": ["O-login", "O-logout"] },
+    { "id": "S-tests", "kind": "tests", "requiredByOutcome": ["O-login", "O-session", "O-logout"] }
+  ],
+  "concerns": [
+    { "id": "csrf", "status": "required" },
+    { "id": "secret-management", "status": "required" },
+    { "id": "token-validation", "status": "required" },
+    { "id": "session-fixation", "status": "required" },
+    { "id": "error-handling", "status": "required" },
+    { "id": "local-password-login", "status": "excluded", "reason": "the plan states SSO is the only way in; building a local password path would be scope drift and add password-storage liability the plan explicitly avoids" }
+  ],
+  "mustHaves": [
+    { "id": "M-login", "planKey": "login-route", "statement": "a user can log in via the external SSO provider" },
+    { "id": "M-stay", "planKey": "session-middleware", "statement": "a logged-in user stays logged in across requests" },
+    { "id": "M-logout", "planKey": "logout-route", "statement": "a user can log out and the session ends" }
+  ],
+  "requiredEdges": [
+    { "fromPlanKey": "login-route", "toPlanKey": "provider-config", "why": "the login redirect needs the provider's authorize URL, client id, and scopes" },
+    { "fromPlanKey": "callback-handler", "toPlanKey": "provider-config", "why": "the code-for-token exchange needs the client id/secret and token endpoint" },
+    { "fromPlanKey": "callback-handler", "toPlanKey": "login-route", "why": "the callback completes the flow the login route started (and verifies the state it issued)" },
+    { "fromPlanKey": "callback-handler", "toPlanKey": "token-validation", "why": "the callback must validate the returned ID token before establishing a session" },
+    { "fromPlanKey": "callback-handler", "toPlanKey": "csrf-protection", "why": "the callback verifies the state/nonce issued at login to prevent CSRF on the auth flow" },
+    { "fromPlanKey": "callback-handler", "toPlanKey": "account-linking", "why": "after token validation the callback links/creates the user account" },
+    { "fromPlanKey": "callback-handler", "toPlanKey": "session-store", "why": "a successful callback establishes a session in the store" },
+    { "fromPlanKey": "account-linking", "toPlanKey": "user-store", "why": "linking/creating a user writes to the user table" },
+    { "fromPlanKey": "session-store", "toPlanKey": "user-store", "why": "a session references the persisted user it belongs to" },
+    { "fromPlanKey": "session-middleware", "toPlanKey": "session-store", "why": "middleware looks the session up in the store on each request" },
+    { "fromPlanKey": "token-refresh", "toPlanKey": "session-store", "why": "refresh updates the tokens held in the session" },
+    { "fromPlanKey": "token-refresh", "toPlanKey": "token-validation", "why": "a refreshed token must be re-validated before it is trusted" },
+    { "fromPlanKey": "logout-route", "toPlanKey": "session-store", "why": "logout destroys the session in the store" },
+    { "fromPlanKey": "token-validation", "toPlanKey": "provider-config", "why": "validation needs the provider's issuer, audience, and signing-key (JWKS) endpoint" },
+    { "fromPlanKey": "provider-config", "toPlanKey": "secret-management", "why": "provider config loads the client secret from managed secrets, not source" },
+    { "fromPlanKey": "login-route", "toPlanKey": "csrf-protection", "why": "the login route issues the unguessable state/nonce the callback later verifies" },
+    { "fromPlanKey": "error-states", "toPlanKey": "callback-handler", "why": "the auth error states are the failure branches of the callback flow" }
+  ]
+}

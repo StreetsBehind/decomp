@@ -1,0 +1,68 @@
+{
+  "fixture": "ingest-pipeline",
+  "outcomes": [
+    { "id": "O-ingest", "statement": "files dropped into the inbox are picked up and ingested", "satisfiedByAnyOf": ["file-watcher", "parse-records"] },
+    { "id": "O-validate", "statement": "records that fail validation are rejected without poisoning the rest of the batch", "satisfiedByAnyOf": ["validate-records", "quarantine-store"] },
+    { "id": "O-dedupe", "statement": "duplicate records (within a batch and against prior batches) are not loaded twice", "satisfiedByAnyOf": ["dedupe-records", "dedupe-index"] },
+    { "id": "O-load", "statement": "valid, de-duplicated records are loaded into the warehouse, and re-running the same input does not double-load", "satisfiedByAnyOf": ["idempotent-load", "load-keys"] },
+    { "id": "O-alert", "statement": "when a run fails, a human is alerted with enough context to act", "satisfiedByAnyOf": ["failure-alert"] }
+  ],
+  "requirements": [
+    { "id": "R-warehouse-schema", "planKey": "warehouse-schema", "description": "the target warehouse table(s) plus the supporting tables: a dedupe index and a quarantine/rejects store" },
+    { "id": "R-file-watcher", "planKey": "file-watcher", "description": "detect/poll the inbox, claim the set of files for a batch, and move them out of the inbox so they are not picked up twice" },
+    { "id": "R-parse-records", "planKey": "parse-records", "description": "read each claimed file and parse it into records, tolerating a malformed file without aborting the batch" },
+    { "id": "R-validate-records", "planKey": "validate-records", "description": "validate each record against the schema/rules; route failures to quarantine and pass the good ones on" },
+    { "id": "R-quarantine-store", "planKey": "quarantine-store", "description": "persist rejected records with the reason so a bad record is set aside, not lost, and does not poison the batch" },
+    { "id": "R-dedupe-index", "planKey": "dedupe-index", "description": "a persisted index/key of records already seen across prior runs, used to detect cross-batch duplicates" },
+    { "id": "R-dedupe-records", "planKey": "dedupe-records", "description": "drop duplicates within the batch and against the dedupe index, keeping one copy" },
+    { "id": "R-load-keys", "planKey": "load-keys", "description": "a deterministic natural/business key per record that the load uses to upsert (the basis of idempotency)" },
+    { "id": "R-idempotent-load", "planKey": "idempotent-load", "description": "upsert/merge the de-duplicated records by load key inside a transaction so re-running the same input does not double-load" },
+    { "id": "R-batch-tracking", "planKey": "batch-tracking", "description": "a record of each batch run (files, counts, status) so a retried run is recognized and the load can be made idempotent at the batch level" },
+    { "id": "R-failure-alert", "planKey": "failure-alert", "description": "on a failed run, notify a human (channel/email) with the batch id, failing stage, and error context" },
+    { "id": "R-run-orchestration", "planKey": "run-orchestration", "description": "the driver that sequences the stages, owns the batch transaction boundary, and decides what counts as a failed run" },
+    { "id": "R-retry-recovery", "planKey": "retry-recovery", "description": "a failed/partial run can be safely retried from a clean state without double-loading or losing quarantined records" }
+  ],
+  "surfaces": [
+    { "id": "S-db", "kind": "db-schema", "requiredByOutcome": ["O-dedupe", "O-load", "O-validate"] },
+    { "id": "S-worker", "kind": "worker", "requiredByOutcome": ["O-ingest", "O-validate", "O-dedupe", "O-load"] },
+    { "id": "S-config", "kind": "config", "requiredByOutcome": ["O-ingest", "O-alert"] },
+    { "id": "S-integration", "kind": "integration", "requiredByOutcome": ["O-alert"] },
+    { "id": "S-tests", "kind": "tests", "requiredByOutcome": ["O-ingest", "O-validate", "O-dedupe", "O-load", "O-alert"] }
+  ],
+  "concerns": [
+    { "id": "idempotency", "status": "required" },
+    { "id": "error-isolation", "status": "required" },
+    { "id": "observability", "status": "required" },
+    { "id": "transactional-integrity", "status": "required" },
+    { "id": "at-least-once-delivery", "status": "required" },
+    { "id": "streaming", "status": "excluded", "reason": "the plan is explicitly batch (a run processes a set of files end to end); building streaming/continuous ingest infrastructure would be scope drift" }
+  ],
+  "mustHaves": [
+    { "id": "M-ingest", "planKey": "file-watcher", "statement": "dropped files are picked up and ingested" },
+    { "id": "M-validate", "planKey": "validate-records", "statement": "bad records are rejected without poisoning the batch" },
+    { "id": "M-dedupe", "planKey": "dedupe-records", "statement": "duplicates within and across batches are not loaded twice" },
+    { "id": "M-load", "planKey": "idempotent-load", "statement": "re-running the same input does not double-load" },
+    { "id": "M-alert", "planKey": "failure-alert", "statement": "a failed run alerts a human" }
+  ],
+  "requiredEdges": [
+    { "fromPlanKey": "parse-records", "toPlanKey": "file-watcher", "why": "parsing operates on the files the watcher has claimed for the batch" },
+    { "fromPlanKey": "validate-records", "toPlanKey": "parse-records", "why": "you can only validate records once they are parsed" },
+    { "fromPlanKey": "validate-records", "toPlanKey": "quarantine-store", "why": "validation routes failing records into the quarantine store" },
+    { "fromPlanKey": "quarantine-store", "toPlanKey": "warehouse-schema", "why": "the quarantine/rejects table is part of the schema" },
+    { "fromPlanKey": "dedupe-records", "toPlanKey": "validate-records", "why": "only validated records are carried forward to be de-duplicated" },
+    { "fromPlanKey": "dedupe-records", "toPlanKey": "dedupe-index", "why": "cross-batch de-dupe checks records against the persisted dedupe index" },
+    { "fromPlanKey": "dedupe-index", "toPlanKey": "warehouse-schema", "why": "the dedupe index is a persisted table defined in the schema" },
+    { "fromPlanKey": "dedupe-records", "toPlanKey": "load-keys", "why": "de-dupe is keyed by the same natural/business key the load upserts on" },
+    { "fromPlanKey": "idempotent-load", "toPlanKey": "dedupe-records", "why": "the load consumes the de-duplicated record set" },
+    { "fromPlanKey": "idempotent-load", "toPlanKey": "load-keys", "why": "idempotent upsert/merge is performed on the load key" },
+    { "fromPlanKey": "idempotent-load", "toPlanKey": "warehouse-schema", "why": "the load writes into the warehouse table" },
+    { "fromPlanKey": "idempotent-load", "toPlanKey": "dedupe-index", "why": "a successful load records the loaded keys into the dedupe index for future cross-batch de-dupe" },
+    { "fromPlanKey": "idempotent-load", "toPlanKey": "batch-tracking", "why": "batch-level tracking lets a retried batch be recognized and not re-loaded" },
+    { "fromPlanKey": "failure-alert", "toPlanKey": "run-orchestration", "why": "the orchestrator detects a failed run and triggers the alert" },
+    { "fromPlanKey": "run-orchestration", "toPlanKey": "file-watcher", "why": "orchestration starts by claiming the batch via the watcher" },
+    { "fromPlanKey": "run-orchestration", "toPlanKey": "idempotent-load", "why": "orchestration sequences through to the load and owns the transaction boundary" },
+    { "fromPlanKey": "run-orchestration", "toPlanKey": "batch-tracking", "why": "orchestration opens/closes the batch record that tracks the run" },
+    { "fromPlanKey": "retry-recovery", "toPlanKey": "batch-tracking", "why": "safe retry keys off the recorded batch state to resume cleanly" },
+    { "fromPlanKey": "retry-recovery", "toPlanKey": "idempotent-load", "why": "retry relies on the load being idempotent so re-processing does not double-load" }
+  ]
+}
