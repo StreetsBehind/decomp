@@ -209,6 +209,11 @@ edges live in the plan, not the library. That is the "Lego danger" defused in ac
 
 ## 4. Curation — many sources of intake, one gate of trust
 
+> **Developed in full in [`CURATION-METHOD.md`](CURATION-METHOD.md)** — the candidate envelope, the lifecycle
+> state machine, and the gate made falsifiable, including the two resolved forks (recurrence = source-diversity
+> weighted; the intrinsic-vs-contextual audit = deterministic contrast-pair instantiation + bounded judge +
+> ratchet). This section is the rationale; that document is the method.
+
 The question "is the only way to build the library by decomposing things and watching archetypes
 emerge?" → **No.** Separate **provenance** (where a candidate came from) from **trust** (whether it
 survived validation). Many sources *propose*; one **source-agnostic gate** *disposes*.

@@ -69,6 +69,12 @@ execution plan that attacks the one robust finding (edges are the weak point): m
 (never edges), and grade against the **converged union** of diverse generators. Includes a cheap-first
 **proof staircase** (Steps 0–4) the next session should execute.
 
+➡️ **For the library write-path, [`docs/CURATION-METHOD.md`](docs/CURATION-METHOD.md)** — develops the spec's
+§4 into an operational method: the candidate envelope, the proposed→grounded→recurrent→audited→canon
+lifecycle, and the source-agnostic gate made falsifiable (recurrence = source-diversity weighted; the
+intrinsic-vs-contextual audit = deterministic contrast-pair instantiation). The runtime gate is substrate-
+gated behind proof-staircase Step 1; the intake/lifecycle/adapter layer is buildable independently.
+
 ## Design rules (non-negotiable — see CHARTER §6)
 
 1. **Determinism-first.** Parse/wire/score and the Tier-0 oracle are pure functions over data. Agents
