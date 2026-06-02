@@ -13,10 +13,12 @@ hash-pinned — per the contamination control in
 | `plan.md` | ✅ | thin prose plan, 8 features (6 archetyped + 2 novelty: feed/notifications, billing) |
 | `plan.lock.json` | ✅ **scaffolded** | thin lock — `app`/`summary`/`stack`/8 `outcomes`/`notes`, **no `features` map** (thin contract). Outcome ids are the ground-truth key the manifest must reuse. |
 | `planted-gaps.json` | ✅ **scaffolded** | clean control (`control:true`, `gaps:[]`). A planted-defect variant (`hearth-variant`) is separate, later corpus work. |
-| `outcome-manifest.json` | ⏳ **NEEDS A SECOND AUTHOR** | the held-out step. A first-author *draft* exists (`outcome-manifest.partitioned.json`) but it was produced by the **same** workflow that authored the archetypes — so it is contaminated and must be independently re-authored (or adversarially verified as *not a relabel* of the archetypes) before it counts. |
+| `outcome-manifest.json` | ✅ **AUTHORED + VERIFIED + PROMOTED** (2026-06-02) | written by a **blind subagent** given only `plan.md` (never the archetypes) — the design's "simulate separation by authoring from a different basis." 65 requirements, 162 edges (**83 intra / 79 seam** across 8 features), schema-valid, partition tags self-consistent. An **adversarial verifier** (saw manifest + archetypes + plan) returned **RELABEL: INDEPENDENT** / **FIDELITY: SOUND** / **TRUST-AS-ORACLE** — the 79 seams are genuine inter-feature dependencies (two features, billing + notifications, have *no* archetype yet are fully seamed; intrinsic surfaces independently named). The contaminated first-author draft (`outcome-manifest.partitioned.json`) is retained only as provenance — NOT used. |
 
-The fixture **will not register** (`discoverFixtures` requires `plan.lock.json` + `outcome-manifest.json`
-+ `planted-gaps.json`) until the manifest lands — that gate is intentional.
+✅ **hearth is now a registered fixture** (`fixtures/hearth/` — plan.md, plan.lock.json,
+outcome-manifest.json, planted-gaps.json). `npm run battery:mock` scores it and the partition scorer
+fires end-to-end (per-arm `edgeByPartition` = intra-feature vs **seam** recall — the anchoring
+instrument, live for the first time).
 
 ## The second author's task (the contamination control)
 
@@ -42,21 +44,23 @@ allow the partition tags). Concretely:
    fold `statedOutcomes`→`outcomes`, drop the rest; keep `requirements[].feature` +
    `requiredEdges[].partition` (both now allowed).
 
-## Promote-to-fixture checklist (when the manifest is ready)
+## Promote-to-fixture checklist
 
-- [ ] `outcome-manifest.json` validates: `node -e "import('./runner/validate-schema.mjs')…"` against
-      `schemas/outcome-manifest.schema.json`; every `requiredEdges[].partition` is set; the seam set is
-      non-trivial.
-- [ ] Copy the bundle to `fixtures/hearth/` (`plan.md`, `plan.lock.json`, `outcome-manifest.json`,
-      `planted-gaps.json`). The fixture hash = `sha256(plan.lock.json)`.
-- [ ] `npm run battery:mock` shows `hearth` registered and scored; partition recall (`edgeByPartition`)
-      appears on its scorecards.
-- [ ] Add the arm spec `experiments/arm-blocks/hearth.json`: classify the 6 archetyped features →
+- [x] `outcome-manifest.json` validates against `schemas/outcome-manifest.schema.json`; every
+      `requiredEdges[].partition` set; seam set non-trivial (79). ✅
+- [x] Bundle copied to `fixtures/hearth/` (4 files). Fixture hash = `sha256(plan.lock.json)`. ✅
+- [x] `npm run battery:mock` shows `hearth` registered + scored; `edgeByPartition` (intra vs seam) on
+      its scorecards + aggregate. ✅
+- [ ] **Arm spec `experiments/arm-blocks/hearth.json`** — classify the 6 archetyped features →
       `[oidc-sso-login, team-membership-invites, rbac-authorization, crud-resource, file-upload,
-      audit-logging]`; author a **length-matched** placebo (the sso-greenfield placebo is a stub — §8).
-- [ ] **Headroom pre-flight** (before any priced sweep): run A0 blind at K≥3 on hearth; confirm covered
-      recall is materially <1 **and seam recall is materially >0 with variance** — else anchoring is
-      unmeasurable and the fixture can't decide the premise (§8).
-- [ ] Hash-pin everything; note the new baseline series in `ledger.md`.
+      audit-logging]`. **Placebo nuance:** hearth uses ALL 6 archetypes in the primed arm, so the
+      mismatched-archetype placebo (used for sso-greenfield) is unavailable — every archetype matches a
+      hearth feature. Fall back to a length-matched generic placebo, and lean on **seam recall** as the
+      clean control (the prime structurally cannot lift seams — the verifier's hardening note). [GATED:
+      experiment-design choice; precedes the live sweep.]
+- [ ] **Headroom pre-flight** — run A0 blind at K≥3 on hearth; confirm covered recall materially <1 AND
+      **seam recall materially >0 with variance**, else anchoring is unmeasurable (§8). **[LIVE — spends.]**
+- [ ] The two priced runs: live Step-2 A/B + the K≥3 three-arm Step-3 sweep. **[LIVE — spends.]**
 
-Until then, `hearth` is a staged draft, not a blessed fixture.
+`hearth` is now a blessed fixture; the remaining unchecked items are the experiment-design choice + the
+billable live runs.

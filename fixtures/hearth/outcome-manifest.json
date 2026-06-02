@@ -1,0 +1,1926 @@
+{
+  "fixture": "hearth",
+  "outcomes": [
+    {
+      "id": "O-sso-signin",
+      "statement": "A person can sign in through their company's SSO identity provider, stay signed in while using Hearth, and sign out.",
+      "satisfiedByAnyOf": [
+        "sso-idp-config",
+        "sso-auth-initiate",
+        "sso-assertion-callback",
+        "session-establish",
+        "session-validate-middleware",
+        "sign-out"
+      ]
+    },
+    {
+      "id": "O-invite",
+      "statement": "An org owner or admin can invite a teammate by email, and that person can accept or decline the invite.",
+      "satisfiedByAnyOf": [
+        "invite-create",
+        "invite-email-send",
+        "invite-accept",
+        "invite-decline",
+        "org-membership-model"
+      ]
+    },
+    {
+      "id": "O-roles",
+      "statement": "Owners and admins can do org- and people-management things that ordinary members cannot, and the product enforces that distinction wherever it applies.",
+      "satisfiedByAnyOf": [
+        "role-model",
+        "permission-model",
+        "authz-enforcement-middleware",
+        "role-assignment"
+      ]
+    },
+    {
+      "id": "O-tasks",
+      "statement": "A member can create a task in a project, assign it, edit it, and mark it complete.",
+      "satisfiedByAnyOf": [
+        "project-model",
+        "project-create",
+        "task-model",
+        "task-create",
+        "task-assign",
+        "task-edit",
+        "task-complete"
+      ]
+    },
+    {
+      "id": "O-files",
+      "statement": "A person can attach a file to a task and download it again later.",
+      "satisfiedByAnyOf": [
+        "file-model",
+        "file-upload",
+        "file-storage",
+        "file-download"
+      ]
+    },
+    {
+      "id": "O-audit",
+      "statement": "The org has an audit trail of who-did-what that the people running it can review for compliance.",
+      "satisfiedByAnyOf": [
+        "audit-log-model",
+        "audit-event-write",
+        "audit-log-read"
+      ]
+    },
+    {
+      "id": "O-notify",
+      "statement": "The right people are notified, in-app and by email, when things they care about change, and can see a feed of recent activity.",
+      "satisfiedByAnyOf": [
+        "notification-model",
+        "activity-event-model",
+        "notification-inapp-deliver",
+        "notification-email-deliver",
+        "activity-feed-read"
+      ]
+    },
+    {
+      "id": "O-billing",
+      "statement": "An organization can subscribe and pay per seat, and how many people it can have follows from what it is paying for.",
+      "satisfiedByAnyOf": [
+        "billing-subscription-model",
+        "billing-checkout",
+        "billing-webhook-handler",
+        "seat-count-enforcement"
+      ]
+    }
+  ],
+  "requirements": [
+    {
+      "id": "R-001",
+      "planKey": "sso-idp-config",
+      "description": "Per-organization SSO identity provider configuration (metadata, entity/client id, signing certificate or JWKS endpoint, allowed domains) so each company's IdP can be registered.",
+      "feature": "SSO sign-in"
+    },
+    {
+      "id": "R-002",
+      "planKey": "sso-auth-initiate",
+      "description": "Endpoint/flow that initiates the SSO handshake (SAML AuthnRequest or OIDC authorization redirect) with a generated relay/state and nonce.",
+      "feature": "SSO sign-in"
+    },
+    {
+      "id": "R-003",
+      "planKey": "sso-assertion-callback",
+      "description": "Callback endpoint that receives and validates the IdP assertion/token (signature, audience, issuer, expiry, nonce/state match), extracts the verified identity, and provisions or matches the user.",
+      "feature": "SSO sign-in"
+    },
+    {
+      "id": "R-004",
+      "planKey": "user-model",
+      "description": "User/identity record keyed to the verified external IdP subject (no local password), with email and profile.",
+      "feature": "SSO sign-in"
+    },
+    {
+      "id": "R-005",
+      "planKey": "session-establish",
+      "description": "Establish an authenticated session after a successful assertion (issue session cookie/token, regenerate session id to prevent fixation).",
+      "feature": "SSO sign-in"
+    },
+    {
+      "id": "R-006",
+      "planKey": "session-validate-middleware",
+      "description": "Middleware that validates the session on every request and resolves the authenticated principal, so a signed-in person stays signed in across the product.",
+      "feature": "SSO sign-in"
+    },
+    {
+      "id": "R-007",
+      "planKey": "sign-out",
+      "description": "Sign-out that destroys the local session (and optionally triggers IdP single-logout) and clears the session cookie.",
+      "feature": "SSO sign-in"
+    },
+    {
+      "id": "R-008",
+      "planKey": "auth-ui",
+      "description": "Sign-in / sign-out UI: a way to start SSO sign-in, landing handling after callback, and a sign-out control.",
+      "feature": "SSO sign-in"
+    },
+    {
+      "id": "R-009",
+      "planKey": "org-model",
+      "description": "Organization record representing a buying company (the tenant root).",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-010",
+      "planKey": "team-model",
+      "description": "Team record nested under an organization.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-011",
+      "planKey": "org-membership-model",
+      "description": "Membership record linking a user to an organization (and team), carrying join state, so the roster reflects who has actually joined.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-012",
+      "planKey": "org-create",
+      "description": "Create an organization and make the creating user its first owner.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-013",
+      "planKey": "team-manage",
+      "description": "Create/rename/delete teams within an org and place members on teams.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-014",
+      "planKey": "invite-model",
+      "description": "Invitation record (org, invited email, inviter, role, single-use token, expiry, status pending/accepted/declined/revoked).",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-015",
+      "planKey": "invite-create",
+      "description": "Owner/admin creates an invitation for a teammate by email with a chosen role.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-016",
+      "planKey": "invite-email-send",
+      "description": "Send the invitation email containing the single-use accept link.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-017",
+      "planKey": "invite-accept",
+      "description": "Invited person accepts: validates token, ties acceptance to a verified SSO identity for the invited email, and creates the membership.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-018",
+      "planKey": "invite-decline",
+      "description": "Invited person declines: marks the invitation declined and creates no membership.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-019",
+      "planKey": "invite-ui",
+      "description": "UI to send invites, view pending/declined invites, and the accept/decline landing page.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-020",
+      "planKey": "roster-read",
+      "description": "Read the org roster and team membership (who actually joined).",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-021",
+      "planKey": "member-remove",
+      "description": "Owner/admin removes a member from the org (leaving), revoking their access.",
+      "feature": "Organizations + teams"
+    },
+    {
+      "id": "R-022",
+      "planKey": "role-model",
+      "description": "Role definitions (owner, admin, member) attached to org membership.",
+      "feature": "Roles & permissions"
+    },
+    {
+      "id": "R-023",
+      "planKey": "permission-model",
+      "description": "Permission/capability mapping that says which roles may perform which actions on which resources.",
+      "feature": "Roles & permissions"
+    },
+    {
+      "id": "R-024",
+      "planKey": "role-assignment",
+      "description": "Assign and change a member's role (owner/admin can promote/demote), with guardrails (e.g. cannot remove the last owner).",
+      "feature": "Roles & permissions"
+    },
+    {
+      "id": "R-025",
+      "planKey": "authz-enforcement-middleware",
+      "description": "Server-side authorization enforcement that checks the principal's role/permission and org-scoping on every protected action, everywhere it applies.",
+      "feature": "Roles & permissions"
+    },
+    {
+      "id": "R-026",
+      "planKey": "authz-ui-gating",
+      "description": "UI that shows/hides org- and people-management affordances based on the viewer's role (defense-in-depth, not the enforcement point).",
+      "feature": "Roles & permissions"
+    },
+    {
+      "id": "R-027",
+      "planKey": "tenant-scoping",
+      "description": "Org-scoping/tenant isolation applied to all data access so a principal only ever reaches their own organization's resources.",
+      "feature": "Roles & permissions"
+    },
+    {
+      "id": "R-028",
+      "planKey": "project-model",
+      "description": "Project record nested under an organization (and/or team).",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-029",
+      "planKey": "project-create",
+      "description": "Create a project within the org.",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-030",
+      "planKey": "project-membership",
+      "description": "Project membership/access defining which people work in a given project.",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-031",
+      "planKey": "task-model",
+      "description": "Task record belonging to a project, with assignee, status (open/complete), and editable fields.",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-032",
+      "planKey": "task-create",
+      "description": "A member creates a task inside a project.",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-033",
+      "planKey": "task-assign",
+      "description": "Assign a task to a person (must be a member with project access).",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-034",
+      "planKey": "task-edit",
+      "description": "Edit a task's fields.",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-035",
+      "planKey": "task-complete",
+      "description": "Mark a task complete (open to done).",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-036",
+      "planKey": "task-read",
+      "description": "List/read projects and their tasks.",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-037",
+      "planKey": "task-comment",
+      "description": "Comment on a task (the comment activity the plan's feed references).",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-038",
+      "planKey": "project-task-ui",
+      "description": "UI for projects, task lists/boards, and task detail (create/assign/edit/complete/comment).",
+      "feature": "Projects & tasks"
+    },
+    {
+      "id": "R-039",
+      "planKey": "file-model",
+      "description": "File/attachment record linking a stored object to a task (filename, size, content-type, storage key, scan status).",
+      "feature": "Files"
+    },
+    {
+      "id": "R-040",
+      "planKey": "file-storage",
+      "description": "Object storage backend for file bytes (e.g. blob store) keyed per org/task.",
+      "feature": "Files"
+    },
+    {
+      "id": "R-041",
+      "planKey": "file-upload",
+      "description": "Upload a file and attach it to a task (validate type/size, store bytes, create attachment record).",
+      "feature": "Files"
+    },
+    {
+      "id": "R-042",
+      "planKey": "file-av-scan",
+      "description": "Antivirus/malware scan of uploaded files before they are made downloadable.",
+      "feature": "Files"
+    },
+    {
+      "id": "R-043",
+      "planKey": "file-download",
+      "description": "Download an attached file later, served only to authorized principals (authorization checked on every download, scoped to the org/task/project).",
+      "feature": "Files"
+    },
+    {
+      "id": "R-044",
+      "planKey": "file-ui",
+      "description": "UI to attach files to a task and download them from the task detail.",
+      "feature": "Files"
+    },
+    {
+      "id": "R-045",
+      "planKey": "audit-log-model",
+      "description": "Append-only audit record (actor, action, target, org, timestamp, metadata) durable enough for compliance.",
+      "feature": "Audit log"
+    },
+    {
+      "id": "R-046",
+      "planKey": "audit-event-write",
+      "description": "Write audit entries for security/compliance-relevant actions across features (join/leave, role change, work changes, file access, billing events, sign-in).",
+      "feature": "Audit log"
+    },
+    {
+      "id": "R-047",
+      "planKey": "audit-log-read",
+      "description": "Owner/admin reviewable audit log view with filtering, restricted to authorized roles.",
+      "feature": "Audit log"
+    },
+    {
+      "id": "R-048",
+      "planKey": "audit-log-ui",
+      "description": "UI for reviewing the audit trail for compliance.",
+      "feature": "Audit log"
+    },
+    {
+      "id": "R-049",
+      "planKey": "activity-event-model",
+      "description": "Activity event record capturing things that happen in the workspace (task assigned, invite accepted, comment, project update).",
+      "feature": "Notifications + feed"
+    },
+    {
+      "id": "R-050",
+      "planKey": "notification-model",
+      "description": "Per-recipient notification record with channel (in-app/email), read state, and the originating event.",
+      "feature": "Notifications + feed"
+    },
+    {
+      "id": "R-051",
+      "planKey": "notification-fanout",
+      "description": "Logic that decides who cares about each event and produces the right recipient notifications.",
+      "feature": "Notifications + feed"
+    },
+    {
+      "id": "R-052",
+      "planKey": "notification-inapp-deliver",
+      "description": "Deliver and display in-app notifications to recipients.",
+      "feature": "Notifications + feed"
+    },
+    {
+      "id": "R-053",
+      "planKey": "notification-email-deliver",
+      "description": "Deliver notifications by email (templating + send via email provider).",
+      "feature": "Notifications + feed"
+    },
+    {
+      "id": "R-054",
+      "planKey": "activity-feed-read",
+      "description": "A feed of recent activity that authorized people in the org/project can view.",
+      "feature": "Notifications + feed"
+    },
+    {
+      "id": "R-055",
+      "planKey": "notification-ui",
+      "description": "UI for the activity feed, in-app notification center, and read/unread state.",
+      "feature": "Notifications + feed"
+    },
+    {
+      "id": "R-056",
+      "planKey": "notification-worker",
+      "description": "Background worker/queue that processes events asynchronously into notification deliveries.",
+      "feature": "Notifications + feed"
+    },
+    {
+      "id": "R-057",
+      "planKey": "billing-plan-model",
+      "description": "Plan/price catalog defining per-seat pricing tiers.",
+      "feature": "Billing"
+    },
+    {
+      "id": "R-058",
+      "planKey": "billing-subscription-model",
+      "description": "Subscription record per org (provider customer/subscription id, plan, quantity of seats, status).",
+      "feature": "Billing"
+    },
+    {
+      "id": "R-059",
+      "planKey": "billing-provider-integration",
+      "description": "Integration with the payment provider (customer creation, payment method, subscription lifecycle).",
+      "feature": "Billing"
+    },
+    {
+      "id": "R-060",
+      "planKey": "billing-checkout",
+      "description": "Owner subscribes / pays: choose a plan and seat quantity and complete payment via the provider.",
+      "feature": "Billing"
+    },
+    {
+      "id": "R-061",
+      "planKey": "billing-webhook-handler",
+      "description": "Idempotent webhook handler reconciling provider events (payment succeeded/failed, subscription updated/canceled) into the subscription record.",
+      "feature": "Billing"
+    },
+    {
+      "id": "R-062",
+      "planKey": "seat-count-enforcement",
+      "description": "Enforce that active members + outstanding invites do not exceed paid seats; gate inviting/accepting when seats are exhausted.",
+      "feature": "Billing"
+    },
+    {
+      "id": "R-063",
+      "planKey": "seat-quantity-sync",
+      "description": "Reflect team growth/shrink in billed seat quantity (update provider subscription quantity as membership changes).",
+      "feature": "Billing"
+    },
+    {
+      "id": "R-064",
+      "planKey": "billing-ui",
+      "description": "UI to choose a plan, manage seats/payment method, and view billing status.",
+      "feature": "Billing"
+    },
+    {
+      "id": "R-065",
+      "planKey": "app-shell-ui",
+      "description": "Authenticated application shell/navigation that hosts the product surfaces and routes only authenticated principals.",
+      "feature": "Roles & permissions"
+    }
+  ],
+  "surfaces": [
+    {
+      "id": "S-idp-config",
+      "kind": "config",
+      "requiredByOutcome": [
+        "O-sso-signin"
+      ]
+    },
+    {
+      "id": "S-sso-routes",
+      "kind": "api-route",
+      "requiredByOutcome": [
+        "O-sso-signin"
+      ]
+    },
+    {
+      "id": "S-sso-callback-integration",
+      "kind": "external-integration",
+      "requiredByOutcome": [
+        "O-sso-signin"
+      ]
+    },
+    {
+      "id": "S-session-middleware",
+      "kind": "middleware",
+      "requiredByOutcome": [
+        "O-sso-signin",
+        "O-invite",
+        "O-roles",
+        "O-tasks",
+        "O-files",
+        "O-audit",
+        "O-notify",
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-auth-ui",
+      "kind": "ui-view",
+      "requiredByOutcome": [
+        "O-sso-signin"
+      ]
+    },
+    {
+      "id": "S-user-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-sso-signin",
+        "O-invite"
+      ]
+    },
+    {
+      "id": "S-org-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-invite",
+        "O-roles",
+        "O-tasks",
+        "O-files",
+        "O-audit",
+        "O-notify",
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-invite-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-invite"
+      ]
+    },
+    {
+      "id": "S-invite-routes",
+      "kind": "api-route",
+      "requiredByOutcome": [
+        "O-invite"
+      ]
+    },
+    {
+      "id": "S-invite-email",
+      "kind": "external-integration",
+      "requiredByOutcome": [
+        "O-invite"
+      ]
+    },
+    {
+      "id": "S-org-ui",
+      "kind": "ui-view",
+      "requiredByOutcome": [
+        "O-invite",
+        "O-roles"
+      ]
+    },
+    {
+      "id": "S-role-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-roles"
+      ]
+    },
+    {
+      "id": "S-authz-middleware",
+      "kind": "middleware",
+      "requiredByOutcome": [
+        "O-roles",
+        "O-invite",
+        "O-tasks",
+        "O-files",
+        "O-audit",
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-project-task-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-tasks"
+      ]
+    },
+    {
+      "id": "S-task-routes",
+      "kind": "api-route",
+      "requiredByOutcome": [
+        "O-tasks"
+      ]
+    },
+    {
+      "id": "S-project-task-ui",
+      "kind": "ui-view",
+      "requiredByOutcome": [
+        "O-tasks"
+      ]
+    },
+    {
+      "id": "S-file-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-files"
+      ]
+    },
+    {
+      "id": "S-file-storage",
+      "kind": "external-integration",
+      "requiredByOutcome": [
+        "O-files"
+      ]
+    },
+    {
+      "id": "S-file-routes",
+      "kind": "api-route",
+      "requiredByOutcome": [
+        "O-files"
+      ]
+    },
+    {
+      "id": "S-file-av-worker",
+      "kind": "worker",
+      "requiredByOutcome": [
+        "O-files"
+      ]
+    },
+    {
+      "id": "S-file-ui",
+      "kind": "ui-view",
+      "requiredByOutcome": [
+        "O-files"
+      ]
+    },
+    {
+      "id": "S-audit-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-audit"
+      ]
+    },
+    {
+      "id": "S-audit-routes",
+      "kind": "api-route",
+      "requiredByOutcome": [
+        "O-audit"
+      ]
+    },
+    {
+      "id": "S-audit-ui",
+      "kind": "ui-view",
+      "requiredByOutcome": [
+        "O-audit"
+      ]
+    },
+    {
+      "id": "S-activity-notification-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-notify"
+      ]
+    },
+    {
+      "id": "S-notification-worker",
+      "kind": "worker",
+      "requiredByOutcome": [
+        "O-notify"
+      ]
+    },
+    {
+      "id": "S-notification-email",
+      "kind": "external-integration",
+      "requiredByOutcome": [
+        "O-notify"
+      ]
+    },
+    {
+      "id": "S-notification-routes",
+      "kind": "api-route",
+      "requiredByOutcome": [
+        "O-notify"
+      ]
+    },
+    {
+      "id": "S-notification-ui",
+      "kind": "ui-view",
+      "requiredByOutcome": [
+        "O-notify"
+      ]
+    },
+    {
+      "id": "S-billing-schema",
+      "kind": "db-schema",
+      "requiredByOutcome": [
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-billing-provider",
+      "kind": "external-integration",
+      "requiredByOutcome": [
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-billing-routes",
+      "kind": "api-route",
+      "requiredByOutcome": [
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-billing-webhook",
+      "kind": "api-route",
+      "requiredByOutcome": [
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-billing-ui",
+      "kind": "ui-view",
+      "requiredByOutcome": [
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-app-shell",
+      "kind": "ui-view",
+      "requiredByOutcome": [
+        "O-tasks",
+        "O-files",
+        "O-notify",
+        "O-roles"
+      ]
+    },
+    {
+      "id": "S-secret-config",
+      "kind": "config",
+      "requiredByOutcome": [
+        "O-sso-signin",
+        "O-files",
+        "O-notify",
+        "O-billing"
+      ]
+    },
+    {
+      "id": "S-tests",
+      "kind": "tests",
+      "requiredByOutcome": [
+        "O-sso-signin",
+        "O-invite",
+        "O-roles",
+        "O-tasks",
+        "O-files",
+        "O-audit",
+        "O-notify",
+        "O-billing"
+      ]
+    }
+  ],
+  "concerns": [
+    {
+      "id": "token-validation",
+      "status": "required"
+    },
+    {
+      "id": "session-fixation",
+      "status": "required"
+    },
+    {
+      "id": "session-management",
+      "status": "required"
+    },
+    {
+      "id": "csrf",
+      "status": "required"
+    },
+    {
+      "id": "authz-enforcement",
+      "status": "required"
+    },
+    {
+      "id": "tenant-isolation",
+      "status": "required"
+    },
+    {
+      "id": "audit-integrity",
+      "status": "required"
+    },
+    {
+      "id": "access-control-on-download",
+      "status": "required"
+    },
+    {
+      "id": "file-av-scan",
+      "status": "required"
+    },
+    {
+      "id": "input-validation",
+      "status": "required"
+    },
+    {
+      "id": "secret-management",
+      "status": "required"
+    },
+    {
+      "id": "idempotent-billing",
+      "status": "required"
+    },
+    {
+      "id": "webhook-signature-verification",
+      "status": "required"
+    },
+    {
+      "id": "invite-token-security",
+      "status": "required"
+    },
+    {
+      "id": "error-handling",
+      "status": "required"
+    },
+    {
+      "id": "rate-limiting",
+      "status": "required"
+    },
+    {
+      "id": "email-deliverability",
+      "status": "required"
+    },
+    {
+      "id": "pii-handling",
+      "status": "required"
+    },
+    {
+      "id": "transport-security",
+      "status": "required"
+    },
+    {
+      "id": "local-password-login",
+      "status": "excluded",
+      "reason": "The plan states the company's SSO identity provider is the only way in and there is no separate Hearth password; local password auth is explicitly ruled out."
+    },
+    {
+      "id": "data-migration",
+      "status": "excluded",
+      "reason": "The plan states this is greenfield with no existing product, accounts, billing relationship, or data to migrate."
+    },
+    {
+      "id": "self-service-signup-without-sso",
+      "status": "excluded",
+      "reason": "Access is gated on company SSO and invitations; there is no password-based self-service account creation outside an organization's IdP."
+    }
+  ],
+  "mustHaves": [
+    {
+      "id": "M-001",
+      "planKey": "sso-assertion-callback",
+      "statement": "The IdP assertion/token must be cryptographically validated (signature, issuer, audience, expiry, nonce/state) before any session is created."
+    },
+    {
+      "id": "M-002",
+      "planKey": "session-establish",
+      "statement": "Session identifiers must be regenerated on sign-in to prevent session fixation, and sessions must keep a person signed in across the product."
+    },
+    {
+      "id": "M-003",
+      "planKey": "session-validate-middleware",
+      "statement": "Every non-public request must resolve and verify the authenticated principal before reaching protected logic."
+    },
+    {
+      "id": "M-004",
+      "planKey": "authz-enforcement-middleware",
+      "statement": "Role/permission checks must be enforced server-side on every protected action, not merely reflected in the UI."
+    },
+    {
+      "id": "M-005",
+      "planKey": "tenant-scoping",
+      "statement": "Every resource access must be scoped to the principal's organization so cross-tenant access is impossible."
+    },
+    {
+      "id": "M-006",
+      "planKey": "invite-accept",
+      "statement": "Acceptance must bind to a verified SSO identity matching the invited email and consume a single-use, expiring token."
+    },
+    {
+      "id": "M-007",
+      "planKey": "file-download",
+      "statement": "Every file download must re-check that the requesting principal is authorized for that file's org/project/task; download URLs must not grant access without an authorization check."
+    },
+    {
+      "id": "M-008",
+      "planKey": "file-av-scan",
+      "statement": "Uploaded files must be scanned for malware and only made downloadable after passing."
+    },
+    {
+      "id": "M-009",
+      "planKey": "audit-event-write",
+      "statement": "All compliance-relevant actions (join/leave, role change, work changes, file access, billing events, sign-in) must produce durable audit entries."
+    },
+    {
+      "id": "M-010",
+      "planKey": "audit-log-model",
+      "statement": "The audit log must be append-only / tamper-evident so the record can be trusted by an auditor."
+    },
+    {
+      "id": "M-011",
+      "planKey": "audit-log-read",
+      "statement": "Audit log review must be restricted to authorized roles (owners/admins)."
+    },
+    {
+      "id": "M-012",
+      "planKey": "billing-webhook-handler",
+      "statement": "Billing webhook processing must verify the provider signature and be idempotent so retried/duplicate events do not double-apply."
+    },
+    {
+      "id": "M-013",
+      "planKey": "seat-count-enforcement",
+      "statement": "The number of people an org can have must follow from paid seats: inviting/accepting must be blocked once active members plus outstanding invites would exceed paid seats."
+    },
+    {
+      "id": "M-014",
+      "planKey": "role-assignment",
+      "statement": "Role changes must preserve invariants such as never removing the last owner."
+    },
+    {
+      "id": "M-015",
+      "planKey": "sign-out",
+      "statement": "Sign-out must fully terminate the local session so the principal is no longer authenticated."
+    },
+    {
+      "id": "M-016",
+      "planKey": "task-assign",
+      "statement": "A task may only be assigned to a person who is a member with access to that task's project."
+    }
+  ],
+  "requiredEdges": [
+    {
+      "fromPlanKey": "sso-auth-initiate",
+      "toPlanKey": "sso-idp-config",
+      "why": "Initiating the handshake needs the org's registered IdP endpoints/credentials.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "sso-assertion-callback",
+      "toPlanKey": "sso-idp-config",
+      "why": "Validating the assertion needs the IdP's signing certificate/JWKS and audience config.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "sso-assertion-callback",
+      "toPlanKey": "sso-auth-initiate",
+      "why": "The callback validates the state/nonce produced when the handshake was initiated.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "sso-assertion-callback",
+      "toPlanKey": "user-model",
+      "why": "A validated assertion provisions or matches a user record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "session-establish",
+      "toPlanKey": "sso-assertion-callback",
+      "why": "A session is only established after the assertion is validated.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "session-establish",
+      "toPlanKey": "user-model",
+      "why": "The session is bound to the resolved user identity.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "session-validate-middleware",
+      "toPlanKey": "session-establish",
+      "why": "Middleware validates the session token/cookie that establishment issues.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "sign-out",
+      "toPlanKey": "session-establish",
+      "why": "Sign-out destroys the session that was established.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "auth-ui",
+      "toPlanKey": "sso-auth-initiate",
+      "why": "The sign-in UI triggers the SSO initiation flow.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "auth-ui",
+      "toPlanKey": "sign-out",
+      "why": "The UI exposes the sign-out control.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "team-model",
+      "toPlanKey": "org-model",
+      "why": "Teams are nested under an organization.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "org-membership-model",
+      "toPlanKey": "org-model",
+      "why": "Membership links a user into an organization.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "org-create",
+      "toPlanKey": "org-model",
+      "why": "Creating an org writes the org record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "team-manage",
+      "toPlanKey": "team-model",
+      "why": "Team management operates on team records.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "team-manage",
+      "toPlanKey": "org-membership-model",
+      "why": "Placing members on teams operates on membership.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-model",
+      "toPlanKey": "org-model",
+      "why": "An invitation belongs to an organization.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-create",
+      "toPlanKey": "invite-model",
+      "why": "Creating an invite writes an invitation record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-email-send",
+      "toPlanKey": "invite-create",
+      "why": "The email is sent for the invitation that was created.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-email-send",
+      "toPlanKey": "invite-model",
+      "why": "The email carries the invitation token from the record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-accept",
+      "toPlanKey": "invite-model",
+      "why": "Acceptance validates and consumes the invitation token.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-accept",
+      "toPlanKey": "org-membership-model",
+      "why": "Accepting creates the org membership.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-decline",
+      "toPlanKey": "invite-model",
+      "why": "Declining updates the invitation status.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-ui",
+      "toPlanKey": "invite-create",
+      "why": "The UI drives invite creation.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-ui",
+      "toPlanKey": "invite-accept",
+      "why": "The accept landing page drives acceptance.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "invite-ui",
+      "toPlanKey": "invite-decline",
+      "why": "The landing page drives decline.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "roster-read",
+      "toPlanKey": "org-membership-model",
+      "why": "The roster reads membership records.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "member-remove",
+      "toPlanKey": "org-membership-model",
+      "why": "Removal deletes/deactivates a membership.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "org-create",
+      "toPlanKey": "org-membership-model",
+      "why": "Creating an org makes the creator the first member/owner.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "role-model",
+      "toPlanKey": "org-membership-model",
+      "why": "Roles attach to an org membership.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "permission-model",
+      "toPlanKey": "role-model",
+      "why": "Permission mapping is defined over roles.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "role-assignment",
+      "toPlanKey": "role-model",
+      "why": "Assignment sets a membership's role.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "role-assignment",
+      "toPlanKey": "org-membership-model",
+      "why": "Role assignment operates on a membership record.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "authz-enforcement-middleware",
+      "toPlanKey": "permission-model",
+      "why": "Enforcement consults the role-to-permission mapping.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "authz-enforcement-middleware",
+      "toPlanKey": "role-model",
+      "why": "Enforcement reads the principal's role.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "authz-enforcement-middleware",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Authorization needs the authenticated principal resolved by session validation.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "authz-ui-gating",
+      "toPlanKey": "role-model",
+      "why": "The UI gates affordances on the viewer's role.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "tenant-scoping",
+      "toPlanKey": "org-membership-model",
+      "why": "Scoping resolves the principal's org from their membership.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "tenant-scoping",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Scoping needs the authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-create",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Only an authenticated principal can send an invite.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-create",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Only owners/admins may invite; the action is authorization-gated.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-accept",
+      "toPlanKey": "sso-assertion-callback",
+      "why": "Acceptance must bind to a verified SSO identity for the invited email.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-accept",
+      "toPlanKey": "user-model",
+      "why": "Acceptance ties the invite to the accepting user identity.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-accept",
+      "toPlanKey": "role-model",
+      "why": "The membership created on accept is assigned the invited role.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "member-remove",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Removing a member is an owner/admin-only people-management action.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "role-assignment",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Changing roles is an owner/admin-only action.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "team-manage",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Managing teams is a privileged org-management action.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "roster-read",
+      "toPlanKey": "tenant-scoping",
+      "why": "Roster reads must be scoped to the caller's org.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "roster-read",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Reading the roster requires an authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-ui",
+      "toPlanKey": "app-shell-ui",
+      "why": "The invite management UI lives inside the authenticated app shell.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-ui",
+      "toPlanKey": "authz-ui-gating",
+      "why": "The invite affordance is shown only to owners/admins.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "roster-read",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Reading the roster is org/people-management gated server-side.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "project-model",
+      "toPlanKey": "org-model",
+      "why": "Projects are nested under an organization.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "project-create",
+      "toPlanKey": "project-model",
+      "why": "Creating a project writes the project record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "project-membership",
+      "toPlanKey": "project-model",
+      "why": "Project access is defined against a project.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "project-membership",
+      "toPlanKey": "org-membership-model",
+      "why": "Only org members can be on a project.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-model",
+      "toPlanKey": "project-model",
+      "why": "Tasks belong to a project.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "task-create",
+      "toPlanKey": "task-model",
+      "why": "Creating a task writes a task record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "task-create",
+      "toPlanKey": "project-membership",
+      "why": "A member creates a task only within a project they have access to.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "task-assign",
+      "toPlanKey": "task-model",
+      "why": "Assignment sets the task's assignee.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "task-assign",
+      "toPlanKey": "project-membership",
+      "why": "A task may only be assigned to someone with project access.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "task-edit",
+      "toPlanKey": "task-model",
+      "why": "Editing mutates task fields.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "task-complete",
+      "toPlanKey": "task-model",
+      "why": "Completion flips the task status.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "task-read",
+      "toPlanKey": "task-model",
+      "why": "Reading lists task records.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "task-comment",
+      "toPlanKey": "task-model",
+      "why": "Comments attach to a task.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "project-task-ui",
+      "toPlanKey": "task-create",
+      "why": "The UI drives task creation.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "project-task-ui",
+      "toPlanKey": "task-assign",
+      "why": "The UI drives assignment.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "project-task-ui",
+      "toPlanKey": "task-edit",
+      "why": "The UI drives editing.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "project-task-ui",
+      "toPlanKey": "task-complete",
+      "why": "The UI drives completion.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "project-task-ui",
+      "toPlanKey": "task-read",
+      "why": "The UI lists projects and tasks.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "project-create",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Creating a project requires an authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "project-create",
+      "toPlanKey": "tenant-scoping",
+      "why": "Projects are created within the caller's org only.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-create",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Creating a task requires an authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-create",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Task creation is permission-gated to members with project access.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-assign",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Assignment is permission-checked server-side.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-assign",
+      "toPlanKey": "org-membership-model",
+      "why": "The assignee must be a member of the org.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-edit",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Editing is permission-checked server-side.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-complete",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Completion is permission-checked server-side.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-read",
+      "toPlanKey": "tenant-scoping",
+      "why": "Task reads are scoped to the caller's org/project access.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "project-task-ui",
+      "toPlanKey": "app-shell-ui",
+      "why": "Project/task views live in the authenticated app shell.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "project-task-ui",
+      "toPlanKey": "authz-ui-gating",
+      "why": "Task affordances reflect the viewer's permissions.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "file-model",
+      "toPlanKey": "task-model",
+      "why": "An attachment links to a task.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "file-upload",
+      "toPlanKey": "file-model",
+      "why": "Upload creates the attachment record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-upload",
+      "toPlanKey": "file-storage",
+      "why": "Upload stores the file bytes in object storage.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-av-scan",
+      "toPlanKey": "file-upload",
+      "why": "Scanning runs against the uploaded bytes.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-av-scan",
+      "toPlanKey": "file-storage",
+      "why": "The scanner reads the stored object.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-download",
+      "toPlanKey": "file-model",
+      "why": "Download resolves the attachment metadata.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-download",
+      "toPlanKey": "file-storage",
+      "why": "Download streams bytes from object storage.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-download",
+      "toPlanKey": "file-av-scan",
+      "why": "Files are only downloadable after passing the AV scan.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-ui",
+      "toPlanKey": "file-upload",
+      "why": "The UI drives attaching files.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-ui",
+      "toPlanKey": "file-download",
+      "why": "The UI drives downloading files.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "file-upload",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Uploading requires an authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "file-upload",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Attaching to a task requires permission on that task's project.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "file-upload",
+      "toPlanKey": "project-membership",
+      "why": "Only people with project access can attach files to its tasks.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "file-download",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Downloading requires an authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "file-download",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Every download re-checks authorization for the file's task/project.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "file-download",
+      "toPlanKey": "tenant-scoping",
+      "why": "Downloads are scoped so no cross-tenant file access is possible.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "file-ui",
+      "toPlanKey": "project-task-ui",
+      "why": "File attachments are surfaced within task detail.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "audit-log-model",
+      "why": "Writing audit events appends to the audit log.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "audit-log-read",
+      "toPlanKey": "audit-log-model",
+      "why": "Review reads from the audit log.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "audit-log-ui",
+      "toPlanKey": "audit-log-read",
+      "why": "The review UI calls the read surface.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "invite-accept",
+      "why": "Joining (accept) is a compliance-relevant event to audit.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "member-remove",
+      "why": "Leaving/removal is a compliance-relevant event to audit.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "role-assignment",
+      "why": "Role changes are compliance-relevant events to audit.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "task-edit",
+      "why": "Changes to work are compliance-relevant events to audit.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "task-complete",
+      "why": "Completing work is a compliance-relevant change to audit.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "file-download",
+      "why": "Access to files is a compliance-relevant event to audit.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "file-upload",
+      "why": "Adding files to work is a compliance-relevant event to audit.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "billing-webhook-handler",
+      "why": "Billing events are compliance-relevant and must be audited.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-event-write",
+      "toPlanKey": "session-establish",
+      "why": "Sign-in is a security-relevant event to audit.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-log-read",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Audit review is restricted to owners/admins.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-log-read",
+      "toPlanKey": "tenant-scoping",
+      "why": "Audit review only shows the caller's own org.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "audit-log-ui",
+      "toPlanKey": "app-shell-ui",
+      "why": "The audit UI lives in the authenticated app shell.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "notification-model",
+      "toPlanKey": "activity-event-model",
+      "why": "Notifications derive from activity events.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-fanout",
+      "toPlanKey": "activity-event-model",
+      "why": "Fanout consumes activity events.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-fanout",
+      "toPlanKey": "notification-model",
+      "why": "Fanout produces per-recipient notification records.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-worker",
+      "toPlanKey": "notification-fanout",
+      "why": "The worker runs fanout asynchronously.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-inapp-deliver",
+      "toPlanKey": "notification-model",
+      "why": "In-app delivery reads notification records.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-email-deliver",
+      "toPlanKey": "notification-model",
+      "why": "Email delivery reads notification records.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-inapp-deliver",
+      "toPlanKey": "notification-worker",
+      "why": "The worker drives in-app delivery.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-email-deliver",
+      "toPlanKey": "notification-worker",
+      "why": "The worker drives email delivery.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "activity-feed-read",
+      "toPlanKey": "activity-event-model",
+      "why": "The feed reads activity events.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-ui",
+      "toPlanKey": "notification-inapp-deliver",
+      "why": "The notification center renders in-app notifications.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "notification-ui",
+      "toPlanKey": "activity-feed-read",
+      "why": "The UI renders the activity feed.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "activity-event-model",
+      "toPlanKey": "task-assign",
+      "why": "Assigning a task is an activity event source.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "activity-event-model",
+      "toPlanKey": "task-comment",
+      "why": "A comment is an activity event source.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "activity-event-model",
+      "toPlanKey": "task-edit",
+      "why": "A project/task update is an activity event source.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "activity-event-model",
+      "toPlanKey": "invite-accept",
+      "why": "An accepted invite is an activity event source.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "notification-fanout",
+      "toPlanKey": "org-membership-model",
+      "why": "Fanout decides recipients from org/team membership.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "notification-fanout",
+      "toPlanKey": "project-membership",
+      "why": "Fanout targets the people with access to the relevant project.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "notification-email-deliver",
+      "toPlanKey": "user-model",
+      "why": "Email delivery needs the recipient's email address.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "activity-feed-read",
+      "toPlanKey": "tenant-scoping",
+      "why": "The feed is scoped to the caller's org/project access.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "activity-feed-read",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "A person only sees feed items they are authorized to see.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "notification-inapp-deliver",
+      "toPlanKey": "session-validate-middleware",
+      "why": "In-app notifications are shown to the authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "notification-ui",
+      "toPlanKey": "app-shell-ui",
+      "why": "The notification center and feed live in the app shell.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "billing-subscription-model",
+      "toPlanKey": "org-model",
+      "why": "A subscription belongs to an organization.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "billing-subscription-model",
+      "toPlanKey": "billing-plan-model",
+      "why": "A subscription references a plan/price.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "billing-checkout",
+      "toPlanKey": "billing-plan-model",
+      "why": "Checkout selects a plan and seat quantity.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "billing-checkout",
+      "toPlanKey": "billing-provider-integration",
+      "why": "Checkout completes payment via the provider.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "billing-checkout",
+      "toPlanKey": "billing-subscription-model",
+      "why": "Checkout creates/updates the org's subscription record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "billing-webhook-handler",
+      "toPlanKey": "billing-provider-integration",
+      "why": "The handler reconciles events from the provider.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "billing-webhook-handler",
+      "toPlanKey": "billing-subscription-model",
+      "why": "Webhook reconciliation updates the subscription record.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "seat-count-enforcement",
+      "toPlanKey": "billing-subscription-model",
+      "why": "Enforcement compares headcount against paid seat quantity.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "seat-quantity-sync",
+      "toPlanKey": "billing-subscription-model",
+      "why": "Seat sync updates the subscription's seat quantity.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "seat-quantity-sync",
+      "toPlanKey": "billing-provider-integration",
+      "why": "Seat sync pushes quantity changes to the provider.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "billing-ui",
+      "toPlanKey": "billing-checkout",
+      "why": "The UI drives plan/seat selection and checkout.",
+      "partition": "intra-feature"
+    },
+    {
+      "fromPlanKey": "billing-checkout",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Only owners may subscribe/pay; checkout is privilege-gated.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "billing-checkout",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Checkout requires an authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "seat-count-enforcement",
+      "toPlanKey": "org-membership-model",
+      "why": "Enforcement counts active members against paid seats.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "seat-count-enforcement",
+      "toPlanKey": "invite-model",
+      "why": "Outstanding invites count toward consumed seats.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-create",
+      "toPlanKey": "seat-count-enforcement",
+      "why": "Inviting is blocked when paid seats are exhausted.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "invite-accept",
+      "toPlanKey": "seat-count-enforcement",
+      "why": "Accepting is blocked when it would exceed paid seats.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "seat-quantity-sync",
+      "toPlanKey": "org-membership-model",
+      "why": "Membership growth/shrink drives billed seat quantity.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "seat-quantity-sync",
+      "toPlanKey": "invite-create",
+      "why": "Adding to the team (invites) is reflected in billed seats.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "seat-quantity-sync",
+      "toPlanKey": "member-remove",
+      "why": "Letting people go is reflected in billed seats.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "billing-ui",
+      "toPlanKey": "app-shell-ui",
+      "why": "Billing management lives in the authenticated app shell.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "billing-ui",
+      "toPlanKey": "authz-ui-gating",
+      "why": "Billing affordances are shown only to owners.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "app-shell-ui",
+      "toPlanKey": "session-validate-middleware",
+      "why": "The app shell only routes authenticated principals.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "authz-ui-gating",
+      "toPlanKey": "session-validate-middleware",
+      "why": "UI gating needs the resolved principal and their role.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "org-create",
+      "toPlanKey": "session-validate-middleware",
+      "why": "Creating an org requires an authenticated principal.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "billing-checkout",
+      "toPlanKey": "org-model",
+      "why": "Subscribing is scoped to the caller's organization.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "task-comment",
+      "toPlanKey": "authz-enforcement-middleware",
+      "why": "Commenting requires project access.",
+      "partition": "seam"
+    },
+    {
+      "fromPlanKey": "team-manage",
+      "toPlanKey": "tenant-scoping",
+      "why": "Team management is scoped to the caller's org.",
+      "partition": "seam"
+    }
+  ]
+}
