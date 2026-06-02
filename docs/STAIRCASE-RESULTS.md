@@ -7,7 +7,7 @@ falsifiable claim that gates the next. Append results here; do not rewrite histo
 |---|---|---|---|
 | **0** | the edge/surface ruler is accurate | ✅ **PASS** (2026-06-02) | both rulers mutation-tested; 36 assertions in `npm run selftest` |
 | **1** | the typed produces/consumes representation can *express* the true edges | ✅ **GO** (2026-06-02) | ceiling **88.2%**, precision **100%** on `sso-greenfield` |
-| 2 | local produces/consumes extraction + join recovers more edges than directly asking | 🟡 **directional, not decisive** | live A/B ran ($5.43, K=2): Arm-2 (extraction→join) +5.9pts suff / +20.6pts presence over Arm-1 (depends_on) — but variance ±25% swamps it and over-wiring is unmeasured (below). Promising, not validated. |
+| 2 | local produces/consumes extraction + join recovers more edges than directly asking | 🔴 **NEGATIVE (decisive)** | K=5 precision-aware A/B: extraction→join recall **16.5%** vs depends_on **34.1%** (−17.6 pts > 1σ; NOT over-wiring, 1.08× edges). Step-1's 88% ceiling is real but **unreached by live haiku extraction** — the bottleneck is extraction quality (likely §1.1 vocabulary alignment). The spec's named Step-2 kill-criterion, hit. |
 | 3 | priming with an obligations library raises recall without anchoring | 🟢 **apparatus ready + headroom pre-flight PASSED** | three arms + C1 lint + partition (seam) scorer built; `hearth` pinned; live pre-flight confirms measurable seam headroom (below). The full 3-arm sweep is the gated next run. |
 | 4 | the diverse ensemble converges; manifest incompleteness is measurable | ⏳ | phase 2 |
 
@@ -71,35 +71,51 @@ for $0, before any extraction or model spend. This clears the substrate gate tha
 > ceiling, since pure stage-ordering edges are less resource-mediated) and on `hearth` (the partitioned
 > manifest will report the intra-feature vs **seam** ceiling separately) before generalizing.
 
-## Step 2 — live extraction A/B on `sso-greenfield` 🟡 directional, NOT decisive
+## Step 2 — live extraction A/B on `sso-greenfield` 🔴 NEGATIVE (decisive)
 
-`tools/extraction-ab-live.mjs` (LIVE, ~$5.43): hold the node set constant per run; **Arm 1** = the model's
-own `depends_on` edges, **Arm 2** = annotate the *same* beads → the deterministic join → its edges. Both
-edge sets judged identically (thin fixture ⇒ semantic judge, not planKey matching). haiku method+annotator,
-sonnet judge, K=2.
+The question: does a *model's* local produces/consumes extraction + the deterministic join recover **more**
+required edges than the model's own `depends_on`? Node set held constant per run; Arm 1 = the model's
+`depends_on`, Arm 2 = annotate the *same* beads → join. Two passes:
+
+- **v1** (`tools/extraction-ab-live.mjs`, K=2, judge-per-edge, $5.43): looked like a **+5.9 pt** win for
+  extraction — but Arm-2 variance was **±25%**, over-wiring was unmeasured, and the "win" rode entirely on one
+  rich run. Flagged at the time as *directional, not decisive*. It was noise.
+- **v2** (`tools/extraction-ab-v2.mjs`, **K=5, precision-aware**, $6.70) — the decisive run. Align manifest
+  planKeys → the model's bead ids *once per run* via the requirement-judge's `beadRef` (so both arms score
+  deterministically over the same alignment), then measure recall (transitive reachability) **and** an
+  over-wiring guard (edge count + required-hit-rate among aligned edges):
 
 ```
-Arm1 (model depends_on)  edge recall: suff 29.4% ± 8.3%   pres 29.4% ± 8.3%    [23.5, 35.3]
-Arm2 (extraction->join)  edge recall: suff 35.3% ± 25.0%  pres 50.0% ± 37.4%   [17.6, 52.9]
-delta (Arm2-Arm1): suff +5.9 pts | pres +20.6 pts   | join edges/run [13, 42] vs 17 required
+planKeys aligned/run: [10,10,11,9,11] of 13
+Arm1 (depends_on)      recall 34.1% ± 10.5%   edges 26.6   required-hit 57.0%   [35.3,23.5,47.1,23.5,41.2]
+Arm2 (extraction→join) recall 16.5% ± 14.0%   edges 28.8   required-hit 50.0%   [17.6,23.5, 5.9, 0.0,35.3]
+DELTA recall −17.6 pts (pooled σ 12.4% → exceeds 1σ)   edge ratio Arm2/Arm1 1.08×
 ```
 
-**Read it honestly — promising, not proven.** The mean favours extraction (esp. on presence), but:
-1. **Underpowered.** K=2 with Arm-2 suff **±25%**. The win is entirely the *rich* run (29 beads → join recovered
-   52.9%); the *sparse* run (13 beads) had Arm-2 **below** Arm-1. The spread swamps the +5.9pt delta.
-2. **Over-wiring is unmeasured.** The rich run's join made **42 edges vs 17 required**; judge-RECALL does not
-   penalize over-wiring, and join PRECISION is unmeasurable on a thin fixture (the model's invented planKeys
-   don't map to the manifest's), so some of Arm-2's lift may be spray — the exact confound §7 Step-2 warns of.
-3. **Decomposition richness is the hidden variable** — more beads → more produces/consumes → more join edges →
-   higher recall *and* worse over-wiring. The A/B conflates derivation quality with enumeration richness.
+**Verdict: EXTRACTION LOSES, decisively.** The join over a model's extracted interfaces recovers **half** the
+required edges that the model's own `depends_on` does (16.5% vs 34.1%, −17.6 pts > 1σ), and it is **not** an
+over-wiring artifact (edge counts nearly equal, 1.08×; required-hit comparable). The K=2 v1 "win" was sampling
+noise — the sign flips hard at K=5.
 
-**Verdict:** consistent with the reframe (Step-1's 88% ceiling says it's *possible*; this says a model's
-extraction *can* exceed its own depends_on), but **not a clean validation**. A decisive Step-2 needs higher K
-**and** a precision guard — which requires aligning the model's beads to manifest planKeys (a judge-based or
-deterministic alignment step), so over-wiring can be penalized. Banked as the next methodological build.
+**What it means (the spec's named Step-2 kill-criterion, hit).** Step 1 proved the representation *can* express
+88% of the edges *with a perfect hand annotation*. Step 2 shows a **model's actual extraction is far from that
+ceiling**: the bottleneck is **extraction quality**, not the representation. The most likely culprit is the
+§1.1 **vocabulary-alignment** problem — the join is exact-match on resource names, and a haiku annotator names
+the same resource inconsistently across beads (`Store:session` vs `Store:sessions` vs `Store:session-store`),
+so the join silently misses the edge. The `slugName` canonicalizer handles casing/separators but not synonyms.
 
-Transport/robustness fixes banked en route: the annotator now retries + fails closed like the judge (a
-transient CLI error during the concurrent fan-out previously crashed a paid run); concurrency gentled to 3.
+**Caveats (don't over-read the negative):** (1) the annotator was **haiku** — and annotation quality is exactly
+what's under test, so a **sonnet** annotator is the obvious retry. (2) One small fixture (13 reqs / 17 edges).
+(3) Alignment covered 9–11/13 planKeys (the judge couldn't place 2–4 per run) — fair to both arms, but it caps
+absolute recall.
+
+**Implied next moves** (not yet run): (a) re-run with a **sonnet annotator** — is extraction the bottleneck, or
+just haiku? (b) implement the spec's **dictionary-first** canonicalization (§1.1: build a resource dictionary,
+then have beads reference dictionary ids) to attack vocabulary alignment directly. This is the "investigate
+extraction quality" branch the spec predicted.
+
+Robustness fixes banked en route: the annotator now retries + fails closed like the judge (a transient CLI
+exit-1 during the concurrent fan-out had crashed a paid run); concurrency gentled to 3.
 
 ## Step 3 — headroom pre-flight on `hearth` ✅ GO (first live data)
 
