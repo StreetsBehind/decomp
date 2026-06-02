@@ -146,7 +146,11 @@ compromise them. Honest observations:
 
 ## 6. OPEN PROBLEMS — fix before trusting any number
 
-### 6.1 Infra bug: large prompts exceed the Windows argv limit (2/26 runs failed)
+### 6.1 Infra bug: large prompts exceed the Windows argv limit (2/26 runs failed) — ✅ RESOLVED 2026-06-02
+> **Fixed:** `claudeInvoke` now pipes the prompt via **stdin** (`spawnCapture`, `-p` with no positional),
+> not argv. Verified by `node tools/transport-smoke.mjs` (200 KB prompt round-trips; non-zero exit / stderr /
+> missing-binary all reject). The swarm/noaudit-on-sonnet re-run is now unblocked. Original report below.
+
 `runner/model-client.mjs` `claudeInvoke` passes the prompt as a **command-line argument**
 (`claude -p <prompt> …`). The biggest prompts — swarm's integrator and the no-audit re-expander, which
 **embed the entire current decomposition** — blow past Windows' ~32 KB argv limit. The CLI even warned

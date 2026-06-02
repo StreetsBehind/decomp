@@ -1,0 +1,21 @@
+{
+  "app": "Hearth",
+  "summary": "A greenfield B2B team workspace, sold per seat: companies sign in via their own SSO, form an org with teams and invites, hold role-gated permissions, organize work into projects and tasks, attach files, keep a compliance audit trail, get notified of activity, and pay per seat.",
+  "stack": { "lang": "ts", "runtime": "node", "store": "postgres", "blobStore": "s3" },
+  "outcomes": [
+    { "id": "O-sso-signin", "statement": "a person can sign in through their company's SSO identity provider, stay signed in while using Hearth, and sign out" },
+    { "id": "O-invite", "statement": "an org owner or admin can invite a teammate by email, and that person can accept or decline the invite" },
+    { "id": "O-roles", "statement": "owners and admins can do org- and people-management things that ordinary members cannot, and the product enforces that distinction wherever it applies" },
+    { "id": "O-tasks", "statement": "a member can create a task in a project, assign it, edit it, and mark it complete" },
+    { "id": "O-files", "statement": "a person can attach a file to a task and download it again later" },
+    { "id": "O-audit", "statement": "the org has an audit trail of who-did-what that the people running it can review for compliance" },
+    { "id": "O-notify", "statement": "the right people are notified, in-app and by email, when things they care about change, and can see a feed of recent activity" },
+    { "id": "O-billing", "statement": "an organization can subscribe and pay per seat, and how many people it can have follows from what it is paying for" }
+  ],
+  "notes": [
+    "Greenfield: no existing product, user accounts, billing relationship, or data to migrate.",
+    "SSO is the ONLY way in — there is no separate Hearth password.",
+    "Role enforcement is required everywhere it matters, not just hidden in the UI.",
+    "Billed per seat: the team size a company can have follows from what it is paying for."
+  ]
+}

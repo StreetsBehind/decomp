@@ -10,11 +10,15 @@ export const JSON_ONLY_SYSTEM =
 /**
  * The snapshot JSON contract, described for the model. Kept identical across methods.
  * @param {string[]} statedOutcomeIds  the STATED outcome ids the method may tag beads with
+ * @param {{ openQuestions?: boolean }} [opts]  when openQuestions=true, ALSO ask for an
+ *        `openQuestions` channel (the floor-not-ceiling gap signal the runner routes to catch-rate).
+ *        Default false so swarm / expand-audit prompts stay byte-identical (no drift).
  * @returns {string}
  */
-export function snapshotContract(statedOutcomeIds) {
+export function snapshotContract(statedOutcomeIds, opts = {}) {
   const ids = statedOutcomeIds.map((s) => `"${s}"`).join(', ');
-  return [
+  const wantOQ = !!opts.openQuestions;
+  const lines = [
     'Return a JSON object with this exact shape:',
     '{',
     '  "beads": [',
@@ -31,16 +35,31 @@ export function snapshotContract(statedOutcomeIds) {
     '    }',
     '  ],',
     '  "edges": [ { "from": "<bead id>", "to": "<bead id this one depends on>" } ],',
-    '  "ready": ["<bead ids with no unmet dependency>"]',
-    '}',
-    '',
+    `  "ready": ["<bead ids with no unmet dependency>"]${wantOQ ? ',' : ''}`,
+  ];
+  if (wantOQ) {
+    lines.push('  "openQuestions": [ { "class": "<short-kebab category>", "location": "<plan area / planKey / edge it concerns>", "note": "<the open question or suspected gap, one sentence>" } ]');
+  }
+  lines.push('}', '');
+  lines.push(
     `The STATED outcome ids you MUST tag beads against (use only these): [${ids}].`,
     'Each non-epic bead MUST carry metadata.provenance.outcomeIds (>=1 stated id),',
     '1..6 acceptanceCriteria, >=1 filesTouched, and >=1 testPlanCases.',
     'edges[].from DEPENDS ON edges[].to (ordering / blocked-by).',
     'Decompose the FULL latent work — every requirement a real build of this plan needs,',
     'not only what the plan spells out.',
-  ].join('\n');
+  );
+  if (wantOQ) {
+    lines.push(
+      '',
+      'ALSO populate "openQuestions": every requirement this plan needs but does NOT state, every',
+      'unresolved decision, and every dependency you are UNSURE about. On a thin plan the correct',
+      'behaviour is to surface MORE open questions, not to confidently invent answers — an empty list',
+      'claims you are certain nothing is missing, which is rarely true. Do NOT assert a dependency edge',
+      'here: an open question is a typed HOLE (what/where/why-unsure), never an answer.',
+    );
+  }
+  return lines.join('\n');
 }
 
 /** A compact textual rendering of the thin plan a method is handed. */

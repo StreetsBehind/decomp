@@ -139,6 +139,37 @@ export function coerceSnapshot(parsed) {
 }
 
 /**
+ * Coerce a parsed object's open-question channel into gap signals the catch-rate scorer reads.
+ * A model surfaces these in `openQuestions` (alias: `gaps`) — every latent requirement it suspects
+ * is missing, every unresolved decision, every dependency it is unsure about. Each becomes a
+ * `{ class, location?, note? }` (the stable {class,location} fields catch-rate matches on, plus a
+ * human-readable note for open-question-yield counting). De-duplicated so an identical question
+ * emitted twice counts once. NEVER an edge — an open question is a typed hole, not an answer.
+ * @param {object|null} parsed
+ * @returns {Array<{class:string, location?:string, note?:string}>}
+ */
+export function coerceGaps(parsed) {
+  const raw = parsed && (Array.isArray(parsed.openQuestions) ? parsed.openQuestions
+    : Array.isArray(parsed.gaps) ? parsed.gaps : null);
+  if (!raw) return [];
+  const out = [];
+  const seen = new Set();
+  for (const g of raw) {
+    if (!g || typeof g !== 'object') continue;
+    const gap = { class: typeof g.class === 'string' && g.class ? g.class : 'open-question' };
+    if (typeof g.location === 'string' && g.location) gap.location = g.location;
+    const note = typeof g.note === 'string' && g.note ? g.note
+      : typeof g.question === 'string' && g.question ? g.question : null;
+    if (note) gap.note = note;
+    const key = `${gap.class}|${gap.location || ''}|${gap.note || ''}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(gap);
+  }
+  return out;
+}
+
+/**
  * One-shot: assistant text -> normalized snapshot. Never throws; returns an empty snapshot
  * ({ beads:[], edges:[], ready:[] }) when nothing parseable is found.
  * @param {string} text
@@ -146,4 +177,16 @@ export function coerceSnapshot(parsed) {
  */
 export function parseSnapshot(text) {
   return coerceSnapshot(extractJsonObject(text));
+}
+
+/**
+ * One-shot: assistant text -> { snapshot, gaps }. Extracts the JSON object ONCE and coerces both
+ * the bead graph and the open-question channel from it. A strategy that asks the model for
+ * openQuestions returns `gaps` on its run result; the runner routes it to scoreCatchRate.
+ * @param {string} text
+ * @returns {{ snapshot: {beads:object[],edges:object[],ready:string[]}, gaps: Array<{class:string,location?:string,note?:string}> }}
+ */
+export function parseReply(text) {
+  const parsed = extractJsonObject(text);
+  return { snapshot: coerceSnapshot(parsed), gaps: coerceGaps(parsed) };
 }

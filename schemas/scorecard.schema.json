@@ -31,7 +31,12 @@
             "overall": { "type": "number", "minimum": 0, "maximum": 1, "description": "combined SUFFICIENCY generative-coverage score" },
             "presenceRequirement": { "type": "number", "minimum": 0, "maximum": 1, "description": "PRESENCE fraction of LATENT requirements for which a packet of the RIGHT SCOPE exists, regardless of how complete its acceptance criteria are. >= requirementCoverage (sufficiency) — the gap is the present-but-thin set." },
             "presenceEdge": { "type": "number", "minimum": 0, "maximum": 1, "description": "PRESENCE fraction of LATENT required edges for which a realized dependency edge of the right scope exists. >= edgeCoverage (sufficiency)." },
-            "presenceOverall": { "type": "number", "minimum": 0, "maximum": 1, "description": "combined PRESENCE generative-coverage score (pooled reqs+edges). >= overall (sufficiency); the GAP between them is the calibration finding this phase reports." }
+            "presenceOverall": { "type": "number", "minimum": 0, "maximum": 1, "description": "combined PRESENCE generative-coverage score (pooled reqs+edges). >= overall (sufficiency); the GAP between them is the calibration finding this phase reports." },
+            "edgeByPartition": {
+              "type": "object",
+              "description": "per-partition SUFFICIENCY edge recall (e.g. {\"intra-feature\":0.9,\"seam\":0.4}). Present ONLY when the fixture's outcome-manifest tags requiredEdges with a `partition`. The library-covered-vs-seam split the archetype experiment's anchoring rule reads (primed is safe iff covered recall rises AND seam recall does not fall).",
+              "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+            }
           }
         },
         "buildCompleteness": {

@@ -1,0 +1,1244 @@
+{
+  "_meta": {
+    "note": "AUTHORED archetypes — provenance=expert-author, trust=UNTRUSTED, lifecycleState=provisional (bootstrap). NOT canon. For premise-validation only. Every entry was contrast-pair validated; all 6 were REPAIRED (edge-smuggling caught + demoted to obligations).",
+    "invariants": [
+      "C1: no from->to edge anywhere",
+      "floor-not-ceiling",
+      "obligations are typed queries -> edge-to-compute | open-question"
+    ]
+  },
+  "entries": [
+    {
+      "archetypeKey": "oidc-sso-login",
+      "validation": {
+        "verdict": "REPAIRED",
+        "edgeSmugglingCaught": [
+          "O2 (persist Identity to a durable user/account record keyed by provider-subject; 'a writer that consumes Identity on first login and a reader that resolves it on return') ILLEGAL: it hardcodes a producer->consumer pair (user-record writer -> return-path reader) and presupposes a sibling user-store/account feature present only in the saturated host. Violates Invariant 6.1 / curation C1 (no edge at intake) and the §3.3 obligation bar ('reject iff posing the query at all requires a sibling present only in the saturated host'). The judge task 'name the consumer this query secretly assumes' returns a concrete consumer: the persisted user/account store. REPAIR: re-pose from intrinsic Identity only as an open-question about whether the host persists Identity at all, never asserting the writer->reader edge.",
+          "Identity intrinsic-surface param 'keyed-by:provider-subject' + 'verified:true' borderline: the verified-principal VALUE is intrinsic, but the phrasing leans toward a persisted account row (the contextual user-store). Not an outright edge, but it invites O2's smuggling. REPAIR (fail-safe): tighten params to mark Identity as the in-session verified principal derived from validated id-token claims, with persistence explicitly deferred to an obligation — so no durable account store is implied by the surface itself.",
+          "O5 minor (not illegal): bundles two questions and the second half reaches for a silent-refresh Job producer. The Job is plausibly intrinsic to OIDC token refresh and it names no concrete from->to pair, so it stays legal as resolvesTo:open-question; kept but noted. No sibling is presupposed (refresh-token is intrinsic)."
+        ],
+        "repairs": [
+          "Demote O2 from an edge-asserting/sibling-presupposing query to an open-question posed from intrinsic Identity alone: ask whether the host plan persists Identity beyond the session (durable account store) at all; if a durable account store exists in THIS plan, the per-plan join computes the Identity-write/Identity-read edges, and if none exists it is an open-question (gap vs intentional-exclusion) — the obligation promotes the HOLE, never the writer->reader edge.",
+          "Tighten the Identity intrinsic surface params from 'keyed-by:provider-subject','claims','verified:true' to make explicit it is the in-session verified principal (claims + verified flag) derived from the validated id-token, with provider-subject as its natural identity key — and push all durable persistence to the repaired O2 open-question, so the surface no longer implies a user-store.",
+          "Add the stateProbes array (absent from the provided entry text), populated only with lifecycle/actor cells reachable from intrinsic surfaces alone per the §3.3 state-probe bar; reject the logout-all-devices/global-revocation fan-out cell as a probe because it needs a sibling device/session registry (it is already covered as a consumer hole by O4).",
+          "Reconstruct the truncated final obligation O9 conservatively as an open consumer-query over the intrinsic id-token (same legal shape as O1 over Identity): which beads consume id-token claims to authorize/scope/attribute work — resolves to edge-to-compute when a consumer is found in this plan, else open-question."
+        ],
+        "contrastPair": "Minimal host = oidc-sso-login's intrinsic block instantiated alone (provider relationship, the three Routes, the token triad, the verified-principal Identity value, the session Store + its read Middleware, the session-ended Event, the auth-failure ErrorState, the provider Config + client-secret). Saturated host = minimal + one neutral bead of every OTHER lattice kind. INTRINSIC (survive minimal, zero saturated edge-delta): oidc-provider, provider-config, client-secret, login-init, callback, logout, id-token, access-token, refresh-token, session, session-read, session-ended, auth-failure, and Identity-as-verified-principal. These are true wherever 'oidc-sso-login' appears. CONTEXTUAL (evaporate in minimal, only fire when a sibling is present): the DURABLE USER/ACCOUNT RECORD reach inside obligation O2 — it presupposes a sibling user-store/account feature (manifest R-user-store, R-account-linking) that does not exist in a minimal SSO host; in a solo app with no persisted accounts the writer-on-first-login / reader-on-return pair has nothing to bind to. Every other obligation is correctly posed as a typed hole over an intrinsic resource (Identity, session, session-ended, refresh-token, client-secret, auth-failure, oidc-provider, id-token), so it survives the minimal host as a QUESTION and resolves to an edge only when this plan happens to supply a consumer — which is exactly the contextual-by-construction property the design wants. Net: 14/14 intrinsic surfaces legal (Identity tightened to the in-session principal, not a DB row), 8/9 obligations clean, 1 obligation (O2) smuggles a from->to user-store edge and is demoted to an intrinsic-posed open-question."
+      },
+      "entry": {
+        "archetypeKey": "oidc-sso-login",
+        "intrinsicSurfaces": [
+          {
+            "type": "ExternalIntegration",
+            "name": "oidc-provider",
+            "params": [
+              "issuer",
+              "authorize-endpoint",
+              "token-endpoint",
+              "jwks-endpoint",
+              "end-session-endpoint"
+            ],
+            "canFail": true
+          },
+          {
+            "type": "Config",
+            "name": "provider-config",
+            "params": [
+              "client-id",
+              "client-secret",
+              "issuer",
+              "redirect-uri",
+              "scopes"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Token",
+            "name": "client-secret",
+            "params": [
+              "secret-ref"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Route",
+            "name": "login-init",
+            "params": [
+              "method:GET",
+              "issues:state",
+              "issues:nonce",
+              "redirects-to:authorize-endpoint"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Route",
+            "name": "callback",
+            "params": [
+              "method:GET",
+              "receives:code",
+              "receives:state",
+              "exchanges:code-for-tokens"
+            ],
+            "canFail": true
+          },
+          {
+            "type": "Route",
+            "name": "logout",
+            "params": [
+              "method:POST",
+              "destroys:session",
+              "optional-hits:end-session-endpoint"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Token",
+            "name": "id-token",
+            "params": [
+              "claims:sub",
+              "claims:iss",
+              "claims:aud",
+              "claims:exp",
+              "claims:nonce",
+              "validated-against:jwks"
+            ],
+            "canFail": true
+          },
+          {
+            "type": "Token",
+            "name": "access-token",
+            "params": [
+              "expiry"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Token",
+            "name": "refresh-token",
+            "params": [
+              "expiry",
+              "rotation"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Schema",
+            "name": "Identity",
+            "params": [
+              "in-session-verified-principal",
+              "derived-from:validated-id-token-claims",
+              "identity-key:provider-subject",
+              "verified:true",
+              "persistence-deferred-to-obligation"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Store",
+            "name": "session",
+            "params": [
+              "issued-on:login",
+              "holds:Identity-ref",
+              "holds:tokens",
+              "looked-up-per-request"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Middleware",
+            "name": "session-read",
+            "params": [
+              "reads:session-cookie",
+              "attaches:Identity",
+              "runs:per-request"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Event",
+            "name": "session-ended",
+            "params": [
+              "cause:logout",
+              "cause:expiry",
+              "cause:revocation"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "ErrorState",
+            "name": "auth-failure",
+            "params": [
+              "provider-error",
+              "denied-consent",
+              "state-mismatch",
+              "nonce-mismatch",
+              "invalid-or-expired-token",
+              "callback-without-pending-login",
+              "token-exchange-failed"
+            ],
+            "canFail": false
+          }
+        ],
+        "obligations": [
+          {
+            "query": "Which beads in the host plan consume Identity (read the authenticated principal / its claims to authorize, scope, attribute, or personalize work)?",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "Identity"
+          },
+          {
+            "query": "Does the host plan persist Identity beyond the session? If a durable account/user store exists in THIS plan, where is Identity reconciled to it (write on first login, resolve on return); if none exists, is that a gap or an intentional exclusion? (poses the persistence HOLE from intrinsic Identity; asserts no writer->reader edge)",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "Identity"
+          },
+          {
+            "query": "Which beads other than session-read or login-init read or write the session Store (any reader of the live session, any writer that mutates or invalidates it)?",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "session"
+          },
+          {
+            "query": "Does any consumer in the host plan react to the session-ended Event (must tear down, revoke, or invalidate derived per-session state when a session ends by logout, expiry, or revocation)?",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "session-ended"
+          },
+          {
+            "query": "Does any consumer of the refresh-token exist that re-establishes validity before expiry, and does the host plan declare a producer for the silent-refresh Job that drives it?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "refresh-token"
+          },
+          {
+            "query": "Is there a host-plan producer of secret-management that the client-secret consumes (the client-secret must be loaded from a managed-config/secrets producer, never inlined)?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "client-secret"
+          },
+          {
+            "query": "Does the host plan declare an ErrorState convention that consumes auth-failure, i.e. a user-facing/observability producer that the callback Route's failure branches route into?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "auth-failure"
+          },
+          {
+            "query": "Is the oidc-provider ExternalIntegration covered by a host-plan resilience/error convention for the canFail paths (provider-down, jwks-fetch-failed, token-exchange-failed)?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "oidc-provider"
+          },
+          {
+            "query": "Which beads consume id-token claims (read sub/iss/aud/exp or other validated claims) to authorize, scope, or attribute work in this plan?",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "id-token"
+          }
+        ],
+        "stateProbes": [
+          {
+            "cell": "first-login (callback produces a verified Identity for a principal seen for the first time)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "returning (session-read attaches Identity from a live session without re-auth)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "access-expired (access-token expiry triggers silent refresh via refresh-token)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "refresh-failed (refresh-token rotation/exchange fails, forcing re-auth through login-init)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "logout (logout Route emits session-ended cause:logout and destroys the session)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "session-expired (session-ended cause:expiry on a live session)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "revoked (session-ended cause:revocation)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "callback-error / denied-consent / state-mismatch / nonce-mismatch (auth-failure branches off the callback Route)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "concurrent-session (session looked-up-per-request under concurrent requests for the same principal)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "logout-all-devices / global-revocation fan-out",
+            "reachableFromIntrinsicAlone": false
+          }
+        ],
+        "provenance": {
+          "source": "expert-author",
+          "trust": "UNTRUSTED",
+          "regime": "bootstrap",
+          "lifecycleState": "provisional",
+          "note": "cold-start authored seed; emitted as a floor-only probe, never counts toward convergence (curation C8). Audit performed by the spec contrast-pair test; substrate-gated: the runtime join read-path that would empirically ground these obligations does not exist until proof-staircase Step 1 clears (CURATION-METHOD §3.3 critical gating). Not canon."
+        }
+      }
+    },
+    {
+      "archetypeKey": "team-membership-invites",
+      "validation": {
+        "verdict": "REPAIRED",
+        "edgeSmugglingCaught": [
+          "invite-delivery (ExternalIntegration) is asserted as an intrinsic surface, but delivering the accept-link presupposes a sibling transactional-email / notification feature. It evaporates in a minimal host (invites can be minted and accepted with the link handed over out-of-band), so promoting it as intrinsic hardcodes a sibling feature. This is the SSO/email pattern the spec's own worked example (§3.4) treats as an OPEN-QUESTION, not a baked-in surface. REPAIR: drop as intrinsic, re-pose as an obligation 'is there a delivery channel that consumes accept-link, or is link-delivery out of scope?'.",
+          "membership-revoked Event note says it is 'the fan-out trigger for any standing this archetype previously granted'. The phrase reaches at downstream consumers (sessions / permission caches / authz) that are SIBLING features. The Event surface itself is intrinsic (the archetype emits it) and names no concrete from->to pair, so it is not an outright illegal edge — but the asserted fan-out behavior is contextual and must live as an obligation ('who consumes membership-revoked?'), not as behavior welded into the surface note. REPAIR: keep the Event as an intrinsic produced resource; move the fan-out to an obligation.",
+          "member-joined Event is correctly modeled (note explicitly: 'consumers are unknown to this archetype, deliberately left open for the join') — NO smuggling, this is the textbook-correct pattern. But the corresponding obligation ('who consumes member-joined?') was never written down; the entry shipped surfaces-only with an empty obligations set, which under-poses the join. REPAIR: add the obligation.",
+          "accept-invite Route note ('the join point where an outside identity becomes an inside member') describes the archetype's own capability (mint a membership from a token), not a from->to edge to a named sibling. The 'outside identity' is the host's identity slot. LEGAL as a surface, but the identity dependency it implies (member-binding must bind to the host's principal) is an unstated obligation, not an asserted edge. REPAIR: add the 'what produces Identity / Principal that member-binding binds to?' obligation.",
+          "membership.member-binding is a typed slot and the note correctly disarms it ('instantiated, not asserted to point anywhere') — NO smuggling. Clean. The dependency on a host identity is real but belongs in an obligation, which was missing.",
+          "team-scope-guard Middleware 'consumes membership + role' — both are archetype-intrinsic, so this is an intra-archetype consume with zero saturated-delta. NO smuggling, fully legal."
+        ],
+        "repairs": [
+          "Demoted invite-delivery from an intrinsic ExternalIntegration surface to an obligation: 'is there a host delivery channel (email/SMS/notification) that consumes the accept-link, or is link delivery out of scope (intentional-exclusion)?' — resolves to edge-to-compute if the host has such a feature, else open-question. This stops the entry from hardcoding a sibling email feature.",
+          "Added the four obligations the surfaces-only entry never posed, each a typed query over the host plan posed from an archetype-intrinsic resource (never a from->to edge): (1) who/what produces the Identity/Principal that membership.member-binding binds to? (2) who consumes the member-joined Event? (3) who consumes the membership-revoked Event (the fan-out for revoked standing)? (4) what host store/feature does the invite.intended-recipient reference resolve against (existing-user vs net-new), if any?",
+          "Rewrote the membership-revoked surface note to remove the asserted fan-out behavior ('fan-out trigger for any standing previously granted'); the fan-out now lives only in obligation (3), keeping the surface a pure produced Event.",
+          "Added the lifecycle state-probes implied by the invite/membership state machines (each reachable from intrinsic surfaces alone in the minimal host, so they pass the most-permissive probe bar): invite-already-accepted/revoked/expired on re-redeem, accept-by-wrong-recipient, last-owner-removal/self-removal, duplicate-pending-invite vs max-pending cap, concurrent accept of the same token. Dropped no probe as sibling-gated.",
+          "Marked provenance trust=UNTRUSTED, source=expert-author, lifecycleState=provisional (bootstrap regime per CURATION-METHOD §5/§7): recurrence (>=2 provenance classes) and the held-out anchoring ratchet structurally cannot fire on this single authored occurrence, and the whole gate is substrate-gated behind Step-1 join-ceiling, so nothing here may reach canon — it is a floor-only probe."
+        ],
+        "contrastPair": "Ran the §5.3 contrast pair (minimal host = team-membership-invites intrinsic block alone; saturated host = minimal + one neutral bead of every other lattice kind). INTRINSIC (survive minimal, zero saturated edge-delta): team, membership, role, invite, invite-token, create-invite, accept-invite, revoke-invite, manage-members, team-scope-guard, teams-membership-invites-schema (Migration), invite-settings (Config), invite-expiry-sweep (Job), member-joined (Event), membership-revoked (Event). Each of these binds only to a same-archetype intrinsic, so its join edge-set is identical between minimal and saturated — the intrinsic-surface bar (strictest) passes. The two Events pass the surface bar but their CONSUMERS are deliberately open, so each spawns an obligation rather than an edge. CONTEXTUAL (evaporates in minimal, only fires when a sibling exists): invite-delivery (ExternalIntegration) — no delivery channel is needed to mint or redeem an invite; it only has a consumer when a sibling email/notification feature is present. Verdict CONTEXTUAL -> reject as intrinsic, demote to an obligation. No component triggered a SPLIT (no intrinsic surface grew its edge-set in the saturated host) and no type-collision undecidable arose, because every binding resolves through a distinctly-typed or same-archetype intrinsic. The host was seeded only from the archetype's own intrinsic block (audited-only seeding, companion #1); under bootstrap this entry is necessarily its own unaudited seed, so per §5/§7 the audit promotes conservatively and the result is provisional, never canon."
+      },
+      "entry": {
+        "archetypeKey": "team-membership-invites",
+        "intrinsicSurfaces": [
+          {
+            "type": "Store/Table",
+            "name": "team",
+            "params": [
+              "team-id",
+              "owner-binding",
+              "display-name"
+            ],
+            "canFail": false,
+            "note": "the org/team aggregate root this archetype is about; every other intrinsic resource is scoped to one of these. owner-binding is a typed slot to the host principal, not an asserted edge."
+          },
+          {
+            "type": "Store/Table",
+            "name": "membership",
+            "params": [
+              "team-id",
+              "member-binding",
+              "role",
+              "joined-at"
+            ],
+            "canFail": false,
+            "note": "the member<->team join carrying a role; the central produced resource of the archetype. member-binding is a typed slot for whatever identity the host plan uses — instantiated, not asserted to point anywhere (its target is obligation O1)."
+          },
+          {
+            "type": "Schema/Type",
+            "name": "role",
+            "params": [
+              "role-set (e.g. owner|admin|member)",
+              "capability-mapping"
+            ],
+            "canFail": false,
+            "note": "membership role enum + capability mapping; intrinsic because the archetype cannot express who may invite/revoke/remove without it. Binds only to membership (same-archetype intrinsic)."
+          },
+          {
+            "type": "Store/Table",
+            "name": "invite",
+            "params": [
+              "team-id",
+              "intended-recipient",
+              "role-to-grant",
+              "status (pending|accepted|revoked|expired)",
+              "issued-by",
+              "issued-at",
+              "expires-at"
+            ],
+            "canFail": false,
+            "note": "pending-invite records; the lifecycle state machine (pending -> accepted | revoked | expired) lives here. intended-recipient is a typed slot; whether it resolves to an existing host user is obligation O4."
+          },
+          {
+            "type": "Token/Credential",
+            "name": "invite-token",
+            "params": [
+              "opaque-secret",
+              "bound-invite-id",
+              "single-use-flag"
+            ],
+            "canFail": false,
+            "note": "the unguessable accept credential carried in the invite link; possession of it authorizes one state transition (accept), not a logged-in identity. Distinct from any host session/login credential."
+          },
+          {
+            "type": "Route",
+            "name": "create-invite",
+            "params": [
+              "team-id",
+              "recipient",
+              "role-to-grant"
+            ],
+            "canFail": true,
+            "note": "issue an invite for a team; gated by the issuer's own role via team-scope-guard (intrinsic)."
+          },
+          {
+            "type": "Route",
+            "name": "accept-invite",
+            "params": [
+              "invite-token"
+            ],
+            "canFail": true,
+            "note": "redeem an invite-token -> produces a membership. The archetype's capability to mint a membership; the identity it binds the new membership to is obligation O1, not an asserted edge."
+          },
+          {
+            "type": "Route",
+            "name": "revoke-invite",
+            "params": [
+              "invite-id"
+            ],
+            "canFail": true,
+            "note": "cancel a still-pending invite before it is accepted."
+          },
+          {
+            "type": "Route",
+            "name": "manage-members",
+            "params": [
+              "team-id"
+            ],
+            "canFail": true,
+            "note": "list members, change a member's role, remove a member; the post-acceptance side of the membership lifecycle."
+          },
+          {
+            "type": "Middleware",
+            "name": "team-scope-guard",
+            "params": [
+              "team-id",
+              "required-role"
+            ],
+            "canFail": true,
+            "note": "resolves the caller's membership + role for a team and authorizes/rejects. Consumes membership + role — both archetype-intrinsic, so a pure intra-archetype consume (zero saturated edge-delta)."
+          },
+          {
+            "type": "Migration",
+            "name": "teams-membership-invites-schema",
+            "params": [
+              "team",
+              "membership",
+              "invite"
+            ],
+            "canFail": false,
+            "note": "brings the three intrinsic stores + the role type into existence."
+          },
+          {
+            "type": "Config/Env",
+            "name": "invite-settings",
+            "params": [
+              "invite-ttl",
+              "invite-accept-base-url",
+              "max-pending-invites-per-team"
+            ],
+            "canFail": false,
+            "note": "expiry window, the base URL used to construct the accept link, and the pending-invite cap. invite-accept-base-url is the link-prefix the archetype owns; it does NOT assert a delivery channel (see obligation O5)."
+          },
+          {
+            "type": "Job",
+            "name": "invite-expiry-sweep",
+            "params": [
+              "invite-ttl"
+            ],
+            "canFail": true,
+            "note": "background transition of pending invites past expires-at into expired (the lifecycle edge no request triggers). Reads the intrinsic invite store only."
+          },
+          {
+            "type": "Event",
+            "name": "member-joined",
+            "params": [
+              "team-id",
+              "member-binding",
+              "role",
+              "via-invite-id"
+            ],
+            "canFail": false,
+            "note": "emitted when accept-invite produces a membership; a produced resource whose consumers are unknown to this archetype — deliberately left open for the join (obligation O2)."
+          },
+          {
+            "type": "Event",
+            "name": "membership-revoked",
+            "params": [
+              "team-id",
+              "member-binding",
+              "reason (removed|invite-revoked|left)"
+            ],
+            "canFail": false,
+            "note": "emitted when a membership or pending invite is torn down; a pure produced Event. Its downstream consumers (any standing it should fan out to) are NOT asserted here — they are obligation O3."
+          }
+        ],
+        "obligations": [
+          {
+            "query": "What in the host plan produces the Identity/Principal that membership.member-binding (and team.owner-binding) bind to? If a host identity store/auth feature exists, the join computes membership-consumes-Identity; if none, OPEN-QUESTION (gap or this archetype owns identity).",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "membership (member-binding typed slot) + team (owner-binding)"
+          },
+          {
+            "query": "Which host features consume the member-joined Event? Each found consumer becomes a computed edge; none found -> OPEN-QUESTION (no one reacts to joins — intended or omission?).",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "member-joined Event (intrinsic produced resource)"
+          },
+          {
+            "query": "Which host features consume the membership-revoked Event to tear down standing they granted (sessions, permission caches, authz, audit)? Each found -> computed fan-out edge; none -> OPEN-QUESTION (revocation may not propagate).",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "membership-revoked Event (intrinsic produced resource)"
+          },
+          {
+            "query": "Does invite.intended-recipient resolve against an existing host user store (invite-existing-user) or is it net-new contact info? If a user store exists the join may compute invite-consumes-User; else OPEN-QUESTION on the recipient resolution model.",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "invite (intended-recipient typed slot)"
+          },
+          {
+            "query": "Is there a host delivery channel (transactional email / SMS / in-app notification) that consumes the accept-link built from invite-settings.invite-accept-base-url + invite-token, or is link delivery out of scope (caller hands the link over out-of-band)? Channel present -> computed edge; absent -> OPEN-QUESTION tagged gap|intentional-exclusion.",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "invite-token + invite-settings.invite-accept-base-url (the link the archetype intrinsically owns)"
+          }
+        ],
+        "stateProbes": [
+          {
+            "cell": "re-redeem an invite-token whose invite is already accepted | revoked | expired",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "accept-invite by a principal other than intended-recipient (token possession vs recipient identity)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "removal of the last owner / sole-owner self-removal via manage-members",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "create-invite that exceeds max-pending-invites-per-team or duplicates a still-pending invite for the same recipient",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "concurrent redemption of the same single-use invite-token",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "role-change via manage-members that would strip the caller's own authorizing capability",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "expiry-sweep races an in-flight accept-invite at the expires-at boundary",
+            "reachableFromIntrinsicAlone": true
+          }
+        ],
+        "provenance": {
+          "source": "expert-author",
+          "trust": "UNTRUSTED",
+          "lifecycleState": "provisional",
+          "regime": "bootstrap",
+          "note": "Cold-start authored seed (CURATION-METHOD §5/§7). Recurrence (>=2 provenance classes) and the held-out anchoring ratchet cannot fire on a single authored occurrence; the executable gate is substrate-gated behind SURFACE-DISCOVERY-SPEC §7 Step-1 (join-ceiling GO/NO-GO). Floor-only probe: may ADD surfaces/questions, never terminate discovery, never count toward convergence, never reach canon. Audited-only host seeding (companion #1) is degenerate at cold-start (no audited:true predecessor), so the audit promoted conservatively and every uncertain branch defaulted to demote-to-obligation (C3)."
+        }
+      }
+    },
+    {
+      "archetypeKey": "rbac-authorization",
+      "validation": {
+        "verdict": "REPAIRED",
+        "edgeSmugglingCaught": [
+          "CLEAN: intrinsicSurfaces — no surface hardcodes a from->to edge. grants.subjectRef and grants.scopeRef are explicitly typed holes ('references SOME subject / SOME scope'), never a concrete users/teams/orders table; the surface defers binding to an obligation. policy-check declares it produces PolicyDecision and consumes Permission+grants (all OWN intrinsics) but explicitly leaves 'which surfaces wrap it' to an obligation — it does not assert any guard edge. authz-decision declares itself producible and defers the consumer to an obligation. No surface names a sibling feature.",
+          "CLEAN: the single materialized obligation (PolicyDecision-consumer enumeration) is posed purely over the intrinsic PolicyDecision and ranges over 'whatever protected surfaces the plan happens to declare' — it never names a concrete route/feature, so it is a typed hole, not an edge wearing a query's clothes. Judge probe 'name the consumer this query secretly assumes' returns NONE (open consumer set) -> passes the obligation hardening bar.",
+          "INCOMPLETENESS, not smuggling: four obligations are PROMISED in surface notes ('subjectRef ... resolved by an obligation', 'whether anything consumes [authz-decision] is an obligation', 'the plan's error-convention coverage can be queried') but were NOT materialized in the obligations array (the entry is also truncated mid-note). These deferrals are correct in spirit; the repair MATERIALIZES them as intrinsic-posed queries so the deferral is real rather than dangling. Leaving a surface that says 'a sibling fills this hole, resolved by an obligation' WITHOUT the obligation present is the one risk — a reader could otherwise back-fill the hole with a hardcoded sibling. Materializing closes that.",
+          "NO illegal from->to pair found anywhere. C1 (no edge at intake) is satisfied: there is no from/to field and no obligation asserts an edge exists; every obligation resolvesTo edge-to-compute OR open-question."
+        ],
+        "repairs": [
+          "Materialized the obligation promised by the grants.subjectRef hole: 'For grants.subjectRef, which subject-bearing surface declared in THIS plan binds the assignment?' — posed from the intrinsic grants store, ranges over whatever subject the plan declares (or open-question -> grants reference no subject => gap or self-managed). Replaces a dangling deferral with a real typed hole.",
+          "Materialized the obligation promised by grants.scopeRef: 'For grants.scopeRef, which scope/tenant boundary in THIS plan parameterizes a grant?' — posed from the grants store; open-question when the plan is flat/un-scoped (intentional-exclusion vs gap).",
+          "Materialized the audit-sink obligation promised by the authz-decision Event note: 'Does any sink in THIS plan consume the authz-decision Event?' — posed from the intrinsic Event; resolves to an audit/observability seam edge-to-compute or an open-question (the classic missing-audit gap).",
+          "Materialized the error-convention obligation promised by the authorization-denied ErrorState note: 'Does THIS plan's error convention cover the authorization-denied (403-analog) terminal distinctly from the unauthenticated (401) terminal?' — posed from the own ErrorState; open-question when no convention is declared.",
+          "Added the state-probes block (absent in the authored/truncated entry). Each cell is reachable from intrinsic surfaces alone via the minimal-host join (transitiveDeps over policy-check/PolicyDecision/authorization-denied/grants/rbac-policy), per the most-permissive state-probe bar: first-grant (subject with no roles yet -> default stance), role-revoked-mid-session, grant-scope-mismatch (denied), policy-default-deny-on-unknown-permission, concurrent-grant-change, model-unavailable (policy-check errors vs denies). None requires a sibling actor/lifecycle, so none is rejected.",
+          "Set provenance to source=expert-author, trust=UNTRUSTED, audited=false, state=provisional (bootstrap regime: cold-start, no audited:true predecessor and <2 provenance classes, so nothing can reach canon; the entry is emitted as a floor-only probe that never counts toward convergence, per C8). Kept the keystone note that PolicyDecision is the own-resource making the obligations well-posed."
+        ],
+        "contrastPair": "Contrast-pair (minimal host = rbac intrinsic block alone; saturated host = minimal + one neutral bead of every OTHER lattice kind), reading the join DELTA per CURATION-METHOD §5.3.\n\nINTRINSIC (survive-minimal, edge-set identical minimal<->saturated, no sibling named):\n- Permission (Schema/Type): the action x resourceKind vocabulary the model is built from; resourceKind is a typed hole, not a hardcoded protected feature. Resolves in minimal alone.\n- roles (Store): an RBAC model IS a set of named roles; stands alone as its own surface.\n- grants (Store): the assignment store; subjectRef/scopeRef are TYPED HOLES ('some subject', 'some scope'), never a concrete users/teams table. Survives minimal as its own node; subject-binding is deferred to an obligation, not asserted.\n- rbac-policy (Config): default-deny/allow posture is a property of the model itself.\n- PolicyDecision (Schema/Type): the keystone OWN resource (rbac's analog of oidc Identity). The model can produce a decision about its own Permission set in the minimal host with zero siblings. This is what makes every cross-feature obligation well-posed from an intrinsic.\n- policy-check (Middleware, canFail:true): consumes Permission+grants (both intrinsic) and produces PolicyDecision (intrinsic) -> resolves entirely within the minimal host. Its own edge-set (Permission+grants -> PolicyDecision) is identical minimal<->saturated; the WRAPPING edges (which surface invokes it) are correctly externalized to an obligation, so no edge-growth is asserted by the surface. INTRINSIC, no SPLIT needed.\n- authorization-denied (ErrorState): a policy-check in the minimal host can deny; 'enforcement that cannot deny is not enforcement'. Own ErrorState, no sibling.\n- authz-decision (Event): a PRODUCIBLE signal of the model -> the producer side survives minimal. The CONSUMER side is contextual (a generic Event-consumer in the saturated host would create the edge), but that edge is already pushed to an obligation, so the surface is promoted while its consuming seam stays in the per-plan join. Effectively a pre-resolved SPLIT: surface intrinsic, consuming edge -> join.\n\nCONTEXTUAL (would only fire with siblings present -> correctly already obligations, never asserted facts):\n- 'who wraps policy-check / consumes PolicyDecision' (the protected-surface set) — evaporates in minimal (no surfaces to guard), appears in saturated. Correctly an obligation ranging over PolicyDecision, not a fact.\n- 'who fills grants.subjectRef' (the subject table) — evaporates in minimal, appears in saturated. Must be an obligation posed from the grants hole.\n- 'who fills grants.scopeRef' (the scope/tenant) — same; obligation.\n- 'who consumes authz-decision' (audit/observability sink) — evaporates in minimal, appears in saturated; obligation.\n- 'does the plan error-convention cover authorization-denied' — contextual coverage query; obligation posed from the own ErrorState.\n\nNo surface evaporated-in-minimal-but-appeared-in-saturated (no contextual artifact masquerading as intrinsic), and no surface forced a type-collision undecidable (each binds via its own distinctly-typed intrinsic: Permission/PolicyDecision Schema, roles/grants Store, rbac-policy Config, policy-check Middleware, authorization-denied ErrorState, authz-decision Event — no two intrinsics share a lattice type in a way that lets a contextual second node bind through them). So all 8 surfaces PASS the intrinsic-surface bar."
+      },
+      "entry": {
+        "archetypeKey": "rbac-authorization",
+        "intrinsicSurfaces": [
+          {
+            "type": "Schema/Type",
+            "name": "Permission",
+            "params": [
+              "action",
+              "resourceKind"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Store",
+            "name": "roles",
+            "params": [
+              "roleId",
+              "label"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Store",
+            "name": "grants",
+            "params": [
+              "subjectRef",
+              "roleId",
+              "scopeRef?"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Config",
+            "name": "rbac-policy",
+            "params": [
+              "defaultStance",
+              "roleDefinitions"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Schema/Type",
+            "name": "PolicyDecision",
+            "params": [
+              "subjectRef",
+              "permission",
+              "scopeRef?",
+              "effect"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Middleware",
+            "name": "policy-check",
+            "params": [
+              "permission",
+              "scopeRef?"
+            ],
+            "canFail": true
+          },
+          {
+            "type": "ErrorState",
+            "name": "authorization-denied",
+            "params": [
+              "permission",
+              "subjectRef"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Event",
+            "name": "authz-decision",
+            "params": [
+              "subjectRef",
+              "permission",
+              "effect"
+            ],
+            "canFail": false
+          }
+        ],
+        "obligations": [
+          {
+            "query": "For every protected surface declared in THIS plan (Route, Job, Event-handler, Middleware-guarded write), does it consume a PolicyDecision before its effect? Enumerate the consumers of PolicyDecision present in this plan.",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "PolicyDecision"
+          },
+          {
+            "query": "For grants.subjectRef, which subject-bearing surface declared in THIS plan binds an assignment? Enumerate the producers of subjects that grants reference; none => open-question (gap or self-managed subjects).",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "grants"
+          },
+          {
+            "query": "For grants.scopeRef, which scope/tenant boundary in THIS plan parameterizes a grant? None => open-question (flat/un-scoped: intentional-exclusion vs gap).",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "grants"
+          },
+          {
+            "query": "Does any sink in THIS plan consume the authz-decision Event (audit/observability)? None => open-question (the classic missing-audit seam).",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "authz-decision"
+          },
+          {
+            "query": "Does THIS plan's error convention cover the authorization-denied (403-analog) terminal distinctly from the unauthenticated (401) terminal? Enumerate error-convention consumers of authorization-denied.",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "authorization-denied"
+          }
+        ],
+        "stateProbes": [
+          {
+            "cell": "first-grant: subject exists with no roles yet -> default stance applies",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "role-revoked: grant removed mid-lifecycle -> next policy-check denies",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "grant-scope-mismatch: subject has role but wrong scopeRef -> denied",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "unknown-permission: action x resourceKind not in vocabulary -> default-deny stance",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "concurrent-grant-change: grant mutated during an in-flight check",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "model-unavailable: grants/roles store down -> policy-check errors vs denies (canFail path)",
+            "reachableFromIntrinsicAlone": true
+          }
+        ],
+        "provenance": {
+          "source": "expert-author",
+          "trust": "UNTRUSTED",
+          "audited": false,
+          "state": "provisional",
+          "regime": "bootstrap",
+          "note": "Cold-start seed: no audited:true predecessor and <2 provenance classes, so capped at recurrent/provisional and emitted as a floor-only probe that never counts toward convergence (C8). PolicyDecision is the keystone OWN resource that makes every cross-feature obligation well-posed without naming a sibling."
+        }
+      }
+    },
+    {
+      "archetypeKey": "crud-resource",
+      "validation": {
+        "verdict": "REPAIRED",
+        "edgeSmugglingCaught": [
+          "INTRINSIC half-edge smuggled into every owner-scoped Route: list/create/read/update/delete-<Entity> all carry params 'consumes:OwnerPrincipal'. A consume with no in-archetype producer is a producer-less half-edge — an edge wearing a surface's clothes (CURATION-METHOD §3.3 intrinsic-surface bar / obligation hardening). It presupposes a sibling identity feature exists. Illegal as an intrinsic param; the OwnerPrincipal coupling must become an open obligation posed from intrinsic resources only.",
+          "<Entity>-ownership-guard Middleware is the most egregious: its entire reason to exist is 'consumes:OwnerPrincipal' + 'subject:<Entity>Record.ownerRef'. Its own note concedes 'the producer of that principal lives in another feature' — i.e. it hardcodes the consumer side of a cross-feature seam (auth→crud) into the library. A Middleware whose existence is contingent on a sibling is contextual, not intrinsic; it evaporates in the minimal host. Demote to an obligation that asks whether an authorization actor exists.",
+          "<Entity>-forbidden ErrorState (403) is sourced 'from:<Entity>-ownership-guard' — it transitively depends on the contextual guard, so it inherits the smuggled edge. Unreachable in the minimal host (no guard fires) → contextual → demote.",
+          "<Entity>Record.params ownerRef:<OwnerPrincipal> and <Entity>Store.params ownerColumn:<OwnerPrincipal>: an ownerRef SLOT typed to an abstract OwnerPrincipal still hardcodes that THIS archetype is owned and that a principal-producing sibling will be joined to it. The note ('declares THAT it is owned, never WHO') is the standard rationalization the audit is built to catch: 'owned-ness' itself is the contextual fact (quicklist falsifies it). The slot presupposes a sibling; strip it from the intrinsic and recover it via obligation.",
+          "The single supplied obligation ('Which resource in this plan produces the OwnerPrincipal that <Entity>-ownership-guard and the list/create routes consume...') is well-posed as a QUERY (no from→to pair, resolvesTo edge-to-compute or open-question) — this one is legal — BUT its wellPosedFromIntrinsic cites <Entity>-ownership-guard, which is itself a contextual (now-demoted) surface. An obligation may not be made well-posed by another contextual artifact (would re-smuggle the seam). Re-anchor it to a genuinely intrinsic resource: the write/index routes that stamp/scope records. After SPLIT, the ownership obligation must stand on the intrinsic CRUD routes, not on the demoted guard."
+        ],
+        "contrastPair": "Decisive datapoint: the quicklist fixture (fixtures/quicklist/outcome-manifest.json) is a crud-resource — items see/add/toggle over an items table — with ZERO owner surfaces: no ownerColumn, no ownership-guard, no 403, and nothing consumes any OwnerPrincipal. So 'user-owned' is NOT a property of crud-resource; it is the contextual seam between crud and an identity-producing sibling (auth/multi-tenancy). Run the contrast pair: MINIMAL HOST = crud-resource's intrinsic block alone (no sibling features). In the minimal host there is no identity producer, so every component that 'consumes OwnerPrincipal' has its join half-edge evaporate — the ownership-guard binds nothing, the owner-scoping on list/create/read/update/delete binds nothing, and the 403 forbidden state is unreachable (its only producer, the guard, never fires). Those components EVAPORATE in minimal and only APPEAR in the SATURATED host once the generic sibling pack supplies a principal producer => verdict CONTEXTUAL for the entire owner-coupling, per §5.3 row 'evaporates in minimal but appears in saturated → reject; demote to obligation'. Conversely the bare CRUD skeleton SURVIVES minimal with identical edge-set across the pair: <Entity>Record (sans ownerRef), <Entity>Store (sans ownerColumn), create-<Entity>-table migration, the five Routes stripped of consumes:OwnerPrincipal and ownership-checked, plus <Entity>-not-found (404) and <Entity>-validation-failed (422), which are reachable from the addressable/write routes alone. That is exactly the §5.3 SPLIT verdict: promote the intrinsic CRUD surface, demote every owner/auth seam to the per-plan join as obligations. Ownership is real wherever an identity feature coexists, but it fails SAFE to an obligation: the obligation still fires per-plan and the join computes the auth→crud seam against THIS plan's actual identity producer — without baking a producer-less OwnerPrincipal consumer into canon."
+      },
+      "entry": {
+        "archetypeKey": "crud-resource",
+        "intrinsicSurfaces": [
+          {
+            "type": "Schema/Type",
+            "name": "<Entity>Record",
+            "params": [
+              "<Entity>",
+              "fields[]"
+            ],
+            "canFail": false,
+            "note": "The entity's record type/shape. SPLIT-repaired: ownerRef SLOT removed — 'owned-ness' is contextual (quicklist is a crud-resource with no owner). Whether records carry an ownerRef is recovered by the ownership obligation against the plan's actual identity producer."
+          },
+          {
+            "type": "Store/Table",
+            "name": "<Entity>Store",
+            "params": [
+              "<Entity>",
+              "primaryKey:id"
+            ],
+            "canFail": false,
+            "note": "Backing table/store. ownerColumn removed for the same reason; if the plan has an identity producer the obligation re-introduces it as a computed seam, never an intrinsic fact."
+          },
+          {
+            "type": "Migration",
+            "name": "create-<Entity>-table",
+            "params": [
+              "<Entity>Store"
+            ],
+            "canFail": false,
+            "note": "Migration materializing <Entity>Store. Survives minimal host (a persisted store needs a creating migration). ownerColumn param dropped; ordering vs other plan migrations is an obligation, not asserted here."
+          },
+          {
+            "type": "Route",
+            "name": "list-<Entity>",
+            "params": [
+              "GET /<entity>",
+              "reads:<Entity>Store",
+              "paginate"
+            ],
+            "canFail": true,
+            "note": "Index route. CAN-FAIL on read error. Owner-SCOPING (filter-by-principal + consumes:OwnerPrincipal) demoted to obligation — quicklist's list-view has no owner filter, proving scoping is contextual."
+          },
+          {
+            "type": "Route",
+            "name": "create-<Entity>",
+            "params": [
+              "POST /<entity>",
+              "validates:<Entity>Record",
+              "writes:<Entity>Store"
+            ],
+            "canFail": true,
+            "note": "Create route. CAN-FAIL on validation. consumes:OwnerPrincipal / ownerRef-stamping demoted to obligation; intrinsic create only validates + writes."
+          },
+          {
+            "type": "Route",
+            "name": "read-<Entity>",
+            "params": [
+              "GET /<entity>/:id",
+              "reads:<Entity>Store"
+            ],
+            "canFail": true,
+            "note": "Show route. CAN-FAIL on not-found. ownership-check demoted to obligation (contextual on an authz sibling)."
+          },
+          {
+            "type": "Route",
+            "name": "update-<Entity>",
+            "params": [
+              "PUT|PATCH /<entity>/:id",
+              "validates:<Entity>Record",
+              "writes:<Entity>Store"
+            ],
+            "canFail": true,
+            "note": "Update route. CAN-FAIL on validation / not-found. ownership-check demoted to obligation."
+          },
+          {
+            "type": "Route",
+            "name": "delete-<Entity>",
+            "params": [
+              "DELETE /<entity>/:id",
+              "writes:<Entity>Store"
+            ],
+            "canFail": true,
+            "note": "Destroy route. CAN-FAIL on not-found. ownership-check demoted to obligation."
+          },
+          {
+            "type": "ErrorState",
+            "name": "<Entity>-not-found",
+            "params": [
+              "404",
+              "from:read/update/delete-<Entity>"
+            ],
+            "canFail": false,
+            "note": "Missing-record terminal state. INTRINSIC: reachable in the minimal host from the addressable single-resource routes alone (no sibling needed)."
+          },
+          {
+            "type": "ErrorState",
+            "name": "<Entity>-validation-failed",
+            "params": [
+              "422",
+              "from:create/update-<Entity>",
+              "against:<Entity>Record"
+            ],
+            "canFail": false,
+            "note": "Input-validation rejection. INTRINSIC: reachable from the write routes alone; quicklist's required input-validation concern confirms it is part of the bare CRUD shape."
+          }
+        ],
+        "obligations": [
+          {
+            "query": "Does this plan declare an identity/principal producer (an authenticated actor) that <Entity> records should be scoped and authorized to?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "create-<Entity>",
+            "note": "The owner-scoping seam, re-posed as a typed hole anchored on the intrinsic write route (not on the demoted guard). Resolves to edge-to-compute when an identity producer is present (multi-tenant/auth plan → join computes auth→crud), and to an open-question (gap or intentional-exclusion: a solo app like quicklist) when none is. Replaces the smuggled consumes:OwnerPrincipal half-edges with one well-posed query that names NO sibling feature."
+          },
+          {
+            "query": "For each addressable/mutating <Entity> route (read/update/delete-<Entity>), is there an authorization actor in this plan that gates access to a single record, and if so what subject does it check?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "read-<Entity>",
+            "note": "The authorization seam formerly hardcoded as <Entity>-ownership-guard Middleware. Posed from the intrinsic addressable routes; if an authz actor exists the join wires it (and a 403 terminal state becomes reachable per-plan), else it is an explicit open-question. Never asserts the guard exists."
+          },
+          {
+            "query": "Does the plan's migration/ordering convention constrain when create-<Entity>-table must run relative to other plan migrations (e.g. a referenced parent table)?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "create-<Entity>-table",
+            "note": "Migration ordering is relational to OTHER plan migrations, so it is a per-plan join, never an intrinsic assertion. Well-posed from the intrinsic migration alone."
+          },
+          {
+            "query": "Is there a plan-wide input-validation / error-response convention that the <Entity> write routes' 422 should conform to?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "<Entity>-validation-failed",
+            "note": "The 422 surface is intrinsic, but whether it must match a shared error envelope depends on a sibling cross-cutting convention → obligation, not a baked param."
+          }
+        ],
+        "stateProbes": [
+          {
+            "cell": "not-found (request a single-resource route with a non-existent :id)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "validation-rejected (POST/PUT a record violating <Entity>Record field constraints)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "empty-collection (list-<Entity> when <Entity>Store has zero rows)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "concurrent-update (two writers PUT the same :id — last-writer-wins vs conflict)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "forbidden / owned-by-another-principal (access a record not owned by the actor)",
+            "reachableFromIntrinsicAlone": false
+          },
+          {
+            "cell": "unauthenticated (a route requiring an actor is hit with no principal)",
+            "reachableFromIntrinsicAlone": false
+          }
+        ],
+        "provenance": {
+          "source": "expert-author",
+          "trust": "UNTRUSTED",
+          "regime": "bootstrap",
+          "terminalStateCap": "provisional",
+          "note": "Cold-start seed (CURATION-METHOD §5): authored archetype is an untrusted occurrence, capped at provisional, emitted as a floor-only probe that never counts toward convergence. Promotion to canon requires source-diverse recurrence (≥2 provenance classes, C5), the audited-seeded contrast-pair audit (C4), and the held-out anchoring ratchet (C6) — none of which a single authored entry satisfies. The minimal/saturated hosts referenced by this audit do not yet exist in-repo: per §9 the executable audit is substrate-gated behind spec §7 Step 1 (the join read-path / ceiling GO-NO-GO), so this verdict is the DESIGN-LEVEL contrast-pair reasoning, to be re-confirmed mechanically once the join exists.",
+          "contrastPairVerdict": "SPLIT",
+          "auditedHostSeedNote": "During bootstrap the host seed is itself unaudited (no audited:true predecessor), so per §5 the audit promotes almost nothing and leans on the downstream ratchet + source-diverse recurrence."
+        }
+      }
+    },
+    {
+      "archetypeKey": "file-upload",
+      "validation": {
+        "verdict": "REPAIRED",
+        "edgeSmugglingCaught": [
+          "download-access-guard (Middleware): presupposes a principal/authz SIBLING to authorize against. In a minimal host there is no principal to deny, so this surface evaporates — it is the access-control-on-download SEAM hardcoded as an always-present surface. Illegal as intrinsic; must become an obligation posed from the metadata record's intrinsic ownerPrincipalRef field ('does the plan declare an authorization/principal model that should gate download against ownerPrincipalRef?').",
+          "async-scan-and-postprocess (Job): the param 'triggersOnUpload' hardcodes a from=upload-endpoint -> to=scan EDGE, and 'scanThenPostprocess' hardcodes a from=scan -> to=postprocess EDGE while presupposing a derive/thumbnail/extract SIBLING that is entirely plan-specific. Two smuggled edges + one smuggled sibling. Violates invariant C1 (no from->to at intake) and floor-not-ceiling.",
+          "virus-scanner (ExternalIntegration) + attachment-scanned (Event): presuppose a security-scanning context that is contextual, not intrinsic to being-a-file-upload (a single-actor minimal host never scans). The Event note literally reads 'who consumes the scanned event?' — an obligation QUERY wearing a surface's clothes — and asserts the scanner 'flips the metadata record's scanStatus', an asserted downstream edge. The scanned-Event is parasitic on virus-scanner; both evaporate in the minimal host. Demote the scan dependency to an obligation and the scan resolution to a state-probe; never assert it as an always-present intrinsic.",
+          "download-endpoint note 'Consumes an AttachmentRef + ObjectKey' is NOT smuggling: it consumes the archetype's OWN intrinsic resources (upload-produced AttachmentRef / ObjectKey), so the deterministic join — not the library — computes the intra-archetype upload->download edge. Kept as a produces/consumes annotation, which is legal."
+        ],
+        "repairs": [
+          "Demoted download-access-guard from an intrinsic Middleware surface to an obligation: 'Does the host plan declare an authorization/principal model whose principal should be checked against this attachment's ownerPrincipalRef before serving bytes?' — well-posed from the intrinsic attachment-metadata-record.ownerPrincipalRef field, resolves to edge-to-compute if an authz sibling is present in THIS plan, else open-question (the access-control-on-download seam surfaces as a hole, not an asserted guard).",
+          "Demoted virus-scanner from an intrinsic ExternalIntegration to an obligation: 'Does the host plan require malware/AV scanning of uploaded bytes before they are released for download?' — well-posed from intrinsic object-blob-store + attachment-metadata-record.scanStatus; resolves to edge-to-compute if a scan/security concern is declared, else open-question.",
+          "Demoted attachment-scanned (Event) — folded into the scan obligation's open-question form ('who, if anyone, consumes a scan-resolved signal in THIS plan?') rather than asserting an always-emitted Event; it is parasitic on the (now-obligation) scanner and cannot stand as an intrinsic surface.",
+          "Demoted async-scan-and-postprocess (Job): stripped the two hardcoded edges (triggersOnUpload, scanThenPostprocess) and the presupposed derive sibling. Replaced with an obligation: 'Does the host plan declare deferred post-ingest processing (scan and/or derive steps) keyed off a landed AttachmentRef?' — posed from the intrinsic AttachmentRef Schema; resolves to edge-to-compute if such workers exist in THIS plan, else open-question. The library no longer asserts the upload->scan->postprocess ordering.",
+          "Converted the scan lifecycle into a state-probe (attachment-metadata-record.scanStatus transitions: not-yet-scanned / clean / infected) — but kept it reachability-honest: in a minimal host the cell is reachable from the intrinsic metadata-record's scanStatus field alone (the field IS intrinsic even if the scanner is not), so the probe is legal as a coverage cell that can only ADD a question.",
+          "Kept all 9 genuinely-intrinsic surfaces unchanged; preserved ownerPrincipalRef and the AttachmentRef Schema specifically because they are the intrinsic resources that make the demoted obligations well-posed WITHOUT naming a sibling feature.",
+          "Added the standard file-upload obligations that were missing entirely (the entry shipped with zero obligations and zero state-probes): consumer-of-AttachmentRef, storage-backend-failure-convention, and the access/scan/postprocess holes above — each a typed query over the host plan, none naming a from->to pair."
+        ],
+        "contrastPair": "Minimal host = file-upload's intrinsic block alone (upload/download Routes, blob Store, metadata Store, AttachmentRef Schema, storage+limits Config, upload-validation Middleware, object-store-backend ExternalIntegration). Saturated host = minimal + one neutral bead of every OTHER lattice kind (a generic principal/authz, a generic event consumer, a generic derive/postprocess job). Surfaces that BIND only to the archetype's own resources and produce IDENTICAL join edge-sets across the pair are INTRINSIC and survive: upload-endpoint, download-endpoint, object-blob-store, attachment-metadata-record (incl. its ownerPrincipalRef as a typed handle, NOT a named sibling table), attachment-ref-descriptor, storage-config, upload-limits-config, upload-validation-guard, object-store-backend. Surfaces that EVAPORATE in the minimal host and only fire once a sibling appears in the saturated host are CONTEXTUAL and must be demoted: download-access-guard (needs a principal/authz sibling to authorize against — there is no 'principal' to deny in a single-actor minimal host; this is the classic access-control seam), virus-scanner + attachment-scanned + async-scan-and-postprocess (the whole scan/postprocess lifecycle fires from a security/derive context, not from being-a-file-upload; in a minimal host nobody scans an upload). The metadata record's ownerPrincipalRef field is what keeps the access obligation well-posed without naming a sibling; the AttachmentRef Schema is what keeps the holder/consumer obligations well-posed without naming a sibling. So the surface set demotes to: 9 intrinsic surfaces kept, 4 contextual components demoted to obligations, 1 scan-lifecycle cell demoted to a state-probe."
+      },
+      "entry": {
+        "archetypeKey": "file-upload",
+        "intrinsicSurfaces": [
+          {
+            "type": "Route",
+            "name": "upload-endpoint",
+            "params": [
+              "acceptedContentTypes",
+              "maxSizeBytes",
+              "uploadPath"
+            ],
+            "canFail": true
+          },
+          {
+            "type": "Route",
+            "name": "download-endpoint",
+            "params": [
+              "downloadPath",
+              "dispositionMode"
+            ],
+            "canFail": true
+          },
+          {
+            "type": "Store",
+            "name": "object-blob-store",
+            "params": [
+              "bucket",
+              "keyspace"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Store",
+            "name": "attachment-metadata-record",
+            "params": [
+              "objectKey",
+              "contentType",
+              "sizeBytes",
+              "checksum",
+              "ownerPrincipalRef",
+              "scanStatus"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Schema",
+            "name": "attachment-ref-descriptor",
+            "params": [
+              "refShape"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Config",
+            "name": "storage-config",
+            "params": [
+              "bucket",
+              "region",
+              "endpoint",
+              "credentialRef"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Config",
+            "name": "upload-limits-config",
+            "params": [
+              "maxSizeBytes",
+              "allowedContentTypes",
+              "allowedExtensions"
+            ],
+            "canFail": false
+          },
+          {
+            "type": "Middleware",
+            "name": "upload-validation-guard",
+            "params": [
+              "enforcesContentType",
+              "enforcesSizeCap",
+              "sniffsMagicBytes"
+            ],
+            "canFail": true
+          },
+          {
+            "type": "ExternalIntegration",
+            "name": "object-store-backend",
+            "params": [
+              "provider",
+              "sdkClient"
+            ],
+            "canFail": true
+          }
+        ],
+        "obligations": [
+          {
+            "query": "Who else in the host plan holds or consumes an AttachmentRef (e.g. a record that references an uploaded file)?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "attachment-ref-descriptor"
+          },
+          {
+            "query": "Does the host plan declare an authorization/principal model that should gate the download route against this attachment's ownerPrincipalRef before serving bytes?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "attachment-metadata-record"
+          },
+          {
+            "query": "Does the host plan require malware/AV scanning of uploaded bytes (gating release-for-download via scanStatus) before an attachment is served?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "attachment-metadata-record"
+          },
+          {
+            "query": "Does the host plan declare deferred post-ingest processing (scan and/or derive steps such as thumbnailing or extraction) keyed off a landed AttachmentRef?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "attachment-ref-descriptor"
+          },
+          {
+            "query": "What is the host plan's error/failure convention for an unreachable object-store backend or a failed put/get (does any error-state surface consume the upload/download failure)?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "object-store-backend"
+          }
+        ],
+        "stateProbes": [
+          {
+            "cell": "upload: request-body violates size cap / content-type allow-list (validation reject)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "upload: body stream aborts mid-transfer (partial object, orphaned bytes vs metadata)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "download: referenced object missing / metadata present but bytes absent",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "attachment lifecycle: scanStatus not-yet-scanned -> clean | infected (release-for-download cell)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "object-store backend unreachable / put-object or get-object error / pre-signed-URL expiry",
+            "reachableFromIntrinsicAlone": true
+          }
+        ],
+        "provenance": {
+          "source": "expert-author",
+          "trust": "UNTRUSTED",
+          "regime": "bootstrap",
+          "terminalStateCap": "provisional",
+          "note": "cold-start seed; emitted to the search as a floor-only probe, never counts toward convergence (C8). Audited by contrast-pair test 2026-06-02: 9 intrinsic surfaces kept, 4 components demoted to obligations (download-access-guard, virus-scanner, attachment-scanned, async-scan-and-postprocess), scan lifecycle moved to state-probe. No from->to edge stored anywhere (C1)."
+        }
+      }
+    },
+    {
+      "archetypeKey": "audit-logging",
+      "validation": {
+        "verdict": "REPAIRED",
+        "edgeSmugglingCaught": [
+          "FINDING 1 (latent, repaired): the actor-identity obligation (#2) was authored with resolvesTo='edge-to-compute' (truncated in the input but the trajectory of obligation #1 implies it). edge-to-compute is the CONTEXTUAL resolution (it only holds when an identity producer is present in the host plan). In the minimal host there is no identity producer, so the structurally-guaranteed resolution is open-question. Asserting edge-to-compute as the fixed value smuggles the presence of an auth/identity sibling. REPAIR: resolvesTo set to open-question; edge-to-compute is documented as the contextual upgrade the join computes when an Identity producer is found.",
+          "FINDING 2 (latent, repaired): the Route:audit-read/export surface buried 'Access-control on this route is an open-question the join resolves against the plan' inside a surface NOTE. An open-question living inside a surface is a half-asserted binding (it presupposes an authorization sibling exists to gate the route while pretending not to). REPAIR: lifted to a standalone obligation 'what authorization mechanism in the host plan gates Route:audit-read/export?', well-posed from the intrinsic Route alone, resolvesTo open-question.",
+          "FINDING 3 (wording risk, repaired): obligation #1's note enumerated example producers (auth login/logout, authorization/role changes, record deletes, payments, admin actions). As written this is illustrative, but it risks being read as a hardcoded producer list baked into the query (an edge list in prose). REPAIR: query string kept fully abstract ('who emits one of these?'); note rephrased so the named features are explicitly 'what the join WOULD find in a multi-feature plan', not a checklist the obligation carries. Routed (notionally) to the §3.3 bounded-judge hardening: 'name the consumer/producer this query secretly assumes' returns NONE for the abstract form.",
+          "NON-FINDING (cleared): obligation #1 ('who PRODUCES an Event:security-action?') is the canonical legal seam-generating obligation. It names no concrete from->to, is well-posed from the intrinsic Event:security-action, resolves to EVERY state-mutating feature in a multi-feature plan (seam edges computed by the join) and to ~nothing in a read-only app — the textbook proof that it is contextual, not baked in. Not smuggling. Its resolvesTo='edge-to-compute' is correct because the producer-side query is structurally guaranteed to compute edges the moment ANY emitter exists, and it is the obligation whose whole purpose is to manufacture seams.",
+          "NON-FINDING (cleared): the actor and target SLOTS inside Schema:audit-event are intrinsic types-to-fill, not bindings to a sibling. Their presence is exactly what makes the actor/target obligations well-posed from the archetype standing alone. Slots are intrinsic; their PRODUCERS are the contextual holes. Correctly separated."
+        ],
+        "repairs": [
+          "Actor obligation resolvesTo: changed edge-to-compute -> open-question (the minimal-host-true, fail-safe value); documented edge-to-compute as the contextual upgrade the join computes when an Identity producer is present. Removes the smuggled assumption that an auth/identity sibling exists.",
+          "Schema:audit-event params renamed actor/target -> actor-slot/target-slot to make explicit these are intrinsic TYPES-to-fill, not bindings; their producers are pushed to obligations o-actor and o-target.",
+          "Lifted the access-control assertion out of the Route:audit-read/export surface NOTE into a standalone obligation (o-read-authz, well-posed from the intrinsic Route, resolvesTo open-question). An open-question must not live as prose inside a surface where it half-asserts a sibling.",
+          "Obligation #1 (security-action producer) note rephrased: the example producers (auth, payments, admin, deletes) are now explicitly framed as 'what the join WOULD find in a multi-feature plan', not a producer checklist the obligation carries. Query string kept fully abstract.",
+          "Reconstructed the truncated entry into a complete, balanced obligation set: producer-side (security-action), actor-slot, target-slot, trail-consumer, integrity-key custody, read-route authorization, and fail-write enforcement response — each anchored to a named intrinsic surface, each a typed hole, none naming a sibling.",
+          "Added 6 state-probes all verified reachable-from-intrinsic-alone; deliberately EXCLUDED actor-deleted / role-revoked style probes because they require a sibling identity/authz lifecycle (they belong to the auth/authz archetype, not here) per the §3.3 state-probe bar.",
+          "Tagged provenance with the full bootstrap-regime envelope (provisional, floor-only, never counts toward convergence, single provenance class => fails C5) so nothing in this untrusted authored entry can masquerade as canon."
+        ],
+        "contrastPair": "Minimal host = audit-logging's intrinsic block instantiated alone (no sibling features). Saturated host = minimal + the generic sibling pack. Read the join delta across the pair. RESULT: all 8 intrinsic surfaces survive the minimal host and reference only same-archetype intrinsics (Store:audit-log, Schema:audit-event, Event:security-action, Middleware:audit-capture, Token:integrity-seal, Config:audit-policy, Route:audit-read/export, ErrorState:audit-write-failed). The keystone is Event:security-action: because the archetype carries its OWN abstract notion of 'an auditable action occurred' (defined without naming any producer), the producer-side obligation can be a typed query rather than a hardcoded edge list. This is the single design decision that makes the entry spec-legal at all. CONTEXTUAL content correctly lives in obligations, NOT in surfaces: the producers of security-actions (every state-mutating sibling), the actor-identity producer, the target owner, the trail consumer, the integrity-key custodian, and the read-route authorizer all EVAPORATE in the minimal host and only APPEAR in a saturated/real plan — so each must be (and now is) a typed hole, not an asserted fact. No surface's join edge-set grows between minimal and saturated (no SPLIT needed) because the surfaces were authored as types-to-instantiate with no embedded bindings. The one buried binding was the access-control note inside the Route surface; lifting it to its own obligation removes the only place a surface implied a sibling. INTRINSIC-vs-CONTEXTUAL verdict per component: 8 surfaces INTRINSIC (promote-eligible were this not bootstrap/untrusted); 7 obligations CONTEXTUAL-by-construction (typed holes); 6 state-probes reachable-from-intrinsic-alone. Uncertain cases (actor obligation's resolvesTo) failed SAFE: set to open-question, the minimal-host-true value, with edge-to-compute as the contextual upgrade, never the asserted default."
+      },
+      "entry": {
+        "archetypeKey": "audit-logging",
+        "intrinsicSurfaces": [
+          {
+            "type": "Store",
+            "name": "audit-log",
+            "params": [
+              "append-only",
+              "immutable/WORM"
+            ],
+            "canFail": false,
+            "note": "The durable append-only sink that holds the trail. Parameterized to the plan's persistence (table vs external log store); the archetype always introduces SOME append-only sink, never a specific table name. INTRINSIC: survives the minimal host alone."
+          },
+          {
+            "type": "Schema",
+            "name": "audit-event",
+            "params": [
+              "actor-slot",
+              "action",
+              "target-slot",
+              "outcome",
+              "timestamp",
+              "prev-hash/seq"
+            ],
+            "canFail": false,
+            "note": "The typed record shape written to the sink. Carries 'actor-slot' and 'target-slot' as TYPES-to-fill, not bindings to any sibling. The slots are intrinsic; their PRODUCERS are contextual holes resolved by obligations o-actor / o-target. The presence of these slots is what makes those obligations well-posed from this archetype alone."
+          },
+          {
+            "type": "Event",
+            "name": "security-action",
+            "params": [
+              "abstract auditable-action channel"
+            ],
+            "canFail": false,
+            "note": "KEYSTONE. The abstract internal event-kind 'a security-relevant action occurred' that the capture middleware ingests, defined WITHOUT naming any producing feature. It is the archetype's own notion of 'what gets audited', which is what lets the producer-side obligation be a typed query ('who emits one of these?') rather than a hardcoded producer list. INTRINSIC."
+          },
+          {
+            "type": "Middleware",
+            "name": "audit-capture",
+            "params": [
+              "cross-cutting interceptor/hook"
+            ],
+            "canFail": true,
+            "note": "Cross-cutting mechanism that observes Event:security-action and writes a Schema:audit-event to Store:audit-log — all three are same-archetype intrinsics, so it binds nothing external. CAN-FAIL: a capture/write can fail and fail-open-vs-fail-closed is a real surface. INTRINSIC (no saturated-host edge growth)."
+          },
+          {
+            "type": "Token",
+            "name": "integrity-seal",
+            "params": [
+              "hash-chain link OR signing/HMAC key material"
+            ],
+            "canFail": false,
+            "note": "Tamper-EVIDENCE material: per-record chained hash (prev-hash linkage) and/or an HMAC/signing key. Distinguishes a tamper-evident trail from an ordinary log; intrinsic to the archetype being itself. Its KEY CUSTODY is a contextual hole (obligation o-key-custody), not an intrinsic binding."
+          },
+          {
+            "type": "Config",
+            "name": "audit-policy",
+            "params": [
+              "signing-key-ref",
+              "retention-window",
+              "fail-mode(open|closed)",
+              "redaction-policy"
+            ],
+            "canFail": false,
+            "note": "Configuration the archetype always needs: where the integrity-seal key lives (a REF, resolved by o-key-custody), retention/sealing window, whether a failed write blocks the action, and what fields are redacted before write. INTRINSIC as config; the key-ref's RESOLUTION is a hole."
+          },
+          {
+            "type": "Route",
+            "name": "audit-read/export",
+            "params": [
+              "query",
+              "export",
+              "verify-chain"
+            ],
+            "canFail": true,
+            "note": "Privileged surface to read/export/verify the trail. Itself a security-relevant action (reading the audit log is auditable) and CAN-FAIL on integrity-verification failure. INTRINSIC surface. Its ACCESS-CONTROL is now a standalone obligation (o-read-authz), not a binding buried in this note."
+          },
+          {
+            "type": "ErrorState",
+            "name": "audit-write-failed",
+            "params": [
+              "sink-unavailable",
+              "seal-mismatch/tamper-detected"
+            ],
+            "canFail": true,
+            "note": "Intrinsic failure surface: sink down OR chain verification detects tampering. Both demand a declared response — the ENFORCEMENT POINT of that response is a contextual hole (obligation o-fail-response). INTRINSIC failure surface, contextual response."
+          }
+        ],
+        "obligations": [
+          {
+            "query": "Who in the host plan PRODUCES an Event:security-action — i.e. which features perform an action the trail must capture? (the query is abstract; it names no producer — each emitter the join finds is a producer the audit-capture Middleware consumes from)",
+            "resolvesTo": "edge-to-compute",
+            "wellPosedFromIntrinsic": "Event:security-action",
+            "note": "THE seam-generating obligation. Well-posed standing alone because Event:security-action is intrinsic. Against a multi-feature plan the join resolves it to EVERY state-mutating feature and computes inter-feature seams, none hardcoded; against a read-only app it resolves to ~nothing — proving it is contextual, not baked in. Wording kept abstract so it carries no producer list; the §3.3 'name the producer this query assumes' check returns NONE."
+          },
+          {
+            "query": "What in the host plan PRODUCES the actor identity that fills Schema:audit-event.actor-slot? (the trail must attribute each event to a principal)",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "Schema:audit-event",
+            "note": "Well-posed from the intrinsic actor-slot, NOT from a presumed auth sibling. In the minimal/solo host there is no identity producer so it resolves to an OPEN-QUESTION ('who is the actor — anonymous? system?'). It UPGRADES to an edge-to-compute when the join finds an identity producer in the plan. resolvesTo set to the minimal-host-true value (fail-safe), repairing the original which asserted edge-to-compute."
+          },
+          {
+            "query": "What in the host plan PRODUCES or owns the target resource that Schema:audit-event.target-slot attributes an action to?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "Schema:audit-event",
+            "note": "Symmetric target-side hole, well-posed from the intrinsic target-slot. Open-question standing alone; upgrades to edges against the owners of the resources audited actions touch (record stores, payment ledgers, role tables) — computed by the join, never named here."
+          },
+          {
+            "query": "Who in the host plan CONSUMES the audit trail — compliance export, SIEM/forwarding, alerting, or admin review — reading from Route:audit-read/export or Store:audit-log?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "Route:audit-read/export",
+            "note": "Consumer-side hole, well-posed from the intrinsic read Route / Store. Open-question standing alone (a self-contained app has no downstream consumer); upgrades to a seam edge when a SIEM/export/alerting feature is present in the plan."
+          },
+          {
+            "query": "What in the host plan provides key/secret custody for the Token:integrity-seal material referenced by Config:audit-policy.signing-key-ref?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "Token:integrity-seal",
+            "note": "Well-posed from the intrinsic Token + the config key-ref. Open-question standing alone; upgrades to an edge against a secret-management / KMS feature if the plan has one — exactly the auth-fixture's provider-config -> secret-management seam, here for the seal key."
+          },
+          {
+            "query": "What authorization mechanism in the host plan gates the privileged Route:audit-read/export?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "Route:audit-read/export",
+            "note": "Lifted out of the Route surface note into a proper obligation (repair). Well-posed from the intrinsic Route. Open-question standing alone; upgrades to an edge against an authorization/RBAC feature if present. Naming no concrete authz model keeps it a hole, not an edge."
+          },
+          {
+            "query": "What in the host plan defines the enforcement response when ErrorState:audit-write-failed fires — fail-open vs fail-closed (per Config:audit-policy.fail-mode), alert, or quarantine — at the point the audited action would otherwise proceed?",
+            "resolvesTo": "open-question",
+            "wellPosedFromIntrinsic": "ErrorState:audit-write-failed",
+            "note": "Well-posed from the intrinsic ErrorState + policy. The POLICY value is intrinsic config, but the ENFORCEMENT POINT (does a failed write block the action?) lives at the seam with each producing feature, so it is a hole. Open-question standing alone; upgrades to edges against the security-action producers when fail-closed is chosen."
+          }
+        ],
+        "stateProbes": [
+          {
+            "cell": "first-audited-action (chain genesis: first record has no prev-hash / seq=0)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "concurrent-writes (two security-actions race for the same seq / prev-hash link)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "sink-unavailable (Store write fails mid-capture)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "tamper-detected / seal-mismatch (chain verification fails on read/export)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "retention-expiry / sealing-window (a record ages past Config:audit-policy.retention-window)",
+            "reachableFromIntrinsicAlone": true
+          },
+          {
+            "cell": "redaction-required (a field must be redacted per Config:audit-policy.redaction-policy before write)",
+            "reachableFromIntrinsicAlone": true
+          }
+        ],
+        "provenance": {
+          "source": "expert-author",
+          "trust": "UNTRUSTED",
+          "regime": "bootstrap",
+          "lifecycleState": "provisional",
+          "floorOnly": true,
+          "countsTowardConvergence": false,
+          "auditNote": "Cold-start seed (CURATION-METHOD §5): no audited:true predecessor exists, so the minimal host is hand-authored and itself unaudited; this entry must promote ALMOST NOTHING and lean on the downstream ratchet + source-diverse recurrence. Emitted to the search as untrusted floor-only probes. Cannot reach canon until the join read-path (Step 1) and the held-out ratchet (Step 3) exist. provenance.classes=[expert-author] only => fails C5 (needs >=2 distinct provenance classes); stays provisional by construction.",
+          "substrateGate": "Read-path join + §3.3 instantiate do not exist in the repo yet; this validation is a logical contrast-pair pass, not an executed join."
+        }
+      }
+    }
+  ]
+}

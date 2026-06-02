@@ -31,6 +31,11 @@ export function assertRunResult(name, result) {
   for (const k of COST_KEYS) {
     if (typeof cost?.[k] !== 'number') throw new Error(`strategy ${name}: cost.${k} must be a number`);
   }
+  // gaps is OPTIONAL (the open-question channel). When present it must be an array; the runner
+  // routes it to scoreCatchRate. A strategy that does not surface open questions simply omits it.
+  if (result.gaps !== undefined && !Array.isArray(result.gaps)) {
+    throw new Error(`strategy ${name}: result.gaps, when present, must be an array`);
+  }
   return result;
 }
 
