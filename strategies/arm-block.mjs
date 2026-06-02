@@ -53,13 +53,12 @@ const surfaceLine = (s) => {
   return `  - ${s.type}:${s.name}${params}${fail}`;
 };
 
-/**
- * Render the PRIMED block from a set of archetype entries. Surfaces + obligations (as questions) +
- * state-probes only — never an edge. Floor-not-ceiling framing is explicit in the preamble.
- * @param {object[]} entries
- * @returns {string}
- */
-export function renderPrimedBlock(entries) {
+// The shared block body: preamble + per-archetype surfaces/obligations(as questions)/probes. Surfaces
+// + obligations + probes only — never an edge. Used by BOTH the primed arm and the (mismatched-
+// archetype) placebo arm, so the two blocks are STRUCTURALLY IDENTICAL and differ ONLY in which
+// archetype's content is listed — the cleanest possible control for "a concrete checklist focuses the
+// model" (concreteness/length) vs the archetype's actual CONTENT-FIT.
+function renderArchetypeChecklist(entries) {
   const lines = [
     'ARCHETYPE PRIORS (an untrusted seed). These are PROBES: they can only ADD candidate surfaces and',
     'OPEN QUESTIONS for you to consider. They NEVER assert a dependency, complete the work, or tell you',
@@ -83,6 +82,11 @@ export function renderPrimedBlock(entries) {
   return lines.join('\n');
 }
 
+/** Render the PRIMED block from the archetype entries that MATCH the fixture's features. */
+export function renderPrimedBlock(entries) {
+  return renderArchetypeChecklist(entries);
+}
+
 const DEFAULT_PLACEBO = [
   'DECOMPOSITION REMINDERS (general best practice — not specific to this plan):',
   '  - Enumerate the FULL latent work, not only what the plan spells out.',
@@ -92,8 +96,22 @@ const DEFAULT_PLACEBO = [
   '  - Consider lifecycle states (first-time, expired, revoked, concurrent) where work often hides.',
 ].join('\n');
 
-/** Render the PLACEBO block (content-free, plan-agnostic). Uses spec.placebo if provided. */
-export function renderPlaceboBlock(spec) {
+/**
+ * Render the PLACEBO (A1) block. Preference order:
+ *   1. spec.placeboArchetypes — render a MISMATCHED archetype (a real archetype for a DIFFERENT
+ *      feature than this plan has) in the IDENTICAL structure as the primed block. This is the
+ *      strongest control: same format + comparable length, deliberately wrong-domain content, so a
+ *      primed>placebo delta is attributable to the archetype's CONTENT-FIT, not concreteness/length.
+ *   2. spec.placebo — an explicit content-free text block.
+ *   3. DEFAULT_PLACEBO — generic plan-agnostic advice.
+ * @param {object} spec  the arm spec
+ * @param {Map<string,object>} [db]  archetypeKey -> entry (required for placeboArchetypes)
+ */
+export function renderPlaceboBlock(spec, db) {
+  if (Array.isArray(spec.placeboArchetypes) && spec.placeboArchetypes.length) {
+    if (!db) throw new Error(`arm-block: spec ${spec.fixture} uses placeboArchetypes but no archetype db was provided`);
+    return renderArchetypeChecklist(resolveArchetypes({ ...spec, archetypes: spec.placeboArchetypes }, db));
+  }
   return typeof spec.placebo === 'string' && spec.placebo.trim() ? spec.placebo.trim() : DEFAULT_PLACEBO;
 }
 
