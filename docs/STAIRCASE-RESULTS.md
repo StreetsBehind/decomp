@@ -8,7 +8,7 @@ falsifiable claim that gates the next. Append results here; do not rewrite histo
 | **0** | the edge/surface ruler is accurate | ✅ **PASS** (2026-06-02) | both rulers mutation-tested; 36 assertions in `npm run selftest` |
 | **1** | the typed produces/consumes representation can *express* the true edges | ✅ **GO** (2026-06-02) | ceiling **88.2%**, precision **100%** on `sso-greenfield` |
 | 2 | local produces/consumes extraction + join recovers more edges than directly asking | 🟢 **apparatus ready** | held-nodes-constant A/B built (`eval/extract-interfaces.mjs` + `eval/extraction-ab.mjs`); $0 demo on sso-greenfield = Arm-2 88.2% @ 100% precision vs Arm-1 0% unwired. **Live A/B (model annotator) is the gated next run.** |
-| 3 | priming with an obligations library raises recall without anchoring | 🟢 **apparatus ready** | three arms + C1 lint + partition (seam) scorer built; needs the `hearth` fixture pinned + placebo length-match (`docs/ARCHETYPE-PREMISE-EXPERIMENT.md` §7–§8) |
+| 3 | priming with an obligations library raises recall without anchoring | 🟢 **apparatus ready + headroom pre-flight PASSED** | three arms + C1 lint + partition (seam) scorer built; `hearth` pinned; live pre-flight confirms measurable seam headroom (below). The full 3-arm sweep is the gated next run. |
 | 4 | the diverse ensemble converges; manifest incompleteness is measurable | ⏳ | phase 2 |
 
 ---
@@ -70,3 +70,25 @@ for $0, before any extraction or model spend. This clears the substrate gate tha
 > ceiling is fixture-specific; re-run on `ingest-pipeline` (heavier ordering structure — expect a lower
 > ceiling, since pure stage-ordering edges are less resource-mediated) and on `hearth` (the partitioned
 > manifest will report the intra-feature vs **seam** ceiling separately) before generalizing.
+
+## Step 3 — headroom pre-flight on `hearth` ✅ GO (first live data)
+
+Before paying for the full 3-arm sweep, the binding question (§8): does **blind** single-session find ANY of
+hearth's inter-feature **seams**? If seam recall floors at ~0, anchoring is unmeasurable (the prime can't lower
+a floor) and the fixture can't decide the premise. `tools/preflight-hearth-seams.mjs` (LIVE) ran blind A0 ×
+K=2, **judging only the 79 seam edges** (method **haiku** — a conservative floor since the sonnet primary finds
+≥; judge **sonnet**):
+
+```
+seam recall (sufficiency): mean 22.2% ± 0.9%   [22.8%, 21.5%]
+seam recall (presence):    mean 25.9% ± 0.9%   [26.6%, 25.3%]
+beads/run [59, 58] | edges wired/run [95, 81] | open-questions/run [20, 26]
+spend: 160 live calls, ~$12.93
+```
+
+**Verdict: HEADROOM OK.** Seam recall is materially **>0 and ≪100%** (≈¼ of seams found), so seam recall can
+move in *both* directions — anchoring is measurable and the fixture can decide the premise. Stable (±0.9%). The
+open-question channel fired live (20–26/run). Two transport lessons banked: a large multi-feature decompose
+exceeds the old 5-min CLI ceiling (raised to 10 min, per-call overridable in `runner/model-client.mjs`), and
+**sonnet** runs past even that on hearth — so the live decomposer is run on **haiku** (sonnet remains the
+primary the conservative floor generalizes upward to). The full 3-arm sweep (A0/A1/A2) is the gated next run.

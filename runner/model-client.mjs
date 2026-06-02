@@ -62,8 +62,10 @@ import process from 'node:process';
 
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const DEFAULT_MAX_TURNS = 1;
-// A few seconds of model latency is normal; a decompose pass can be long. 5 min ceiling.
-const DEFAULT_TIMEOUT_MS = 300_000;
+// A few seconds of model latency is normal, but a single-shot decompose of a large multi-feature
+// plan emits a very large JSON and can run several minutes — a 5-min ceiling SIGTERMs it mid-stream.
+// 10-min ceiling; callers can override per-call via args.timeoutMs (e.g. a short cap for tiny judge calls).
+const DEFAULT_TIMEOUT_MS = 600_000;
 
 /**
  * Strip a single wrapping markdown code fence (```json ... ``` or ``` ... ```) from text.
@@ -154,6 +156,7 @@ export async function claudeInvoke(args = {}) {
     system,
     model = DEFAULT_MODEL,
     maxTurns = DEFAULT_MAX_TURNS,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
     signal,
   } = args;
 
@@ -183,7 +186,7 @@ export async function claudeInvoke(args = {}) {
   ];
 
   const start = process.hrtime.bigint();
-  const { stdout } = await spawnCapture('claude', argv, { input: prompt, signal, timeoutMs: DEFAULT_TIMEOUT_MS });
+  const { stdout } = await spawnCapture('claude', argv, { input: prompt, signal, timeoutMs });
   const end = process.hrtime.bigint();
   const measuredSec = Number(end - start) / 1e9;
 

@@ -58,9 +58,12 @@ allow the partition tags). Concretely:
       hearth feature. Fall back to a length-matched generic placebo, and lean on **seam recall** as the
       clean control (the prime structurally cannot lift seams — the verifier's hardening note). [GATED:
       experiment-design choice; precedes the live sweep.]
-- [ ] **Headroom pre-flight** — run A0 blind at K≥3 on hearth; confirm covered recall materially <1 AND
-      **seam recall materially >0 with variance**, else anchoring is unmeasurable (§8). **[LIVE — spends.]**
-- [ ] The two priced runs: live Step-2 A/B + the K≥3 three-arm Step-3 sweep. **[LIVE — spends.]**
+- [x] **Headroom pre-flight** ✅ **GO** (2026-06-02, `tools/preflight-hearth-seams.mjs`, ~$12.93) — blind A0
+      × K=2, seam edges only: **seam recall 22.2% suff / 25.9% presence ± 0.9%** — materially >0 and ≪100%,
+      so anchoring is measurable. See `docs/STAIRCASE-RESULTS.md`. **Constraint learned:** a sonnet decompose
+      of hearth runs past even a 10-min CLI ceiling, so the **live decomposer runs on haiku** (a conservative
+      floor for the sonnet primary); raise the per-call timeout / chunk if running sonnet.
+- [ ] The two priced runs: live Step-2 A/B + the K≥3 three-arm Step-3 sweep. **[LIVE — spends; haiku method.]**
 
 `hearth` is now a blessed fixture; the remaining unchecked items are the experiment-design choice + the
 billable live runs.
