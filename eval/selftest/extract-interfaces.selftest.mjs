@@ -6,7 +6,7 @@
 import assert from 'node:assert/strict';
 import { extractInterfaces, slugName, exactName } from '../extract-interfaces.mjs';
 import { extractionAB } from '../extraction-ab.mjs';
-import { makeStubAnnotator, parseInterface } from '../../runner/annotator.mjs';
+import { makeStubAnnotator, makeClaudeAnnotator, parseInterface } from '../../runner/annotator.mjs';
 
 const bead = (planKey, id = planKey) => ({
   id, type: 'task', title: planKey, status: 'open',
@@ -81,7 +81,16 @@ export async function run() {
   assert.deepEqual(parseInterface('not json at all'), { produces: [], consumes: [] }, 'garbage -> empty interface');
   assert.deepEqual(parseInterface(null), { produces: [], consumes: [] }, 'null -> empty interface');
 
-  return { name: 'extract-interfaces', assertions: 20 };
+  // ---- live annotator resilience (a transient CLI failure must not crash a paid extraction) ----
+  let n = 0;
+  const flaky = async () => { if (n++ === 0) throw new Error('transient overload'); return { text: '{"produces":["Store:s"],"consumes":[]}' }; };
+  const retried = await makeClaudeAnnotator(flaky)({ bead: { id: 'x', title: 'x' }, lattice: [] });
+  assert.deepEqual(retried, { produces: ['Store:s'], consumes: [] }, 'annotator RETRIES a transient failure then succeeds');
+  const dead = async () => { throw new Error('CLI down'); };
+  const failed = await makeClaudeAnnotator(dead)({ bead: { id: 'y', title: 'y' }, lattice: [] });
+  assert.deepEqual(failed, { produces: [], consumes: [] }, 'annotator FAILS CLOSED to an empty interface (never throws)');
+
+  return { name: 'extract-interfaces', assertions: 22 };
 }
 
 export default run;

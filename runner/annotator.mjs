@@ -56,15 +56,20 @@ export function parseInterface(text) {
 export function makeClaudeAnnotator(invoke, opts = {}) {
   if (typeof invoke !== 'function') throw new Error('makeClaudeAnnotator: invoke is required');
   return async function annotate({ bead, lattice }) {
-    const res = await invoke({
-      prompt: renderAnnotatePrompt(bead, lattice),
-      system: ANNOTATE_SYSTEM,
-      model: opts.model,
-      maxTurns: 1,
-      role: 'annotate',
-      signal: opts.signal,
-    });
-    return parseInterface(res && typeof res.text === 'string' ? res.text : '');
+    const args = { prompt: renderAnnotatePrompt(bead, lattice), system: ANNOTATE_SYSTEM, model: opts.model, maxTurns: 1, role: 'annotate', signal: opts.signal };
+    // Resilience (mirrors runner/judge.mjs): a transient CLI failure (rate-limit/overload during a
+    // concurrent fan-out) must NOT crash the whole extraction. Retry once, then FAIL CLOSED to an
+    // empty interface — that bead just contributes no produces/consumes (the join makes fewer edges
+    // for it; conservative, never inflates).
+    for (let attempt = 0; attempt < 2; attempt++) {
+      try {
+        const res = await invoke(args);
+        return parseInterface(res && typeof res.text === 'string' ? res.text : '');
+      } catch {
+        if (attempt === 0) { await new Promise((r) => setTimeout(r, 1500)); continue; }
+      }
+    }
+    return { produces: [], consumes: [] };
   };
 }
 

@@ -7,7 +7,7 @@ falsifiable claim that gates the next. Append results here; do not rewrite histo
 |---|---|---|---|
 | **0** | the edge/surface ruler is accurate | ✅ **PASS** (2026-06-02) | both rulers mutation-tested; 36 assertions in `npm run selftest` |
 | **1** | the typed produces/consumes representation can *express* the true edges | ✅ **GO** (2026-06-02) | ceiling **88.2%**, precision **100%** on `sso-greenfield` |
-| 2 | local produces/consumes extraction + join recovers more edges than directly asking | 🟢 **apparatus ready** | held-nodes-constant A/B built (`eval/extract-interfaces.mjs` + `eval/extraction-ab.mjs`); $0 demo on sso-greenfield = Arm-2 88.2% @ 100% precision vs Arm-1 0% unwired. **Live A/B (model annotator) is the gated next run.** |
+| 2 | local produces/consumes extraction + join recovers more edges than directly asking | 🟡 **directional, not decisive** | live A/B ran ($5.43, K=2): Arm-2 (extraction→join) +5.9pts suff / +20.6pts presence over Arm-1 (depends_on) — but variance ±25% swamps it and over-wiring is unmeasured (below). Promising, not validated. |
 | 3 | priming with an obligations library raises recall without anchoring | 🟢 **apparatus ready + headroom pre-flight PASSED** | three arms + C1 lint + partition (seam) scorer built; `hearth` pinned; live pre-flight confirms measurable seam headroom (below). The full 3-arm sweep is the gated next run. |
 | 4 | the diverse ensemble converges; manifest incompleteness is measurable | ⏳ | phase 2 |
 
@@ -70,6 +70,36 @@ for $0, before any extraction or model spend. This clears the substrate gate tha
 > ceiling is fixture-specific; re-run on `ingest-pipeline` (heavier ordering structure — expect a lower
 > ceiling, since pure stage-ordering edges are less resource-mediated) and on `hearth` (the partitioned
 > manifest will report the intra-feature vs **seam** ceiling separately) before generalizing.
+
+## Step 2 — live extraction A/B on `sso-greenfield` 🟡 directional, NOT decisive
+
+`tools/extraction-ab-live.mjs` (LIVE, ~$5.43): hold the node set constant per run; **Arm 1** = the model's
+own `depends_on` edges, **Arm 2** = annotate the *same* beads → the deterministic join → its edges. Both
+edge sets judged identically (thin fixture ⇒ semantic judge, not planKey matching). haiku method+annotator,
+sonnet judge, K=2.
+
+```
+Arm1 (model depends_on)  edge recall: suff 29.4% ± 8.3%   pres 29.4% ± 8.3%    [23.5, 35.3]
+Arm2 (extraction->join)  edge recall: suff 35.3% ± 25.0%  pres 50.0% ± 37.4%   [17.6, 52.9]
+delta (Arm2-Arm1): suff +5.9 pts | pres +20.6 pts   | join edges/run [13, 42] vs 17 required
+```
+
+**Read it honestly — promising, not proven.** The mean favours extraction (esp. on presence), but:
+1. **Underpowered.** K=2 with Arm-2 suff **±25%**. The win is entirely the *rich* run (29 beads → join recovered
+   52.9%); the *sparse* run (13 beads) had Arm-2 **below** Arm-1. The spread swamps the +5.9pt delta.
+2. **Over-wiring is unmeasured.** The rich run's join made **42 edges vs 17 required**; judge-RECALL does not
+   penalize over-wiring, and join PRECISION is unmeasurable on a thin fixture (the model's invented planKeys
+   don't map to the manifest's), so some of Arm-2's lift may be spray — the exact confound §7 Step-2 warns of.
+3. **Decomposition richness is the hidden variable** — more beads → more produces/consumes → more join edges →
+   higher recall *and* worse over-wiring. The A/B conflates derivation quality with enumeration richness.
+
+**Verdict:** consistent with the reframe (Step-1's 88% ceiling says it's *possible*; this says a model's
+extraction *can* exceed its own depends_on), but **not a clean validation**. A decisive Step-2 needs higher K
+**and** a precision guard — which requires aligning the model's beads to manifest planKeys (a judge-based or
+deterministic alignment step), so over-wiring can be penalized. Banked as the next methodological build.
+
+Transport/robustness fixes banked en route: the annotator now retries + fails closed like the judge (a
+transient CLI error during the concurrent fan-out previously crashed a paid run); concurrency gentled to 3.
 
 ## Step 3 — headroom pre-flight on `hearth` ✅ GO (first live data)
 
