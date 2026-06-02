@@ -53,9 +53,15 @@ npm run battery        # run the full matrix (once strategies + fixtures are wir
 
 ## Status
 
-Scaffolding. The **Tier-0 build-completeness oracle** (`eval/build-completeness.mjs`) and its selftest
-are the first functional pieces; everything else carries a precise contract and a TODO stub owned by a
-later build-out slice. See `docs/CHARTER.md` §7 (Definition of done) and §9 (open questions).
+**Live and running.** The full apparatus is built and self-tested (`npm run selftest` — 142 assertions),
+runs at zero spend on a deterministic mock (`npm run battery:mock`), and runs live against the `claude`
+CLI (`npm run battery:live`). The corpus now tests *generative* decomposition of **thin** plans (the real
+problem), with six methods under test (two pure-code controls + single-session / swarm / expand-audit ±
+structural-audit). One scoped live sweep has run.
+
+➡️ **Read [`docs/FINDINGS.md`](docs/FINDINGS.md) first** — current state, locked decisions, the first live
+results, the two open problems to fix next (an argv-limit transport bug and a confounded audit A/B), and
+how to run everything. See also `docs/CHARTER.md` §7 (Definition of done) and §9 (open questions).
 
 ## Design rules (non-negotiable — see CHARTER §6)
 
