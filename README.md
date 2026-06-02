@@ -63,6 +63,12 @@ structural-audit). One scoped live sweep has run.
 results, the two open problems to fix next (an argv-limit transport bug and a confounded audit A/B), and
 how to run everything. See also `docs/CHARTER.md` §7 (Definition of done) and §9 (open questions).
 
+➡️ **Then [`docs/SURFACE-DISCOVERY-SPEC.md`](docs/SURFACE-DISCOVERY-SPEC.md)** — the forward design +
+execution plan that attacks the one robust finding (edges are the weak point): make edges a deterministic
+**join** over a typed produces/consumes interface, seed the search with a **library of obligations**
+(never edges), and grade against the **converged union** of diverse generators. Includes a cheap-first
+**proof staircase** (Steps 0–4) the next session should execute.
+
 ## Design rules (non-negotiable — see CHARTER §6)
 
 1. **Determinism-first.** Parse/wire/score and the Tier-0 oracle are pure functions over data. Agents
