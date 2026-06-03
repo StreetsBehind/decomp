@@ -7,7 +7,7 @@ falsifiable claim that gates the next. Append results here; do not rewrite histo
 |---|---|---|---|
 | **0** | the edge/surface ruler is accurate | ✅ **PASS** (2026-06-02) | both rulers mutation-tested; 36 assertions in `npm run selftest` |
 | **1** | the typed produces/consumes representation can *express* the true edges | ✅ **GO** (2026-06-02) | ceiling **88.2%**, precision **100%** on `sso-greenfield` |
-| 2 | local produces/consumes extraction + join recovers more edges than directly asking | 🔴 **NEGATIVE (decisive)** | K=5 precision-aware A/B: extraction→join recall **16.5%** vs depends_on **34.1%** (−17.6 pts > 1σ; NOT over-wiring, 1.08× edges). Step-1's 88% ceiling is real but **unreached by live haiku extraction** — the bottleneck is extraction quality (likely §1.1 vocabulary alignment). The spec's named Step-2 kill-criterion, hit. |
+| 2 | local produces/consumes extraction + join recovers more edges than directly asking | 🔴 **NEGATIVE (decisive, REPLICATED)** | K=5 precision-aware A/B, BOTH haiku & sonnet annotators: extraction→join loses to depends_on by **−17.6 pts** (>1σ) in each batch. Sonnet extracts better (Arm-2 16.5%→34.1%) but still loses and over-wires more (required-hit 43% vs 73%). **Model strength isn't the fix** — the bottleneck is structural (§1.1 vocabulary alignment + over-wiring). |
 | 3 | priming with an obligations library raises recall without anchoring | 🟢 **apparatus ready + headroom pre-flight PASSED** | three arms + C1 lint + partition (seam) scorer built; `hearth` pinned; live pre-flight confirms measurable seam headroom (below). The full 3-arm sweep is the gated next run. |
 | 4 | the diverse ensemble converges; manifest incompleteness is measurable | ⏳ | phase 2 |
 
@@ -104,15 +104,39 @@ ceiling**: the bottleneck is **extraction quality**, not the representation. The
 the same resource inconsistently across beads (`Store:session` vs `Store:sessions` vs `Store:session-store`),
 so the join silently misses the edge. The `slugName` canonicalizer handles casing/separators but not synonyms.
 
-**Caveats (don't over-read the negative):** (1) the annotator was **haiku** — and annotation quality is exactly
-what's under test, so a **sonnet** annotator is the obvious retry. (2) One small fixture (13 reqs / 17 edges).
-(3) Alignment covered 9–11/13 planKeys (the judge couldn't place 2–4 per run) — fair to both arms, but it caps
-absolute recall.
+### Sonnet-annotator replication (`AB_ANNOT=claude-sonnet-4-6`, K=5, $6.59) — the negative HOLDS
 
-**Implied next moves** (not yet run): (a) re-run with a **sonnet annotator** — is extraction the bottleneck, or
-just haiku? (b) implement the spec's **dictionary-first** canonicalization (§1.1: build a resource dictionary,
-then have beads reference dictionary ids) to attack vocabulary alignment directly. This is the "investigate
-extraction quality" branch the spec predicted.
+Same A/B, only the annotator swapped haiku→sonnet (decomposer stays haiku, so Arm-1 is the same *distribution*):
+
+```
+                        Arm1 (depends_on)        Arm2 (extraction→join)      delta
+haiku annotator:        34.1% ± 10.5%            16.5% ± 14.0%               −17.6 pts   (edges 1.08×)
+sonnet annotator:       51.8% ± 16.3%            34.1% ± 13.4%               −17.6 pts   (edges 1.28×, hit 43% vs 73%)
+```
+
+Read it right (absolute numbers are noisy batch-to-batch — Arm-1 differs only from different haiku decompose
+draws + alignment, NOT the annotator; the **within-batch delta** is the controlled comparison):
+1. **Sonnet extracts genuinely better** — Arm-2 absolute recall *doubled* (16.5% → 34.1%). A stronger annotator
+   does help the extraction.
+2. **But it still loses to `depends_on` by the same −17.6 pts** (>1σ) — the negative **replicated** across both
+   annotator strengths, and across two independent K=5 batches.
+3. **Sonnet over-wires *more*** — 1.28× the edges at required-hit 43% vs `depends_on`'s 73%: more of its join
+   edges are not required.
+
+**Conclusion: the negative is robust to model strength.** The extraction→join reframe underperforms the model's
+own `depends_on` whether the annotator is weak or strong — so the bottleneck is **structural** (§1.1 vocabulary
+alignment: even sonnet names the same resource inconsistently across beads, so the exact-match join misses edges;
+plus over-wiring from coarse shared resources). **Model choice is not the lever; canonicalization is.**
+
+**Implied next moves** (not yet run): (a) implement the spec's **dictionary-first** canonicalization (§1.1: the
+model builds a resource dictionary *first*, then beads reference dictionary ids — directly attacks the vocabulary
+misalignment that this result fingers as the cause), re-run, and see if the gap closes; (b) if it does not, the
+edges-via-local-extraction reframe is insufficient as posed and the supplementary mechanism / a rethink is due.
+Either way, Step 2 has done its job: it has *localized* where the reframe breaks.
+
+**Caveats:** one small fixture (13 reqs / 17 edges); alignment covered 9–12/13 planKeys (fair to both arms, caps
+absolute recall); cross-batch Arm-1 variance (34%↔52%) shows absolute recall is noisy even at K=5 — the robust
+signal is the **replicated within-batch −17.6 pt delta**.
 
 Robustness fixes banked en route: the annotator now retries + fails closed like the judge (a transient CLI
 exit-1 during the concurrent fan-out had crashed a paid run); concurrency gentled to 3.

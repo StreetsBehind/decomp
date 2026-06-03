@@ -27,7 +27,10 @@ import { buildSnapshotDigest } from '../eval/generative-coverage.mjs';
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const rj = (p) => JSON.parse(readFileSync(resolve(ROOT, p), 'utf8'));
 const FIX = 'sso-greenfield';
-const METHOD = 'claude-haiku-4-5'; const ANNOT = 'claude-haiku-4-5'; const JUDGE = 'claude-sonnet-4-6';
+const METHOD = 'claude-haiku-4-5'; const JUDGE = 'claude-sonnet-4-6';
+// ANNOTATOR model is the variable under test (extraction quality). Override with AB_ANNOT=<model>.
+// Keep METHOD=haiku fixed so Arm-1 (depends_on) is the SAME baseline across annotator swaps.
+const ANNOT = process.env.AB_ANNOT || 'claude-haiku-4-5';
 const K = 5;
 
 const lock = rj(`fixtures/${FIX}/plan.lock.json`);
@@ -85,7 +88,7 @@ function scoreArm(edges, align, beadPk, beads) {
   return { recall: REQUIRED.length ? covered / REQUIRED.length : 1, covered, total: edges.length, aligned, hitRate: aligned ? hits / aligned : 0 };
 }
 
-console.log(`Step-2 extraction A/B v2 (DECISIVE, LIVE) — ${FIX}, K=${K}, method/annot ${METHOD} / judge ${JUDGE}`);
+console.log(`Step-2 extraction A/B v2 (DECISIVE, LIVE) — ${FIX}, K=${K}, method ${METHOD} / ANNOT ${ANNOT} / judge ${JUDGE}`);
 console.log(`alignment-based deterministic recall + over-wiring guard; Arm1 = depends_on, Arm2 = extraction->join, SAME nodes.\n`);
 const A = { r1: [], r2: [], e1: [], e2: [], h1: [], h2: [], aligned: [] };
 for (let k = 0; k < K; k++) {
