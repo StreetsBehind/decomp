@@ -135,11 +135,11 @@ function entriesForFixture(fixtureName, manifest) {
   }
   entries[`${fixtureName}::swarm:integrate`] = snap(SWARM_KEYS);
 
-  // expand-audit: iter0 partial AND missing files/tests on one bead so the deterministic
-  // structural audit fires -> the loop takes a 2nd invoke. iter1+ return the near-complete set.
-  // Both A/B variants (audit-on `expand-audit` and audit-off `expand-audit-noaudit`) share the
-  // SAME canned iter outputs — keyed by the strategy NAME the variant carries — so the A/B is
-  // isolated to the audit signal/fixpoint behaviour, not the mock content.
+  // expand-audit family: iter0 partial AND missing files/tests on one bead so the deterministic
+  // structural audit fires with real gaps. iter1+ return the near-complete set. ALL THREE
+  // feedback variants (structural / generative / off) share the SAME canned iter outputs —
+  // keyed by the strategy NAME the variant carries — so the A/B/C is isolated to the feedback
+  // signal, not the mock content. (Equal expand budgets are enforced by the strategy itself.)
   const partialKeys = dedupe([...satisfiers].slice(0, Math.max(1, Math.ceil(satisfiers.length / 2))));
   const iter0 = (() => {
     const obj = JSON.parse(snap(partialKeys.length ? partialKeys : [all[0]].filter(Boolean)));
@@ -149,10 +149,19 @@ function entriesForFixture(fixtureName, manifest) {
     }
     return JSON.stringify(obj);
   })();
-  for (const variant of ['expand-audit', 'expand-audit-noaudit']) {
+  for (const variant of ['expand-audit', 'expand-audit-gen', 'expand-audit-noaudit']) {
     entries[`${fixtureName}::${variant}:iter0`] = iter0;
-    // cover iter1..iter9 (MAX_ITERS is small; over-provision is harmless).
+    // cover iter1..iter9 (the expand budget is small; over-provision is harmless).
     for (let i = 1; i < 10; i++) entries[`${fixtureName}::${variant}:iter${i}`] = snap(EXPAND_KEYS);
+  }
+  // expand-audit-gen's bounded audit invokes: canned gap lists naming the still-missing latent
+  // keys (iter0 audit sees the partial graph; later audits see the near-complete one).
+  const missingAfterPartial = all.filter((k) => !partialKeys.includes(k));
+  const missingAfterExpand = all.filter((k) => !EXPAND_KEYS.includes(k));
+  for (let i = 0; i < 10; i++) {
+    const missing = i === 0 ? missingAfterPartial : missingAfterExpand;
+    entries[`${fixtureName}::expand-audit-gen:audit${i}`] =
+      JSON.stringify({ gaps: missing.map((k) => `missing packet: ${k}`) });
   }
 
   return entries;

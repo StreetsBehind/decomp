@@ -3,19 +3,31 @@
 // A DETERMINISTIC loop around a bounded judgment step:
 //
 //   for iter in 0..MAX:
-//     invoke -> expand/add packets (given the plan + the current graph + the structural gaps)
-//     run PURE Tier-0 structural invariants over the current graph (acyclicity, orphans,
-//       readiness) using the canonical graph helpers
-//     if no structural gaps  -> FIXPOINT, stop
-//     else feed the gaps into the next invoke's prompt
+//     invoke -> expand/add packets (given the plan + the current graph + the audit feedback)
+//     run the AUDIT over the current graph and feed its gaps into the next expand prompt
 //
-// The loop / control-flow / invariant checks are DETERMINISTIC CODE. Only the expand step is
-// a model invoke. agents = number of invokes performed. outputTokens / usd summed across them.
+// The loop / control-flow / invariant checks are DETERMINISTIC CODE. Only the expand step (and,
+// for the generative-audit variant, one bounded audit invoke per iteration) is a model invoke.
+// agents = number of invokes performed. outputTokens / usd summed across them.
 //
-// NB: the structural invariants can only flag problems with what EXISTS (a cycle, an orphan, a
-// thin bead) — they CANNOT invent a missing latent requirement (CHARTER §8). The expand invoke
-// is where generative judgment adds the latent packets; the audit only keeps the graph honest
-// and tells the next expand pass what to fix.
+// THE DE-CONFOUNDED A/B/C (FINDINGS §6.2). The L1 sweep conflated "audit signal" with
+// "iteration count": audit-ON stopped at a STRUCTURAL fixpoint while half the latent work was
+// still missing (structural completeness ≠ generative completeness, CHARTER §8), so audit-OFF
+// simply out-iterated it. Fixed by making EVERY variant perform the SAME number of expand
+// invokes (EXPAND_BUDGET — no fixpoint short-circuit) so the ONLY difference is the FEEDBACK
+// SIGNAL fed to the next expand pass:
+//
+//   auditMode 'structural'  PURE Tier-0 invariants over the graph (acyclicity, orphans,
+//                           readiness) — free, deterministic, but blind to missing latent work.
+//   auditMode 'generative'  ONE bounded model invoke per iteration reads the PLAN + the current
+//                           decomposition and names the latent work still missing. Sees ONLY the
+//                           plan the method was given — NEVER the oracle manifest. Costs an
+//                           invoke; directly tests "does an audit catch missed latent work?".
+//   auditMode 'off'         no audit, no feedback — blind re-expansion (the control).
+//
+// The early-stop-at-fixpoint economy that L1's audit-ON exhibited is a STOPPING RULE, not an
+// audit signal; it is deliberately removed here and belongs to the granularity/stopping-policy
+// experiments (docs/RESEARCH-PROGRAM.md) as its own manipulated variable.
 
 import { buildIndex, nonEpicBeads, transitiveDeps } from '../../eval/graph/build-graph.mjs';
 import { parseSnapshot } from '../parse-snapshot.mjs';
@@ -32,7 +44,8 @@ import {
 // pattern through single-session and swarm.
 const MODEL = 'claude-sonnet-4-6';
 const EFFORT = 'medium';
-const MAX_ITERS = 3;
+// EVERY variant performs exactly this many expand invokes (the equal-budget control).
+const EXPAND_BUDGET = 3;
 
 // ---- PURE Tier-0 structural invariants over the current graph --------------
 
@@ -134,34 +147,50 @@ function digest(snapshot) {
   return `PACKETS:\n${lines.join('\n') || '  (none)'}\nEDGES:\n${edges.join('\n') || '  (none)'}`;
 }
 
+// ---- the GENERATIVE audit (one bounded invoke; sees ONLY the plan, never the oracle) -------
+
+const GEN_AUDIT_SYSTEM =
+  'You are a meticulous completeness auditor. You are given a PLAN and the CURRENT decomposition ' +
+  'of that plan into build packets. Name the LATENT work a real build of this plan would need ' +
+  'that NO current packet covers — missing packets, and missing dependency edges between the ' +
+  'packets that DO exist. Be specific and actionable; do not restate covered work. ' +
+  'Output ONLY a JSON object: {"gaps": ["<one specific missing packet or edge per entry>"]}.';
+
+/** Parse the generative-audit reply into a string[] of gaps. Defensive; never throws. */
+export function parseGapList(text) {
+  if (typeof text !== 'string') return [];
+  const start = text.indexOf('{');
+  const end = text.lastIndexOf('}');
+  if (start === -1 || end <= start) return [];
+  try {
+    const obj = JSON.parse(text.slice(start, end + 1));
+    if (obj && Array.isArray(obj.gaps)) {
+      return obj.gaps.filter((g) => typeof g === 'string' && g.trim()).slice(0, 30);
+    }
+  } catch { /* fall through */ }
+  return [];
+}
+
 /**
- * Build an EXPAND/AUDIT strategy parameterized on the structural-audit feedback signal.
+ * Build an EXPAND/AUDIT strategy parameterized on the FEEDBACK SIGNAL (see header comment).
  *
- * This is the ±structural-audit A/B (the human's "does a graph/audit catch missed edges?"
- * question), registered as two sweepable variants:
- *
- *   - auditMode:'on'  (default) — each iter: invoke -> PURE Tier-0 auditStructure over the
- *     current graph -> feed the structural gaps into the next prompt -> stop at fixpoint/max.
- *   - auditMode:'off' (the CONTROL) — SAME iteration budget (MAX_ITERS) and SAME expand
- *     prompts, but the structural audit NEVER runs and structural gaps are NEVER fed back.
- *     Each pass re-expands "blind" (told the current decomposition but no audit signal), so
- *     the A/B isolates whether the structural-audit signal actually improves coverage.
- *     There is no fixpoint short-circuit (no audit -> no fixpoint), so the control burns the
- *     full budget; audit-on can stop early at a fixpoint => audit-on performs <= as many
- *     invokes as audit-off given the same canned outputs.
+ * EQUAL-BUDGET CONTROL: every variant performs exactly EXPAND_BUDGET expand invokes — no
+ * fixpoint short-circuit — so the A/B/C isolates the feedback signal, never the iteration
+ * count. 'generative' additionally performs one bounded audit invoke between expands (billed:
+ * agents/tokens/usd all count).
  *
  * MODEL KNOB: the run reads `ctx.model` when present and falls back to the pinned MODEL.
- * The chosen model is passed to every ctx.invoke and recorded on the cost record. The judge's
- * model is held fixed elsewhere and is NOT read from ctx.model here.
+ * The generative audit runs on the SAME swept model (it is part of the method under test —
+ * unlike the scoring judge, which is held fixed elsewhere and never read from ctx here).
  *
- * @param {{ name?: string, auditMode?: 'on'|'off' }} [opts]
+ * @param {{ name?: string, auditMode?: 'structural'|'generative'|'off'|'on' }} [opts]
  * @returns {import('../adapter.mjs').Strategy}
  */
-export function makeExpandAudit({ name = 'expand-audit', auditMode = 'on' } = {}) {
-  if (auditMode !== 'on' && auditMode !== 'off') {
-    throw new Error(`makeExpandAudit: auditMode must be 'on' or 'off', got ${auditMode}`);
+export function makeExpandAudit({ name = 'expand-audit', auditMode = 'structural' } = {}) {
+  if (auditMode === 'on') auditMode = 'structural'; // back-compat alias
+  if (!['structural', 'generative', 'off'].includes(auditMode)) {
+    throw new Error(`makeExpandAudit: auditMode must be 'structural', 'generative' or 'off', got ${auditMode}`);
   }
-  const auditOn = auditMode === 'on';
 
   return {
     name,
@@ -186,13 +215,21 @@ export function makeExpandAudit({ name = 'expand-audit', auditMode = 'on' } = {}
       let usdKnown = false;
       let agents = 0;
 
-      let snapshot = { beads: [], edges: [], ready: [] };
-      let lastGaps = [];
+      const bill = (res) => {
+        agents++;
+        if (Number.isFinite(res.outputTokens)) outputTokens += res.outputTokens;
+        if (res.usd !== null && Number.isFinite(res.usd)) { usd += res.usd; usdKnown = true; }
+      };
 
-      for (let iter = 0; iter < MAX_ITERS; iter++) {
+      let snapshot = { beads: [], edges: [], ready: [] };
+      let lastGaps = []; // the feedback fed into the NEXT expand (mode-dependent)
+      let gapsLabel = 'GAPS TO FIX';
+
+      for (let iter = 0; iter < EXPAND_BUDGET; iter++) {
         const isFirst = iter === 0;
-        // audit-off iterations re-expand without any structural-gap feedback (blind re-expand);
-        // audit-on iterations get the prior pass's structural gaps to repair.
+        const feedback = !isFirst && lastGaps.length
+          ? [`${gapsLabel}:`, lastGaps.map((g) => `  - ${g}`).join('\n'), ''].join('\n')
+          : '';
         const prompt = isFirst
           ? [
               'Decompose the following THIN plan into the FULL set of atomic build packets.',
@@ -202,33 +239,19 @@ export function makeExpandAudit({ name = 'expand-audit', auditMode = 'on' } = {}
               '',
               contract,
             ].join('\n')
-          : auditOn
-          ? [
-              'Here is the CURRENT decomposition and the STRUCTURAL GAPS a deterministic audit found.',
-              'Return the COMPLETE updated decomposition (keep good packets, add/repair to close the gaps,',
-              'and add any latent packets still missing).',
-              '',
-              'CURRENT DECOMPOSITION:',
-              digest(snapshot),
-              '',
-              'STRUCTURAL GAPS TO FIX:',
-              lastGaps.map((g) => `  - ${g}`).join('\n'),
-              '',
-              planText,
-              '',
-              contract,
-            ].join('\n')
           : [
               'Here is the CURRENT decomposition. Return the COMPLETE updated decomposition',
-              '(keep good packets, and add any latent packets still missing).',
+              '(keep good packets, add/repair to close any listed gaps, and add any latent',
+              'packets still missing).',
               '',
               'CURRENT DECOMPOSITION:',
               digest(snapshot),
               '',
+              feedback,
               planText,
               '',
               contract,
-            ].join('\n');
+            ].filter((s) => s !== '').join('\n');
 
         const res = await ctx.invoke({
           prompt,
@@ -239,20 +262,42 @@ export function makeExpandAudit({ name = 'expand-audit', auditMode = 'on' } = {}
           fixtureName: fixture.name,
           signal: ctx.signal,
         });
-        agents++;
-        if (Number.isFinite(res.outputTokens)) outputTokens += res.outputTokens;
-        if (res.usd !== null && Number.isFinite(res.usd)) { usd += res.usd; usdKnown = true; }
+        bill(res);
 
         const next = parseSnapshot(res.text);
         // Never regress: keep the richer graph if an iteration returns fewer packets.
         snapshot = next.beads.length >= snapshot.beads.length ? next : snapshot;
 
-        // CONTROL: audit-off never runs the structural audit and never feeds gaps back.
-        if (!auditOn) continue;
+        // Produce the feedback for the NEXT expand. The last iteration's audit would feed
+        // nothing, so skip it (saves an invoke in 'generative'; harmless in 'structural').
+        if (iter === EXPAND_BUDGET - 1 || auditMode === 'off') continue;
 
-        const audit = auditStructure(snapshot);
-        if (!audit.hasGaps) break; // FIXPOINT
-        lastGaps = audit.gaps;
+        if (auditMode === 'structural') {
+          const audit = auditStructure(snapshot);
+          // NO fixpoint stop (equal-budget control): a clean audit just means no feedback.
+          lastGaps = audit.hasGaps ? audit.gaps : [];
+          gapsLabel = 'STRUCTURAL GAPS a deterministic audit found — FIX THESE';
+        } else {
+          const auditRes = await ctx.invoke({
+            prompt: [
+              planText,
+              '',
+              'CURRENT DECOMPOSITION:',
+              digest(snapshot),
+              '',
+              'Name the latent work still missing. Answer with the JSON object only.',
+            ].join('\n'),
+            system: GEN_AUDIT_SYSTEM,
+            model,
+            maxTurns: 1,
+            role: `${name}:audit${iter}`,
+            fixtureName: fixture.name,
+            signal: ctx.signal,
+          });
+          bill(auditRes);
+          lastGaps = parseGapList(auditRes.text);
+          gapsLabel = 'LATENT GAPS an auditor found — COVER THESE';
+        }
       }
 
       const wallClockSec = Number(process.hrtime.bigint() - start) / 1e9;
@@ -260,7 +305,7 @@ export function makeExpandAudit({ name = 'expand-audit', auditMode = 'on' } = {}
         snapshot,
         cost: {
           outputTokens,
-          agents, // = number of expand invokes performed
+          agents, // = number of invokes performed (expands + generative audits)
           wallClockSec,
           usd: usdKnown ? usd : null,
           model,
@@ -271,8 +316,11 @@ export function makeExpandAudit({ name = 'expand-audit', auditMode = 'on' } = {}
   };
 }
 
-/** Back-compat default export: the audit-on variant under the original name. */
-export default makeExpandAudit({ name: 'expand-audit', auditMode: 'on' });
+/** Back-compat default export: the structural-audit variant under the original name. */
+export default makeExpandAudit({ name: 'expand-audit', auditMode: 'structural' });
 
-/** The CONTROL variant for the ±structural-audit A/B (no audit signal). */
+/** The CONTROL variant (no audit signal, blind re-expansion, same expand budget). */
 export const expandAuditNoAudit = makeExpandAudit({ name: 'expand-audit-noaudit', auditMode: 'off' });
+
+/** The GENERATIVE-audit variant — "does a model audit catch missed latent work?" (FINDINGS §6.2). */
+export const expandAuditGen = makeExpandAudit({ name: 'expand-audit-gen', auditMode: 'generative' });
