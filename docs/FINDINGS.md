@@ -1,8 +1,45 @@
 # decomp — Findings & Handoff
 
-_Last updated: 2026-06-01. This is the source-of-truth handoff for picking the work up on another
-machine. Read it with [`CHARTER.md`](CHARTER.md). The repo answers: **what is the best method for
-decomposing a thin plan into atomic work-packet beads?**_
+_Last updated: 2026-06-11. This is the source-of-truth handoff for picking the work up on another
+machine. Read it with [`CHARTER.md`](CHARTER.md) and [`RESEARCH-PROGRAM.md`](RESEARCH-PROGRAM.md)
+(the pre-registered v2 design). The repo answers: **what is the best method for decomposing a thin
+plan into atomic work-packet beads?** — sharpened by the v2 program to: **what decompose-then-build
+policy (method × granularity × risk-threshold × deferral rule) maximizes realized outcomes per
+dollar under a cheap-model precondition?**_
+
+---
+
+## 0a. Apparatus update (2026-06-11) — Phase-0 instrument work landed
+
+Four of the v2 program's Phase-0 items are built, selftested (186 assertions), and verified on the
+zero-spend mock. **No new live numbers yet** — these change the instruments, so the next live sweep
+starts a fresh comparison series for the affected variants:
+
+1. **E0.1 — stdin transport (§6.1 FIXED).** `claudeInvoke` writes the prompt to the CLI's stdin
+   (never argv); verified with a 200 KB prompt. The two L1 holes (`expand-audit-noaudit@sonnet`,
+   one `swarm@sonnet` repeat) are unblocked for the re-run.
+2. **E0.2 — audit A/B de-confounded (§6.2 FIXED).** Every expand-audit variant now performs exactly
+   `EXPAND_BUDGET` expand invokes — no fixpoint short-circuit — so the A/B/C isolates the FEEDBACK
+   SIGNAL: `expand-audit` (structural Tier-0 gaps), **`expand-audit-gen` (NEW: one bounded model
+   audit per iteration names missing latent work — sees only the plan, never the oracle; fully
+   billed)**, `expand-audit-noaudit` (blind control). ⚠ `expand-audit`'s identity changed (it no
+   longer stops early): its L1 rows are not comparable to its next rows. The early-stop economy is
+   now a STOPPING-RULE variable for the granularity experiments, not a hidden confound.
+3. **E0.3 — honest accounting.** The live judge meters itself; every scorecard now carries
+   `graderCost` (deltaed per run) and the aggregate a `graderTotal` — strictly separate from method
+   cost. Runs are namespaced `runs/mock/**` vs `runs/live/**`; the leaderboard reads `runs/live` by
+   default (`--mode mock` for the plumbing board); mock runs no longer touch `ledger.md`.
+4. **E0.7 — the granularity instrument.** Five operational levels (L0 outcome / L1 epic / L2 task /
+   L3 atomic / L4 micro), threaded through every generative strategy as `--granularity L0,...`
+   (variant gains `#level`): the level's clause joins the shared contract AND a deterministic,
+   content-preserving merge/split post-pass enforces the dose. Every scorecard records the
+   REQUESTED level and the MEASURED dose (`eval/granularity.mjs`: G.atoms, AC median/mean, edge
+   density, depth) — analyses regress on the measured dose (RESEARCH-PROGRAM A5). The same
+   transform is the derived-G merger for E2 (apply to a native-L4 snapshot to derive coarser rungs
+   with generative content held constant).
+
+**Still open from Phase 0:** E0.4 (judge calibration set + ensemble judge), E0.5 (OSS transport +
+cheap-tier smoke), E0.6 (corpus growth + executable acceptance suites), E0.8 (Tier-2 builder loop).
 
 ---
 
