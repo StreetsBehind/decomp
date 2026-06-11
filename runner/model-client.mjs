@@ -38,7 +38,7 @@
 // or a lone object). Every field is guarded — a missing optional never throws.
 // ---------------------------------------------------------------------------
 
-import { execFile } from 'node:child_process';
+import { spawn } from 'node:child_process';
 import process from 'node:process';
 
 /**
@@ -164,12 +164,17 @@ export async function claudeInvoke(args = {}) {
   // Build argv. Tools disabled for a clean single-shot: --allowedTools "" yields an
   // empty allow-set so the model cannot call any tool. The appended system prompt
   // reinforces "output only the requested JSON".
+  //
+  // The PROMPT travels via STDIN, never argv (FINDINGS §6.1): the biggest prompts (swarm's
+  // integrator, the re-expanders — they embed the whole current decomposition) blow past the
+  // ~32 KB Windows argv ceiling, which silently skipped runs in the first live sweep. `-p`
+  // with no value puts the CLI in print mode reading the prompt from stdin.
   const sys = system && typeof system === 'string'
     ? system
     : 'Output ONLY the requested JSON. No prose, no markdown code fences, no commentary.';
 
   const argv = [
-    '-p', prompt,
+    '-p',
     '--output-format', 'json',
     '--model', String(model),
     '--max-turns', String(Number.isFinite(maxTurns) ? maxTurns : DEFAULT_MAX_TURNS),
@@ -178,7 +183,7 @@ export async function claudeInvoke(args = {}) {
   ];
 
   const start = process.hrtime.bigint();
-  const { stdout } = await execFileP('claude', argv, { signal, timeoutMs: DEFAULT_TIMEOUT_MS });
+  const { stdout } = await spawnWithStdin('claude', argv, prompt, { signal, timeoutMs: DEFAULT_TIMEOUT_MS });
   const end = process.hrtime.bigint();
   const measuredSec = Number(end - start) / 1e9;
 
@@ -188,34 +193,61 @@ export async function claudeInvoke(args = {}) {
   return { text, outputTokens, usd, wallClockSec };
 }
 
+// Output buffer ceiling: a full bead-graph JSON can be large.
+const MAX_OUTPUT_BYTES = 64 * 1024 * 1024;
+
 /**
- * Promise wrapper over execFile with a byte-bounded buffer + timeout.
+ * Spawn a process, write `stdinData` to its stdin (then end it), and collect stdout/stderr.
+ * Promise wrapper with a byte-bounded buffer + timeout + abort-signal support — the stdin
+ * write is the whole point (no prompt ever rides argv; FINDINGS §6.1).
  * Resolves { stdout, stderr } on exit code 0; rejects with a descriptive error otherwise.
  * @param {string} file
  * @param {string[]} argv
+ * @param {string} stdinData
  * @param {{ signal?: AbortSignal, timeoutMs?: number }} opts
  */
-function execFileP(file, argv, opts = {}) {
+function spawnWithStdin(file, argv, stdinData, opts = {}) {
   return new Promise((resolve, reject) => {
-    execFile(
-      file,
-      argv,
-      {
-        signal: opts.signal,
-        timeout: opts.timeoutMs ?? DEFAULT_TIMEOUT_MS,
-        maxBuffer: 64 * 1024 * 1024, // a full bead-graph JSON can be large
-        windowsHide: true,
-        encoding: 'utf8',
-      },
-      (err, stdout, stderr) => {
-        if (err) {
-          const msg = stderr ? `${err.message}\n${String(stderr).slice(0, 2000)}` : err.message;
-          reject(new Error(`claude CLI failed: ${msg}`));
-          return;
-        }
-        resolve({ stdout: String(stdout), stderr: String(stderr) });
-      },
-    );
+    const child = spawn(file, argv, {
+      signal: opts.signal,
+      windowsHide: true,
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+
+    let stdout = '';
+    let stderr = '';
+    let settled = false;
+    const settle = (fn, v) => { if (!settled) { settled = true; clearTimeout(timer); fn(v); } };
+
+    const timer = setTimeout(() => {
+      child.kill('SIGKILL');
+      settle(reject, new Error(`claude CLI timed out after ${opts.timeoutMs ?? DEFAULT_TIMEOUT_MS}ms`));
+    }, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
+
+    child.stdout.setEncoding('utf8');
+    child.stderr.setEncoding('utf8');
+    child.stdout.on('data', (d) => {
+      stdout += d;
+      if (stdout.length > MAX_OUTPUT_BYTES) {
+        child.kill('SIGKILL');
+        settle(reject, new Error('claude CLI stdout exceeded the buffer ceiling'));
+      }
+    });
+    child.stderr.on('data', (d) => { if (stderr.length < 64 * 1024) stderr += d; });
+
+    child.on('error', (err) => settle(reject, new Error(`claude CLI failed to spawn: ${err.message}`)));
+    child.on('close', (code) => {
+      if (code === 0) settle(resolve, { stdout, stderr });
+      else {
+        const msg = stderr ? `exit ${code}\n${stderr.slice(0, 2000)}` : `exit ${code}`;
+        settle(reject, new Error(`claude CLI failed: ${msg}`));
+      }
+    });
+
+    // EPIPE here (CLI exited before reading stdin) surfaces via 'close' with the real exit
+    // status — swallow the write error so it cannot mask the descriptive one.
+    child.stdin.on('error', () => {});
+    child.stdin.end(stdinData, 'utf8');
   });
 }
 
