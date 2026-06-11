@@ -2,6 +2,8 @@
 // model, no clock. Centralized so single-session / swarm / expand-audit describe the SAME
 // snapshot JSON contract to the model (no drift between methods).
 
+import { granularityClause } from './granularity.mjs';
+
 /** The system prompt: force JSON-only output. */
 export const JSON_ONLY_SYSTEM =
   'You are a senior tech lead decomposing a plan into atomic build packets. ' +
@@ -10,9 +12,11 @@ export const JSON_ONLY_SYSTEM =
 /**
  * The snapshot JSON contract, described for the model. Kept identical across methods.
  * @param {string[]} statedOutcomeIds  the STATED outcome ids the method may tag beads with
+ * @param {{granularity?: string|null}} [opts]  granularity level (L0–L4) — appends the level's
+ *   clause so every method describes the SAME dose the same way (RESEARCH-PROGRAM §4.2)
  * @returns {string}
  */
-export function snapshotContract(statedOutcomeIds) {
+export function snapshotContract(statedOutcomeIds, opts = {}) {
   const ids = statedOutcomeIds.map((s) => `"${s}"`).join(', ');
   return [
     'Return a JSON object with this exact shape:',
@@ -40,6 +44,7 @@ export function snapshotContract(statedOutcomeIds) {
     'edges[].from DEPENDS ON edges[].to (ordering / blocked-by).',
     'Decompose the FULL latent work — every requirement a real build of this plan needs,',
     'not only what the plan spells out.',
+    ...(opts.granularity ? ['', granularityClause(opts.granularity)] : []),
   ].join('\n');
 }
 

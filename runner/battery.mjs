@@ -28,6 +28,8 @@ import { scoreFidelity } from '../eval/fidelity.mjs';
 import { scoreCatchRate } from '../eval/catch-rate.mjs';
 import { scoreOutcomeCoverage } from '../eval/outcome-coverage.mjs';
 import { scoreGenerativeCoverage } from '../eval/generative-coverage.mjs';
+import { scoreGranularity } from '../eval/granularity.mjs';
+import { GRANULARITY_LEVEL_IDS } from '../strategies/granularity.mjs';
 import { claudeInvoke } from './model-client.mjs';
 import { makeBatteryMockInvoke, makeStubJudge } from './mock-table.mjs';
 import { makeClaudeJudge } from './judge.mjs';
@@ -84,6 +86,28 @@ function resolveModels(opts = {}) {
   }
   // Default single element: a bare run sweeps exactly one (the strategies' pinned default).
   return [null];
+}
+
+// --- the GRANULARITY SWEEP dimension ------------------------------------------
+// opts.granularities / `--granularity L1,L3` is an ARRAY of levels (L0–L4) to sweep; default a
+// SINGLE null element so a bare run is unchanged (no clause, no post-pass). For each level the
+// GENERATIVE strategies re-run with ctx.granularity = that level (variant gains a `#level`
+// suffix); pure-code controls ignore it. The level CLAUSE asks the model for the dose; the
+// strategy's deterministic POST-PASS enforces it; the runner records the MEASURED granularity
+// on every scorecard regardless (RESEARCH-PROGRAM §4.2 / assumption A5).
+function resolveGranularities(opts = {}) {
+  let levels = null;
+  if (Array.isArray(opts.granularities) && opts.granularities.length) levels = opts.granularities.map(String);
+  else {
+    const flag = readStringFlag('granularity');
+    if (flag) levels = flag.split(',').map((s) => s.trim()).filter(Boolean);
+  }
+  if (!levels || !levels.length) return [null];
+  const unknown = levels.filter((l) => !GRANULARITY_LEVEL_IDS.includes(l));
+  if (unknown.length) {
+    throw new Error(`--granularity: unknown level(s) ${unknown.join(', ')} (have: ${GRANULARITY_LEVEL_IDS.join(', ')})`);
+  }
+  return levels;
 }
 
 /** Read a numeric `--flag value` / `--flag=value` arg (returns null if absent/non-numeric). */
@@ -256,6 +280,7 @@ export async function runBattery(opts = {}) {
     throw new Error(`unknown BATTERY_MODE/--mode '${mode}' (expected 'mock' or 'live')`);
   }
   const models = resolveModels(opts);       // the sweep dimension (labels; [null] = one bare run)
+  const granularities = resolveGranularities(opts); // the dose dimension ([null] = no knob)
   const judgeModel = resolveJudgeModel(opts); // HELD FIXED across the whole sweep
   const fixtureFilter = resolveFixtureFilter(opts); // null = all; else a Set of fixture names
   const strategyFilter = resolveStrategyFilter(opts); // null = all; else a Set of strategy names
@@ -287,6 +312,7 @@ export async function runBattery(opts = {}) {
   }
   console.log(`Battery mode: ${mode.toUpperCase()}${mode === 'mock' ? ' (ZERO spend — deterministic mock invoke + stub judge)' : ' (real claude CLI — spends money)'}`);
   console.log(`Model sweep: ${models.map((m) => m ?? '(strategy default)').join(', ')}   |   judge model (fixed): ${judgeModel ?? '(judge default)'}`);
+  console.log(`Granularity sweep: ${granularities.map((g) => g ?? '(none)').join(', ')}`);
 
   // Load the scorecard schema once so we can round-trip-validate every emitted scorecard.
   const scorecardSchema = JSON.parse(fs.readFileSync(path.join(SCHEMAS_DIR, 'scorecard.schema.json'), 'utf8'));
@@ -304,14 +330,18 @@ export async function runBattery(opts = {}) {
 
   for (const strategy of STRATEGIES) {
     if (strategyFilter && !strategyFilter.has(strategy.name)) continue;
-    // PURE-CODE CONTROLS (deterministic) ignore the model knob and run exactly ONCE regardless of
-    // the sweep — never multiplied per model. Generative methods run once per swept model label.
+    // PURE-CODE CONTROLS (deterministic) ignore the model + granularity knobs and run exactly
+    // ONCE regardless of the sweep. Generative methods run once per (model label × level).
     const sweep = strategy.deterministic ? [null] : models;
+    const granSweep = strategy.deterministic ? [null] : granularities;
 
     for (const model of sweep) {
-      // variant = the swept identity. Generative: `${strategy}@${model}`; pure-code control: the
-      // strategy name (it ignores the model). A bare run (model=null) -> just the strategy name.
-      const variant = strategy.deterministic || model == null ? strategy.name : `${strategy.name}@${model}`;
+    for (const gran of granSweep) {
+      // variant = the swept identity: `${strategy}@${model}#${level}` for generative methods
+      // (each suffix only when swept); pure-code controls keep the bare strategy name.
+      const variant = strategy.deterministic
+        ? strategy.name
+        : `${strategy.name}${model == null ? '' : `@${model}`}${gran == null ? '' : `#${gran}`}`;
 
       for (const fixture of fixtures) {
         const K = repeatsFor(strategy, minRepeats);
@@ -320,6 +350,7 @@ export async function runBattery(opts = {}) {
         const beadPresences = [];
         const buildReadinesses = [];
         const genOveralls = [];
+        const granAtoms = []; // measured dose (G.atoms) per repeat
         let lastBuildComplete = null;
         let anyScored = false;
 
@@ -334,9 +365,9 @@ export async function runBattery(opts = {}) {
 
           let result;
           try {
-            // ctx carries the mode's invoke + the swept model; a strategy NEVER reaches for the
-            // CLI itself. ctx.model is read by generative strategies (controls ignore it).
-            result = await strategy.run(fixtureArg, { signal: undefined, invoke, model });
+            // ctx carries the mode's invoke + the swept knobs; a strategy NEVER reaches for the
+            // CLI itself. ctx.model / ctx.granularity are read by generative strategies.
+            result = await strategy.run(fixtureArg, { signal: undefined, invoke, model, granularity: gran });
           } catch (e) {
             // One strategy must never crash the matrix. Record + continue.
             const note = { variant, strategy: strategy.name, fixture: fixture.name, skipped: true, reason: e.message };
@@ -349,6 +380,9 @@ export async function runBattery(opts = {}) {
 
           const fidelity = scoreFidelity(result.snapshot, fixture.manifest);
           const catchRate = scoreCatchRate(result.gaps || [], fixture.plantedGaps);
+          // MEASURED granularity on every run (assumption A5: analyses regress on the measured
+          // dose, never on the requested level — the knob is leaky by nature).
+          const granularity = scoreGranularity(result.snapshot, fixture.manifest);
           // THIN-input axes computed FIRST: mechanical STATED-outcome coverage + bounded-judgment
           // LATENT requirement/edge coverage (the judge is the mode's injected judge — stub in mock).
           const outcomeCoverage = scoreOutcomeCoverage(result.snapshot, fixture.manifest);
@@ -383,6 +417,8 @@ export async function runBattery(opts = {}) {
             fixtureHash: fixture.fixtureHash,
             repeat: r,
             thin: fixture.thin,
+            granularityLevel: gran, // the REQUESTED dose (null = knob off)
+            granularity,            // the MEASURED dose (always recorded)
             axes: {
               fidelity,
               generativeCoverage: {
@@ -434,6 +470,7 @@ export async function runBattery(opts = {}) {
           beadPresences.push(scorecard.axes.buildCompleteness.beadPresence);
           buildReadinesses.push(scorecard.axes.buildCompleteness.buildReadiness);
           genOveralls.push(scorecard.axes.generativeCoverage.overall);
+          granAtoms.push(granularity.atomsPerRequirement);
           lastBuildComplete = buildCompleteness.buildComplete;
           anyScored = true;
 
@@ -455,6 +492,8 @@ export async function runBattery(opts = {}) {
           variant,
           strategy: strategy.name,
           model: model ?? null,
+          granularityLevel: gran ?? null,
+          granularity: { atomsPerRequirement: { mean: round(mean(granAtoms), 4), stddev: round(sampleStddev(granAtoms), 4) } },
           fixture: fixture.name,
           fixtureHash: fixture.fixtureHash,
           K: fidelities.length,
@@ -479,8 +518,10 @@ export async function runBattery(opts = {}) {
           edge: agg.edgeCoverage.mean,
           present: agg.beadPresence.mean,
           ready: agg.buildReadiness.mean,
+          atoms: agg.granularity.atomsPerRequirement.mean,
         });
       }
+    }
     }
   }
 
@@ -490,6 +531,7 @@ export async function runBattery(opts = {}) {
     mode,
     minRepeats,
     models: models.map((m) => m ?? null), // the swept model labels (null = strategy default)
+    granularities: granularities.map((g) => g ?? null), // the swept dose levels (null = no knob)
     judgeModel: judgeModel ?? null,       // held fixed across the sweep
     fixtures: fixtures.map((f) => ({ name: f.name, fixtureHash: f.fixtureHash })),
     // TOTAL grader (judge) cost for the whole battery — apparatus cost, reported separately
@@ -513,11 +555,11 @@ export async function runBattery(opts = {}) {
 
 // --- console summary --------------------------------------------------------
 function printSummary(rows, skipped, mode) {
-  const header = ['variant', 'fixture', 'K', 'buildComplete', 'genCov*', 'fidelity(mean±sd)', 'edge', 'present', 'ready'];
+  const header = ['variant', 'fixture', 'K', 'buildComplete', 'genCov*', 'fidelity(mean±sd)', 'edge', 'present', 'ready', 'G.atoms'];
   const lines = [header];
   for (const r of rows) {
     if (r.skipped) {
-      lines.push([r.variant, r.fixture, '0', 'SKIPPED', '-', '-', '-', '-', '-']);
+      lines.push([r.variant, r.fixture, '0', 'SKIPPED', '-', '-', '-', '-', '-', '-']);
       continue;
     }
     lines.push([
@@ -530,6 +572,7 @@ function printSummary(rows, skipped, mode) {
       String(r.edge),
       String(r.present),
       String(r.ready),
+      String(r.atoms),
     ]);
   }
   // column widths

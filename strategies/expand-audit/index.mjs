@@ -31,6 +31,7 @@
 
 import { buildIndex, nonEpicBeads, transitiveDeps } from '../../eval/graph/build-graph.mjs';
 import { parseSnapshot } from '../parse-snapshot.mjs';
+import { applyGranularity } from '../granularity.mjs';
 import {
   JSON_ONLY_SYSTEM,
   snapshotContract,
@@ -205,10 +206,13 @@ export function makeExpandAudit({ name = 'expand-audit', auditMode = 'structural
       }
       // MODEL KNOB: sweep value from ctx.model, else the pinned default.
       const model = ctx.model ?? MODEL;
+      // GRANULARITY KNOB: clause joins every expand contract; the post-pass enforces the
+      // dose on the FINAL snapshot (iterations evolve the graph naturally in between).
+      const granularity = ctx.granularity ?? null;
       const start = process.hrtime.bigint();
       const outcomeIds = statedOutcomeIds(fixture);
       const planText = renderThinPlan(fixture);
-      const contract = snapshotContract(outcomeIds);
+      const contract = snapshotContract(outcomeIds, { granularity });
 
       let outputTokens = 0;
       let usd = 0;
@@ -299,6 +303,9 @@ export function makeExpandAudit({ name = 'expand-audit', auditMode = 'structural
           gapsLabel = 'LATENT GAPS an auditor found — COVER THESE';
         }
       }
+
+      // Enforce the dose mechanically on the final graph (free, deterministic).
+      if (granularity) snapshot = applyGranularity(snapshot, granularity);
 
       const wallClockSec = Number(process.hrtime.bigint() - start) / 1e9;
       return {

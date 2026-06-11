@@ -13,6 +13,21 @@
     "fixtureHash": { "type": "string", "description": "sha256(plan.lock.json) — runs only compare within a hash" },
     "repeat": { "type": "integer", "minimum": 0 },
     "thin": { "type": "boolean", "description": "true iff the fixture lock is THIN (lock has no `features` map ⇒ lock ⊊ manifest). On a thin fixture the GENERATIVE leap is the test, so the leaderboard's fidelity composite leans on generativeCoverage instead of build-completeness (whose planKey matching cannot see invented beads)." },
+    "granularityLevel": { "type": ["string", "null"], "enum": ["L0", "L1", "L2", "L3", "L4", null], "description": "the REQUESTED granularity dose (the swept knob; null = knob off). Analyses regress on the MEASURED dose below, never on this alone (RESEARCH-PROGRAM A5: knobs are leaky)." },
+    "granularity": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "the MEASURED granularity of the produced snapshot (eval/granularity.mjs) — recorded on every run regardless of whether the knob was set.",
+      "required": ["beadCount", "atomsPerRequirement", "acMedian", "acMean", "edgeDensity", "depth"],
+      "properties": {
+        "beadCount": { "type": "integer", "minimum": 0, "description": "non-epic beads" },
+        "atomsPerRequirement": { "type": "number", "minimum": 0, "description": "beadCount / |manifest.requirements| — the primary dose (G.atoms)" },
+        "acMedian": { "type": "number", "minimum": 0 },
+        "acMean": { "type": "number", "minimum": 0 },
+        "edgeDensity": { "type": "number", "minimum": 0, "description": "|edges| / beadCount" },
+        "depth": { "type": "integer", "minimum": 0, "description": "max parent-chain depth" }
+      }
+    },
     "axes": {
       "type": "object",
       "additionalProperties": false,

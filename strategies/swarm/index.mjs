@@ -12,6 +12,7 @@
 // only each expand/integrate step is a model invoke.
 
 import { parseSnapshot } from '../parse-snapshot.mjs';
+import { applyGranularity } from '../granularity.mjs';
 import {
   JSON_ONLY_SYSTEM,
   snapshotContract,
@@ -71,6 +72,9 @@ export default {
     // MODEL KNOB: sweep value from ctx.model, else the pinned default. Passed to every
     // ctx.invoke and recorded on the cost record. The judge's model is held fixed elsewhere.
     const model = ctx.model ?? MODEL;
+    // GRANULARITY KNOB: clause joins every fan-out + integrator contract; the post-pass
+    // enforces the dose on the FINAL snapshot (per-worker outputs stay natural).
+    const granularity = ctx.granularity ?? null;
     const outcomeIds = statedOutcomeIds(fixture);
     const planText = renderThinPlan(fixture);
 
@@ -95,7 +99,7 @@ export default {
         '',
         planText,
         '',
-        snapshotContract(outcomeIds),
+        snapshotContract(outcomeIds, { granularity }),
       ].join('\n');
 
       const res = await ctx.invoke({
@@ -127,7 +131,7 @@ export default {
       '',
       planText,
       '',
-      snapshotContract(outcomeIds),
+      snapshotContract(outcomeIds, { granularity }),
     ].join('\n');
 
     const integ = await ctx.invoke({
@@ -144,9 +148,11 @@ export default {
     // The integrator's snapshot is authoritative when it returns beads; otherwise fall back
     // to the deterministic merge so a sloppy integrator can never lose the fan-out's coverage.
     const integrated = parseSnapshot(integ.text);
-    const snapshot = integrated.beads.length
+    const raw = integrated.beads.length
       ? integrated
       : { beads: merged.beads, edges: merged.edges, ready: merged.beads.filter((b) => b.type !== 'epic').map((b) => b.id) };
+    // Enforce the dose mechanically on the final graph (free, deterministic).
+    const snapshot = granularity ? applyGranularity(raw, granularity) : raw;
 
     const wallClockSec = Number(process.hrtime.bigint() - start) / 1e9;
     return {

@@ -8,6 +8,7 @@
 // wallClockSec measured around the run with process.hrtime.
 
 import { parseSnapshot } from '../parse-snapshot.mjs';
+import { applyGranularity } from '../granularity.mjs';
 import {
   JSON_ONLY_SYSTEM,
   snapshotContract,
@@ -33,6 +34,9 @@ export default {
     // MODEL KNOB: sweep value from ctx.model, else the pinned default. Passed to ctx.invoke
     // and recorded on the cost record. The judge's model is held fixed elsewhere (never ctx.model).
     const model = ctx.model ?? MODEL;
+    // GRANULARITY KNOB (RESEARCH-PROGRAM §4.2): when the runner threads ctx.granularity,
+    // the level's clause joins the contract AND the deterministic post-pass enforces it.
+    const granularity = ctx.granularity ?? null;
     const outcomeIds = statedOutcomeIds(fixture);
 
     const prompt = [
@@ -40,7 +44,7 @@ export default {
       '',
       renderThinPlan(fixture),
       '',
-      snapshotContract(outcomeIds),
+      snapshotContract(outcomeIds, { granularity }),
     ].join('\n');
 
     const res = await ctx.invoke({
@@ -53,7 +57,10 @@ export default {
       signal: ctx.signal,
     });
 
-    const snapshot = parseSnapshot(res.text);
+    const parsed = parseSnapshot(res.text);
+    // Enforce the dose mechanically (free, deterministic) so the knob bites even when the
+    // model ignores the clause; the MEASURED granularity is recorded by the runner either way.
+    const snapshot = granularity ? applyGranularity(parsed, granularity) : parsed;
 
     const wallClockSec = Number(process.hrtime.bigint() - start) / 1e9;
     return {

@@ -7,8 +7,9 @@ import fidelity from './fidelity.selftest.mjs';
 import leaderboard from './leaderboard.selftest.mjs';
 import outcomeCoverage from './outcome-coverage.selftest.mjs';
 import generativeCoverage from './generative-coverage.selftest.mjs';
+import granularity from './granularity.selftest.mjs';
 
-const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage];
+const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity];
 
 let failed = 0;
 for (const suite of SUITES) {
