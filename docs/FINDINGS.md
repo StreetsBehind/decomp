@@ -43,6 +43,69 @@ cheap-tier smoke), E0.6 (corpus growth + executable acceptance suites), E0.8 (Ti
 
 ---
 
+## 0b. Handoff (2026-06-11) — resume here on the next machine
+
+Everything is on branch `claude/optimal-decomposition-strategy-01jwus` (7 commits: the v2 program
+docs `8158a59`/`0e6054e`, then E0.1 `70765fc`, E0.2 `53b373d`, E0.3 `da211c2`, E0.7 `ae45156`,
+this doc `a1ee172`+). Working tree clean; `runs/` is gitignored scratch. To verify the apparatus on
+a fresh clone: `npm run selftest` (186 assertions) then `npm run battery:mock` (zero spend), and the
+granularity knob end-to-end via
+`node runner/battery.mjs --mode mock --strategy single-session --granularity L0,L2,L4`.
+
+### Standing decisions from the working session (not recorded anywhere else)
+
+1. **Budget is NOT a design input — only outcomes matter.** Already baked into
+   `RESEARCH-PROGRAM.md` (§5/§8: builds everywhere, ensemble judge, K=10, full factorials;
+   validity-gating only). Don't re-introduce cost compromises when implementing.
+2. **THE MODEL SUPPLY (new, this session): the "Pinocchio / JNOCCIO" gateway.** On the human's
+   machine, under a path like `workspace/echo`, lives a gateway that intelligently routes calls to
+   very cheap or FREE models across many provider APIs. **Directive: those free models are the
+   builder + method models for our experiments** (the A1 cheap-tier precondition). Its invocation
+   interface is NOT yet known (never inspected — this session's machine didn't have it). First task
+   on a machine that has it:
+   - Inspect `workspace/echo` (search terms: `echo`, `pinocchio`, `jnocchio`, `gateway`) and
+     determine how it's called — HTTP server (OpenAI-compatible?), local library, or CLI.
+   - Wire it as an **injected invoke** in `runner/model-client.mjs` alongside `claudeInvoke` —
+     same contract: `({prompt, system, model, maxTurns, signal}) → {text, outputTokens, usd,
+     wallClockSec}`. The DI architecture means nothing else changes: `--models` sweeps gateway
+     model ids; strategies/scorers never know the transport.
+   - Mind the contract edges: usd may be 0/unknown for free models (usd:null is supported; tokens
+     + wallClock still meter the Cost/Efficiency axes — record them); A8 still applies (retries
+     budgeted and billed, exhausted retries score zero — free models will be the flakiest);
+     "intelligent routing" must not break reproducibility — pin/record WHICH underlying model
+     served each call (extend the cost record's `model` field with the resolved id if the gateway
+     exposes it; if it doesn't, that's a methodology problem to flag before any scored sweep).
+   - The JUDGE does **not** move to the gateway: grading stays on a strong, fixed, pinned model
+     (CHARTER §5.3; the judge is apparatus). Free models are for METHODS and BUILDERS.
+3. **Mock-judge title-bias observation** (verification finding, preview of A6): merging renames
+   bead titles, which tanked the title-keyed STUB judge's coverage on coarse levels. Mock-only
+   artifact, but it is exactly the judge–granularity bias the E0.4 calibration set must quantify
+   on the LIVE judge before any dose-response sweep is trusted.
+
+### Next work, in order (from the v2 program's Phase 0)
+
+1. **E0.4 — judge calibration set + ensemble judge.** ~100 labeled (snapshot, latent-item,
+   true-label) triples across 3 granularity bins (selftest-style, pure authoring); ensemble
+   wrapper (odd panel ≥3, majority vote, disagreement recorded) in `runner/judge.mjs`. Buildable
+   offline; running calibration needs live spend.
+2. **E0.8 — Tier-2 builder loop** (`runner/builder.mjs` + `schemas/build-record.schema.json` +
+   scorecard `realizedCoverage`/`totalPolicyCost`): D0/D1/D2 deferral policies per
+   RESEARCH-PROGRAM §2.3/§4.5; testable end-to-end against the mock invoke.
+3. **E0.6 — corpus growth**: ≥12 thin fixtures ({3 sizes}×{4 domains}) with EXECUTABLE acceptance
+   suites (the Tier-2 ground truth), thin clean controls, planted-gaps variants; 4 held-out
+   fixtures authored only after Phase-2 tuning.
+4. **E0.5 — cheap-tier transport** = the gateway integration above, plus a smoke proving ≥4 gateway
+   models produce valid snapshots on 2 fixtures.
+
+### Blocked on the human
+
+- Gateway access/path + any auth it needs (and confirmation of which free models to sweep).
+- An authenticated `claude` CLI wherever live runs happen (judge + L1 re-run + pilot builds).
+- Where the big grids run (a persistent machine; sessions like this one are for building the
+  apparatus, not hosting the campaign).
+
+---
+
 ## 0. TL;DR — current state
 
 - The apparatus is **built end-to-end and self-tested** (142 selftest assertions: `npm run selftest`).
