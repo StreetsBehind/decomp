@@ -63,6 +63,12 @@ structural-audit). One scoped live sweep has run.
 results, the two open problems to fix next (an argv-limit transport bug and a confounded audit A/B), and
 how to run everything. See also `docs/CHARTER.md` §7 (Definition of done) and §9 (open questions).
 
+➡️ **[`docs/RESEARCH-PROGRAM.md`](docs/RESEARCH-PROGRAM.md)** is the pre-registered v2 design: it
+sharpens the question to *optimal granularity + risk-thresholded deferral under a cheap-model
+precondition*, moves the keystone from the static artifact to the decompose-then-build **policy**
+(Tier-2 micro-builds become the primary endpoint), and lays out the assumptions, hypotheses
+(H1–H5), harness extensions, and the E0–E6 experiment battery.
+
 ## Design rules (non-negotiable — see CHARTER §6)
 
 1. **Determinism-first.** Parse/wire/score and the Tier-0 oracle are pure functions over data. Agents
