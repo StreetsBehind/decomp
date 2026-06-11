@@ -67,7 +67,7 @@ measure it.
 | A4 | **Build-time discovery is a legitimate part of the policy** and its cost is measurable and chargeable. A gap is a defect only if the policy as a whole fails to cover it or covers it at excess cost. | Deferral could mask unrecoverable failures (silent scope loss). | The build record (§4.6) logs every discovered/repaired item with provenance to the manifest; unrecovered latent items still score as misses. |
 | A5 | **Granularity can be measured method-independently** from the snapshot (G, §2.1), so "how decomposed" is an observed dose, not a prompt wish. | Knobs are leaky — models don't obey "make 12 beads"; arms would collapse together. | `eval/granularity.mjs` computes G on every snapshot; analysis regresses on *measured* G; a deterministic post-pass (§4.2) enforces level bounds. |
 | A6 | **The judge's error is independent of granularity.** A strong-model judge grading "is requirement r covered?" is equally accurate over 12 big beads and 120 tiny ones. | The entire dose-response curve could be a grader artifact (verbosity / needle-in-haystack bias). | E0.4 calibrates the judge on synthetic snapshots with known ground truth at 3 granularity bins; report accuracy per bin. Tier-2 endpoints (executable tests) bypass the judge entirely — the decisive curve does not depend on A6. |
-| A7 | **Fixtures can be made small enough to fully build for ≤~$3/run** with a cheap builder, while still containing real latent structure (10–20 latent requirements, 15–25 required edges). | Tier-2 becomes unaffordable and the program degrades to static-only. | Corpus growth (§4.7) authors fixtures with an executable acceptance suite and a budget cap; a pilot build (E0.8) gates Phase 2. |
+| A7 | **Fixtures can be kept small enough that a full micro-build terminates and the oracle bundle stays hand-auditable**, while still containing real latent structure (10–20 latent requirements, 15–25 required edges). | Builds don't terminate cleanly or oracles can't be trusted; Tier-2 verdicts become noise. | Corpus growth (§4.7) authors fixtures with an executable acceptance suite sized for auditability; a pilot build (E0.8) validates the loop before the mass grids. |
 | A8 | **Cheap-model formatting fragility is part of the phenomenon, not noise.** JSON failures, truncations, and retries are properties of the method under the production condition. | Silently re-rolling failures would overstate cheap-tier reliability. | Retries are budgeted and billed to the method; exhausted retries score zero and feed the Reliability axis (fail-closed, as the judge already does). |
 | A9 | **Total policy cost is the right denominator**: $(decompose) + $(build) + $(repair), with judge/grader cost reported separately and never charged to the policy. | Mixing grader cost into the policy would penalize nothing in production. | Cost record extension (§4.6); FINDINGS §7 judge-cost accounting fix is a Phase-0 gate. |
 
@@ -178,12 +178,13 @@ alongside `claudeInvoke`, same `{text, outputTokens, usd, durationMs}` contract.
 cheap-tier allowlist (A1). Retry budget + fail-closed scoring per A8.
 
 ### 4.4 Judge upgrades — `runner/judge.mjs`
-- **Calibration set**: ~60 synthetic (snapshot, latent-item, true-label) triples spanning 3
+- **Calibration set**: ~100 synthetic (snapshot, latent-item, true-label) triples spanning 3
   granularity bins, authored once, selftest-style. Report judge accuracy overall and per bin (gates
   A6). Re-run whenever the judge prompt or model changes.
-- **Batched judge**: one call grading all latent items of a snapshot at once (vs ~600 per-item calls
-  that dominated L1 spend). Adopted **only if** agreement with the per-item judge on the calibration
-  set ≥ 95%; otherwise per-item stays and we pay.
+- **Ensemble judge**: each latent item is graded by an odd panel (≥3 independent per-item calls,
+  strongest available judge model, majority vote; disagreement rate recorded per item). Spend on the
+  grader is not a constraint — measurement quality is. The per-item, bounded, fail-closed semantics
+  are unchanged; the ensemble narrows the only stochastic component of the scoring pipeline.
 
 ### 4.5 Tier-2 micro-build harness — `runner/builder.mjs` (the big one)
 A bounded build loop, itself part of the *apparatus* (pinned prompt/tooling, held constant unless D
@@ -204,59 +205,73 @@ is the manipulated variable):
   existing rows stay valid.
 
 ### 4.7 Corpus growth — `fixtures/`
-Target **≥6 thin fixtures**: {2 sizes: ~10 vs ~20 latent requirements} × {3 domains: CRUD/service,
-CLI tool, data pipeline} — `sso-greenfield` and `ingest-pipeline` seed two cells. Each new oracle
-bundle adds an **executable acceptance suite** (the Tier-2 ground truth; plain node test scripts, no
-deps, budget-capped per A7), plus: one thin **clean control** (zero planted gaps → false-positive
-rate), and planted-gaps variants (finally exercising catch-rate end-to-end). Two further fixtures are
-authored **after** Phase-2 tuning and held out for the confirmation run (E6) — authored blind to the
-tuned policy, used once.
+Target **≥12 thin fixtures**: {3 sizes: ~10 / ~15 / ~20 latent requirements} × {4 domains:
+CRUD/service, CLI tool, data pipeline, event-driven/realtime} — `sso-greenfield` and
+`ingest-pipeline` seed two cells. Each new oracle bundle adds an **executable acceptance suite**
+(the Tier-2 ground truth; plain node test scripts, no deps, sized for hand-auditability per A7),
+plus: thin **clean controls** (zero planted gaps → false-positive rate), and planted-gaps variants
+(finally exercising catch-rate end-to-end). **Four further fixtures** are authored **after**
+Phase-2 tuning and held out for the confirmation run (E6) — authored blind to the tuned policy,
+used once.
 
 ---
 
 ## 5. The experiment battery
 
-Phased; each phase gates the next (go/no-go), so spend follows signal.
+**Spend is not a constraint; only outcomes are.** Phasing below is **instrument-validation
+ordering**, not spend-gating: a phase is entered when the instruments it depends on are proven
+(calibrated judge, selftested knob, validated build loop), never deferred to save money. The
+operating default from Phase 1 onward: **every decomposition that is scored is also built** —
+Tier-2 realized coverage is the primary endpoint everywhere, and static scores ride along as
+diagnostics and calibration targets. (Note A9 still stands: the *policy's* cost remains a measured
+endpoint, because the production condition is cheap models — unconstrained experiment spend does not
+change what we are measuring, only how precisely we measure it.)
 
-### Phase 0 — instrument repairs & calibration (≈ free–$30)
-| ID | What | Gate it satisfies |
+### Phase 0 — instrument repairs & calibration
+| ID | What | Validity gate it satisfies |
 | --- | --- | --- |
 | E0.1 | stdin transport fix; rerun the two L1 holes | unblocks sonnet swarm/noaudit rows |
 | E0.2 | De-confound the audit A/B: equal iteration budgets **and** a generative-gap audit variant (FINDINGS §6.2, second option) | makes "amount of iterations" a controlled knob |
-| E0.3 | Judge $ in aggregates; namespace `runs/` | A9 |
-| E0.4 | Judge calibration set + per-granularity-bin accuracy; batched-judge agreement test | A6; 10–20× grader-cost cut if batched judge passes |
-| E0.5 | OSS transport + cheap-tier smoke (2 OSS models + haiku produce valid snapshots on 1 fixture) | A1, A8 |
-| E0.6 | Corpus to ≥6 thin fixtures w/ executable suites + clean control + planted gaps | A7, statistics |
+| E0.3 | Judge + builder $ in aggregates; namespace `runs/` | A9 |
+| E0.4 | Judge calibration set (~100 labeled triples) + per-granularity-bin accuracy; ensemble-judge disagreement baseline | A6 — no grid runs until per-bin accuracy is known |
+| E0.5 | OSS transport + cheap-tier smoke (≥4 OSS models + haiku produce valid snapshots on 2 fixtures) | A1, A8 |
+| E0.6 | Corpus to **≥12 thin fixtures** ({3 sizes} × {4 domains}) w/ executable suites + clean controls + planted gaps; **4 held-out fixtures** authored after tuning | A7, statistics |
 | E0.7 | Granularity knob + post-pass + derived-G merger + `eval/granularity.mjs`, all selftested | A5 |
-| E0.8 | Builder-loop pilot: 1 fixture × L2 × D1 × K=2 full micro-builds; confirm ≤$3/build | A7, gates Phase 2 |
+| E0.8 | Builder-loop pilot: 2 fixtures × {L1, L3} × {D0, D2} × K=3 full micro-builds; verify termination, repair-event attribution, and build-record integrity by hand | A4, A7 — gates the mass grids |
 
-### Phase 1 — static dose-response (judge-scored; ≈ $80–150 with batched judge)
-- **E1 — native-G sweep.** Method: `single-session` and the de-confounded `expand-audit` (iteration
-  budget N∈{1,3} explicit). Dose: L0–L4. Models: haiku + 1–2 OSS. Fixtures: 6 thin. K=5.
-  Endpoints: genCov (presence & sufficiency), edge coverage, readiness, $, measured G. → H1, H5.
-- **E2 — derived-G control.** Generate L4 once per (model × fixture × K=5); derive L3→L0
-  deterministically; score every rung. Generative content constant ⇒ any score movement is pure
-  slicing. The E1-vs-E2 delta isolates *"does asking for fine granularity change what gets
-  generated, not just how it's cut?"*
+### Phase 1 — dose-response, built end-to-end
+- **E1 — native-G sweep (H1, H5, and the backbone of H2).** Methods: `single-session`, de-confounded
+  `expand-audit` (iteration budget N∈{1,3,5} explicit), and `swarm` — granularity may interact with
+  fan-out, so keep all three families. Dose: L0–L4. Models: haiku + ≥4 OSS spanning ~8B–70B.
+  Fixtures: all 12 thin. **K=10.** Every run is judge-scored *and* micro-built (fixed builder,
+  D1). Endpoints: realized coverage, genCov (presence & sufficiency), edge coverage, readiness,
+  total policy $, measured G.
+- **E2 — derived-G control.** Generate L4 once per (method × model × fixture × K=10); derive
+  L3→L0 deterministically; score **and build** every rung. Generative content constant ⇒ any
+  endpoint movement is pure slicing. The E1-vs-E2 delta isolates *"does asking for fine granularity
+  change what gets generated, not just how it's cut?"*
 
-### Phase 2 — build-mediated outcomes (the decisive, expensive phase; ≈ $200–450)
-- **E3 — granularity × builder (H2).** Decompositions from E1/E2 at 4 G levels → Tier-2 micro-build,
-  fixed builder (haiku-class), fixed D1. 3 fixtures × 4 levels × K=3 = 36 builds. Endpoints:
-  realized coverage, total policy $, wall-clock. Also yields the (static score → build outcome)
-  calibration: train a Tier-1.5 per-bead "would the builder one-shot this?" predictor; report
-  Brier/AUC so future grids can run cheap.
-- **E4 — deferral A/B (H3, ρ).** At coarse (L1) and optimal-so-far G: D0 vs D1 vs D2; plus the
-  **τ-sweep** (risk-targeted partial decomposition, τ∈{0.25, 0.5, 0.75}) under D2. 2 fixtures ×
-  ~8 arms × K=3. Endpoint: realized coverage vs total $; **measure ρ per recovered latent item**
-  and report its distribution. This is the experiment the user's hunch lives or dies on.
-- **E5 — builder-relativity slice (H4).** Repeat E3's 2 middle G levels with a weaker builder
-  (~8B OSS) on 2 fixtures. If the optimum shifts finer, the deliverable becomes the policy surface.
+### Phase 2 — the policy factorials (the decisive phase)
+- **E3 — granularity × builder factorial (H2, H4).** Decompositions from E1/E2 at all 5 G levels →
+  Tier-2 micro-build under **4 builder tiers** (~8B OSS, ~30B OSS, ~70B OSS, haiku-class), fixed D1.
+  All 12 fixtures × 5 levels × 4 builders × K=10. This merges the old E3/E5 slices into one full
+  factorial: the dose-response curve *per builder tier* is the H2/H4 deliverable in a single design.
+  Also yields the (static score → build outcome) calibration: a Tier-1.5 per-bead "would this
+  builder one-shot this bead?" predictor with reported Brier/AUC — kept as a *diagnostic*, since
+  with unconstrained spend the real builds remain the endpoint everywhere.
+- **E4 — deferral × risk-threshold factorial (H3, ρ).** Full crossing: G∈{L1, L2, G\*-so-far} ×
+  D∈{D0, D1, D2} × τ∈{0, 0.25, 0.5, 0.75, 1} (τ only meaningful under D2; D0/D1 arms carry τ=0) on
+  all 12 fixtures, K=10, at ≥2 builder tiers. Endpoint: realized coverage vs total policy $;
+  **measure ρ per recovered latent item** and report its full distribution per builder tier. This
+  is the experiment the deferral hunch lives or dies on, and the factorial is what lets us see the
+  G × D interaction (deferral may only win at coarse G).
 
-### Phase 3 — synthesis & confirmation (≈ $100–200)
+### Phase 3 — synthesis & confirmation
 - **E6 — confirmation run.** The tuned policy (method × G\* × τ\* × D\*) vs the two strongest
-  incumbents (uniform-fine+D0; `single-session@cheap` at L2+D1) on the **2 held-out fixtures**,
-  K=5, full Tier-2. Pre-registered: the tuned policy must sit on the realized-coverage ×
-  total-cost Pareto frontier on **both** held-out fixtures for the headline claim to stand.
+  incumbents (uniform-fine + D0; `single-session@cheap` at L2 + D1) on the **4 held-out fixtures**,
+  K=10, full Tier-2, ≥2 builder tiers. Pre-registered: the tuned policy must sit on the
+  realized-coverage × total-policy-cost Pareto frontier on **all four** held-out fixtures for the
+  headline claim to stand; 3-of-4 downgrades the claim to "promising, corpus-sensitive."
 
 ---
 
@@ -266,13 +281,15 @@ Phased; each phase gates the next (go/no-go), so spend follows signal.
   judge-scored is secondary/predictive.
 - **Paired designs**: every comparison is within-fixture; report per-fixture deltas plus the pooled
   bootstrap 95% CI over (fixtures × K). A claim stands only if the CI excludes zero **and** the sign
-  agrees on ≥5 of 6 fixtures (sign-consistency guard against one-fixture wins).
-- **Dose-response**: fit realized-coverage-per-dollar vs measured G.atoms per fixture; H2 is
-  confirmed if the fitted peak is interior (not at the swept boundary) with CI support on both sides.
-- **Power note**: with σ(genCov)≈0.10 (L1-era), paired K=5 across 6 fixtures gives SE≈0.02 on a mean
-  delta — adequate for the ≥0.05 effects we care about. Tier-2 K=3 is acknowledged as
-  low-powered per-cell; that is why decisions rest on dose-response shape + pairing, not per-cell
-  t-tests.
+  agrees on ≥9 of 12 fixtures (sign-consistency guard against subset-driven wins).
+- **Dose-response**: fit realized-coverage-per-dollar vs measured G.atoms per (fixture × builder
+  tier) with a mixed-effects model (fixture as random intercept + slope); H2 is confirmed if the
+  fitted peak is interior (not at the swept boundary) with CI support on both sides; H4 is confirmed
+  if the peak location decreases monotonically in builder capability across tiers.
+- **Power note**: with σ(genCov)≈0.10 (L1-era), paired K=10 across 12 fixtures gives SE≈0.009 on a
+  mean delta — resolving effects of ~0.02, well below the ≥0.05 effects we care about. Tier-2 cells
+  at K=10 are individually adequately powered, so per-cell contrasts are reportable in addition to
+  the dose-response fits.
 - **Ledger discipline** continues: every live scored run is one append-only row; new series headers
   per phase; fixture-hash pinning unchanged.
 
@@ -289,12 +306,24 @@ Phased; each phase gates the next (go/no-go), so spend follows signal.
 7. **Deferral masking scope loss** → unrecovered latent items always score as misses; D2 discovery
    budget is capped and billed (A4).
 
-## 8. Budget & sequencing
+## 8. Scale & sequencing
 
-Worst-case ≈ **$400–850 total** (Phase 0: ≤$30 · Phase 1: $80–150 · Phase 2: $200–450 · Phase 3:
-$100–200), assuming the batched judge passes calibration (else Phase 1 grows ~3–5×, and we would
-descope E1 to 4 fixtures × 4 levels). Every phase has a go/no-go gate; the maximum-information-
-per-dollar items come first (E0.8 pilot build answers "is Tier-2 affordable?" for under $10).
+**Budget is explicitly not a design input — only outcomes are.** Run sizes above are set by
+statistical power and decisiveness, not spend (for scheduling: the program is on the order of
+10⁴ micro-builds and 10⁵–10⁶ judge calls; wall-clock, rate limits, and compute scheduling are the
+real resources to manage, and the runner's concurrency pool + fresh-workspace isolation are what
+make the grids parallelizable). Sequencing is **validity ordering only**: no grid runs on an
+uncalibrated judge (E0.4), an unproven knob (E0.7), or an unvalidated build loop (E0.8) — because a
+wrong number at any scale is worse than a late one. If any instrument fails its gate, fix the
+instrument; never shrink the question to fit it.
+
+Two disciplines matter *more* without a budget constraint, not less:
+1. **Pre-registration bites harder.** With this much data, post-hoc subgroup stories become easy to
+   find; only the §3 hypotheses and §6 decision rules count as confirmatory, everything else is
+   labeled exploratory in the ledger.
+2. **The policy-cost endpoint survives.** Unconstrained *experiment* spend does not change the
+   production condition (A1/A9): the thing being optimized is still realized coverage per policy
+   dollar on cheap models, because that is what the consuming systems will pay.
 
 ## 9. Definition of done
 
