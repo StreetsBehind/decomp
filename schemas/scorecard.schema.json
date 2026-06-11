@@ -55,6 +55,18 @@
         }
       }
     },
-    "cost": { "$ref": "https://decomp/schemas/cost-record.schema.json" }
+    "cost": { "$ref": "https://decomp/schemas/cost-record.schema.json" },
+    "graderCost": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "What GRADING this run cost (the generative-coverage judge's calls), deltaed per run. APPARATUS cost — kept strictly separate from `cost` (the method's own spend) so grader spend can never inflate or hide inside a method's cost-effectiveness axis. Absent for runs scored without a metered judge.",
+      "required": ["calls", "outputTokens", "usd", "wallClockSec"],
+      "properties": {
+        "calls": { "type": "integer", "minimum": 0, "description": "judge invocations (including failed attempts)" },
+        "outputTokens": { "type": "number", "minimum": 0 },
+        "usd": { "type": "number", "minimum": 0 },
+        "wallClockSec": { "type": "number", "minimum": 0 }
+      }
+    }
   }
 }

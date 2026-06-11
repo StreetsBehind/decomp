@@ -205,7 +205,9 @@ export function makeStubJudge() {
     covered: present, // derived alias === sufficiency
     evidence,
   });
-  return async function stubJudge({ kind, target, snapshotDigest }) {
+  const cost = { calls: 0, outputTokens: 0, usd: 0, wallClockSec: 0 };
+  async function stubJudge({ kind, target, snapshotDigest }) {
+    cost.calls++; // zero-spend, but CALL COUNTS are real — exercises the graderCost plumbing
     const titles = new Set((snapshotDigest.beads || []).map((b) => b.title));
     if (kind === 'requirement') {
       const present = titles.has(target.planKey);
@@ -213,7 +215,9 @@ export function makeStubJudge() {
     }
     const present = titles.has(target.fromPlanKey) && titles.has(target.toPlanKey);
     return verdict(present, present ? 'both edge endpoints present' : 'an edge endpoint absent');
-  };
+  }
+  stubJudge.cost = cost; // same accumulator interface as the live judge
+  return stubJudge;
 }
 
 export default { makeBatteryMockInvoke, makeStubJudge };

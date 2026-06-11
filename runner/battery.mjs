@@ -181,12 +181,17 @@ function assertSnapshotShape(strategyName, snapshot) {
 }
 
 // --- workspace --------------------------------------------------------------
-// Keyed by VARIANT (filesystem-safe) so swarm@mock-a and swarm@mock-b never collide.
+// NAMESPACED BY MODE (FINDINGS §7): runs/mock/** and runs/live/** never mix, so the
+// leaderboard can read a clean series. Keyed by VARIANT (filesystem-safe) below that,
+// so swarm@mock-a and swarm@mock-b never collide.
+function modeRunsDir(mode) {
+  return path.join(RUNS_DIR, mode);
+}
 function variantDir(variant) {
   return String(variant).replace(/[^a-zA-Z0-9._@-]/g, '_');
 }
-function freshWorkspace(variant, fixture, r) {
-  const ws = path.join(RUNS_DIR, variantDir(variant), fixture, `r${r}`, 'ws');
+function freshWorkspace(mode, variant, fixture, r) {
+  const ws = path.join(modeRunsDir(mode), variantDir(variant), fixture, `r${r}`, 'ws');
   fs.rmSync(ws, { recursive: true, force: true });
   fs.mkdirSync(ws, { recursive: true });
   return ws;
@@ -288,7 +293,7 @@ export async function runBattery(opts = {}) {
   const costSchema = JSON.parse(fs.readFileSync(path.join(SCHEMAS_DIR, 'cost-record.schema.json'), 'utf8'));
   const schemaRefs = { [costSchema.$id]: costSchema };
 
-  fs.mkdirSync(RUNS_DIR, { recursive: true });
+  fs.mkdirSync(modeRunsDir(mode), { recursive: true });
 
   let validatedOnce = false; // round-trip-validate the first emitted scorecard, loudly
   const skipped = [];
@@ -319,7 +324,7 @@ export async function runBattery(opts = {}) {
         let anyScored = false;
 
         for (let r = 0; r < K; r++) {
-          const ws = freshWorkspace(variant, fixture.name, r);
+          const ws = freshWorkspace(mode, variant, fixture.name, r);
           const fixtureArg = {
             name: fixture.name,
             lock: fixture.lock,
@@ -347,7 +352,18 @@ export async function runBattery(opts = {}) {
           // THIN-input axes computed FIRST: mechanical STATED-outcome coverage + bounded-judgment
           // LATENT requirement/edge coverage (the judge is the mode's injected judge — stub in mock).
           const outcomeCoverage = scoreOutcomeCoverage(result.snapshot, fixture.manifest);
+          // GRADER COST (FINDINGS §7): delta the judge's accumulator around the judged pass so
+          // each scorecard carries what GRADING it cost — separate from the method's cost record.
+          const graderBefore = judge.cost ? { ...judge.cost } : null;
           const generativeCoverage = await scoreGenerativeCoverage(result.snapshot, fixture.manifest, judge);
+          const graderCost = graderBefore
+            ? {
+                calls: judge.cost.calls - graderBefore.calls,
+                outputTokens: judge.cost.outputTokens - graderBefore.outputTokens,
+                usd: round(judge.cost.usd - graderBefore.usd, 6),
+                wallClockSec: round(judge.cost.wallClockSec - graderBefore.wallClockSec, 4),
+              }
+            : null;
 
           // KEYSTONE FOLD: on a THIN fixture (lock ⊊ manifest — no `features`), a generative method
           // invents its own planKeys so the mechanical planKey match scores ~0. So we fold the
@@ -395,6 +411,7 @@ export async function runBattery(opts = {}) {
               },
             },
             cost: result.cost,
+            ...(graderCost ? { graderCost } : {}),
           };
 
           // Honesty guard: every emitted scorecard MUST validate against the evolved schema
@@ -409,7 +426,7 @@ export async function runBattery(opts = {}) {
             console.log(`Round-trip schema check: scorecard for ${variant}/${fixture.name} VALID against schemas/scorecard.schema.json`);
           }
 
-          const scPath = path.join(RUNS_DIR, variantDir(variant), fixture.name, `r${r}`, 'scorecard.json');
+          const scPath = path.join(modeRunsDir(mode), variantDir(variant), fixture.name, `r${r}`, 'scorecard.json');
           fs.writeFileSync(scPath, JSON.stringify(scorecard, null, 2) + '\n', 'utf8');
 
           fidelities.push(fidelity);
@@ -475,12 +492,19 @@ export async function runBattery(opts = {}) {
     models: models.map((m) => m ?? null), // the swept model labels (null = strategy default)
     judgeModel: judgeModel ?? null,       // held fixed across the sweep
     fixtures: fixtures.map((f) => ({ name: f.name, fixtureHash: f.fixtureHash })),
+    // TOTAL grader (judge) cost for the whole battery — apparatus cost, reported separately
+    // from every method cost record (FINDINGS §7: the judge dominated L1 spend invisibly).
+    graderTotal: judge.cost
+      ? { ...judge.cost, usd: round(judge.cost.usd, 4), wallClockSec: round(judge.cost.wallClockSec, 2) }
+      : null,
     results: aggregate,
     skipped,
   };
-  fs.writeFileSync(path.join(RUNS_DIR, 'aggregate.json'), JSON.stringify(aggregateOut, null, 2) + '\n', 'utf8');
+  fs.writeFileSync(path.join(modeRunsDir(mode), 'aggregate.json'), JSON.stringify(aggregateOut, null, 2) + '\n', 'utf8');
 
-  appendLedgerRows(ledgerRows);
+  // Ledger discipline (ledger.md header): MOCK runs are plumbing, not science — only LIVE
+  // scored runs are ledgered. (An earlier version accumulated ~900 mock rows; purged.)
+  if (mode === 'live') appendLedgerRows(ledgerRows);
 
   printSummary(summaryRows, skipped, mode);
 

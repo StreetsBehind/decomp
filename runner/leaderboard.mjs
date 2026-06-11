@@ -158,8 +158,19 @@ export function paretoFrontier(points, axes) {
 }
 
 // --- scorecard loading ------------------------------------------------------
-/** Recursively collect every runs/**\/scorecard.json. */
-function loadScorecardsFromDisk() {
+// Runs are NAMESPACED BY MODE (runs/live/**, runs/mock/**) so mock plumbing rows can never
+// pollute a live leaderboard (FINDINGS §7). Default: LIVE (the science). `--mode mock` (or
+// loadScorecardsFromDisk('mock')) renders the zero-spend plumbing board explicitly.
+function resolveLeaderboardMode() {
+  const idx = process.argv.indexOf('--mode');
+  if (idx !== -1 && process.argv[idx + 1]) return String(process.argv[idx + 1]).toLowerCase();
+  const eq = process.argv.find((a) => a.startsWith('--mode='));
+  if (eq) return eq.slice('--mode='.length).toLowerCase();
+  return 'live';
+}
+
+/** Recursively collect every runs/<mode>/**\/scorecard.json. */
+function loadScorecardsFromDisk(mode = resolveLeaderboardMode()) {
   const out = [];
   const walk = (dir) => {
     if (!fs.existsSync(dir)) return;
@@ -169,7 +180,7 @@ function loadScorecardsFromDisk() {
       else if (e.name === 'scorecard.json') out.push(JSON.parse(fs.readFileSync(full, 'utf8')));
     }
   };
-  walk(RUNS_DIR);
+  walk(path.join(RUNS_DIR, mode));
   return out;
 }
 
@@ -195,7 +206,12 @@ function normalize(values, dir) {
  */
 export function buildLeaderboard(scorecards, weights = COMPOSITE_WEIGHTS) {
   const cards = scorecards ?? loadScorecardsFromDisk();
-  if (!cards.length) throw new Error(`no scorecards found under ${RUNS_DIR} (run \`npm run battery\` first)`);
+  if (!cards.length) {
+    throw new Error(
+      `no scorecards found under ${path.join(RUNS_DIR, resolveLeaderboardMode())} ` +
+      '(run `npm run battery` first; the leaderboard reads runs/live by default — pass --mode mock for the plumbing board)',
+    );
+  }
 
   // group by VARIANT (`${strategy}@${model}` for generative methods, the strategy name for
   // pure-code controls / bare runs). So swarm@haiku vs swarm@sonnet and expand-audit vs

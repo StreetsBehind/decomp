@@ -64,7 +64,19 @@ export function makeClaudeJudge(invoke, opts = {}) {
   if (typeof invoke !== 'function') throw new Error('makeClaudeJudge: invoke function is required');
   const model = opts.model || 'claude-sonnet-4-6';
 
-  return async function claudeJudge({ kind, target, snapshotDigest }) {
+  // GRADER-COST ACCOUNTING (FINDINGS §7): the judge dominated L1 spend (~600 calls) but was
+  // invisible in the scorecards. Every attempt — including retries — is accumulated here; the
+  // runner snapshots deltas around each scoring pass and reports them as `graderCost`,
+  // SEPARATE from the method's cost record (grader cost is apparatus cost, never the policy's).
+  const cost = { calls: 0, outputTokens: 0, usd: 0, wallClockSec: 0 };
+  const billAttempt = (res) => {
+    cost.calls++;
+    if (res && Number.isFinite(res.outputTokens)) cost.outputTokens += res.outputTokens;
+    if (res && res.usd !== null && Number.isFinite(res.usd)) cost.usd += res.usd;
+    if (res && Number.isFinite(res.wallClockSec)) cost.wallClockSec += res.wallClockSec;
+  };
+
+  async function claudeJudge({ kind, target, snapshotDigest }) {
     const prompt = [
       renderTarget(kind, target),
       '',
@@ -89,10 +101,12 @@ export function makeClaudeJudge(invoke, opts = {}) {
           role: 'gen-judge',
           signal: opts.signal,
         });
+        billAttempt(res);
         lastErr = null;
         break;
       } catch (e) {
         lastErr = e;
+        cost.calls++; // a failed attempt still happened (and may have cost upstream)
         if (attempt === 0) await new Promise((r) => setTimeout(r, 1500));
       }
     }
@@ -125,7 +139,10 @@ export function makeClaudeJudge(invoke, opts = {}) {
       beadRef: typeof parsed.beadRef === 'string' ? parsed.beadRef : undefined,
       evidence: typeof parsed.evidence === 'string' ? parsed.evidence : '',
     };
-  };
+  }
+
+  claudeJudge.cost = cost; // live accumulator — the runner reads/deltas this
+  return claudeJudge;
 }
 
 export default { makeClaudeJudge };
