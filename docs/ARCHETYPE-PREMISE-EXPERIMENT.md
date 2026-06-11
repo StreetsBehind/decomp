@@ -3,8 +3,9 @@
 _Last updated: 2026-06-02. A controlled experiment to answer one question cheaply, **before** committing
 resources to mining archetypes: **does priming a decomposer with authored archetypes help a weaker model
 find more of the right surfaces and seam-questions — without anchoring it away from the seams a template
-can't hold?** Read after [`SURFACE-DISCOVERY-SPEC.md`](SURFACE-DISCOVERY-SPEC.md) (§3 the obligations
-library, §6 invariants, §7 the proof staircase) and [`CURATION-METHOD.md`](CURATION-METHOD.md) (the gate).
+can't hold?** Read after [`OBLIGATIONS.md`](OBLIGATIONS.md) (the live obligations layer — the typed
+lethal quadrant; full original detail in archived [`SURFACE-DISCOVERY-SPEC`](../archive/surface-discovery/SURFACE-DISCOVERY-SPEC.md)
+§3/§6/§7 + [`CURATION-METHOD`](../archive/surface-discovery/CURATION-METHOD.md), the gate).
 Artifacts live in [`../experiments/archetype-premise/`](../experiments/archetype-premise/)._
 
 ---

@@ -1,8 +1,8 @@
 # Surface & Edge Discovery — Design Spec & Next Steps
 
 _Last updated: 2026-06-02. This is a **forward-looking design spec + execution plan**, written as a
-handoff to a fresh session. Read it **after** [`CHARTER.md`](CHARTER.md) (what we're trying to
-accomplish + what "best" means) and [`FINDINGS.md`](FINDINGS.md) (what the apparatus is and what the
+handoff to a fresh session. Read it **after** [`CHARTER.md`](../../docs/CHARTER.md) (what we're trying to
+accomplish + what "best" means) and [`FINDINGS.md`](../../docs/FINDINGS.md) (what the apparatus is and what the
 first live sweep actually taught us). This document does not repeat those; it builds on them._
 
 > **The thesis in one line:** stop asking a model to *generate* the dependency edges of a decomposition

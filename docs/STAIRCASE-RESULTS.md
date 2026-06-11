@@ -1,6 +1,6 @@
 # Proof-Staircase — Results Log
 
-_Running log of the cheapest-first proof staircase (SURFACE-DISCOVERY-SPEC §7). Each step is a
+_Running log of the cheapest-first proof staircase (archived [`SURFACE-DISCOVERY-SPEC`](../archive/surface-discovery/SURFACE-DISCOVERY-SPEC.md) §7). Each step is a
 falsifiable claim that gates the next. Append results here; do not rewrite history._
 
 | Step | Claim | Status | Result |
@@ -37,9 +37,9 @@ All 36 pass. Until this passed, every downstream recall number was vibes; it now
 
 ## Step 1 — join-ceiling on `sso-greenfield` ✅ GO
 
-`npm run join-ceiling` ([`eval/join-ceiling.mjs`](../eval/join-ceiling.mjs)) over a hand-authored
+`npm run join-ceiling` ([`join-ceiling.mjs`](../archive/edge-join/join-ceiling.mjs), since archived) over a hand-authored
 produces/consumes annotation
-([`experiments/join-ceiling/sso-greenfield.produces-consumes.json`](../experiments/join-ceiling/sso-greenfield.produces-consumes.json)),
+([`sso-greenfield.produces-consumes.json`](../archive/edge-join/join-ceiling-experiment/sso-greenfield.produces-consumes.json)),
 one node per requirement planKey, annotated from each component's **genuine** I/O over the lattice
 (`eval/lattice.mjs`) — not reverse-engineered from the target edges:
 
@@ -62,8 +62,8 @@ gaps fixable by adding a resource type:
 **Verdict:** GO. The reframe (edges = a deterministic join over typed produces/consumes) can express
 the resource-mediated bulk of the edges cleanly and without over-wiring. ~12% are intrinsic ordering
 edges that need a small supplementary ordering signal (or are redundant) — and we learned exactly which,
-for $0, before any extraction or model spend. This clears the substrate gate that
-[`CURATION-METHOD.md`](CURATION-METHOD.md) §3.3 / §9 sit behind.
+for $0, before any extraction or model spend. This clears the substrate gate that the obligations layer
+([`OBLIGATIONS.md`](OBLIGATIONS.md); full lifecycle in archived [`CURATION-METHOD`](../archive/surface-discovery/CURATION-METHOD.md) §3.3 / §9) sits behind.
 
 > Honesty notes: the annotation is a single hand author's best modelling, so 88.2% is *an attainable
 > ceiling under a good annotation*, not a guarantee any extraction pass reaches it (that is Step 2). The

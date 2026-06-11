@@ -5,6 +5,14 @@ _Drafted 2026-06-11. This document extends [`CHARTER.md`](CHARTER.md) and builds
 assumptions, the constructs, the hypotheses, the harness extensions, and the experiments that will
 answer the sharpened question below. Nothing here invalidates the charter; it re-aims the apparatus._
 
+> **⚠ Pre-registered, with pending revisions (2026-06-11).** This program was drafted **blind** to the
+> archetype-premise evidence now merged onto the trunk. The cross-review in
+> [`RECONCILIATION.md`](RECONCILIATION.md) found the spine corroborated but **seven strategies in need of
+> revision** — most importantly, the repair premium **ρ is quadrant-censored**, so the §2.6 / H3 median
+> rule would falsely crown deferral. The revisions are catalogued in **§10**, each marked *pending* its
+> gating $0 kill-test. The pre-registered §0–§9 text is left intact (pre-registration discipline); read
+> it **through** §10.
+
 ---
 
 ## 0. The question, sharpened
@@ -339,3 +347,24 @@ The program is finished when the repo can state, with ledger-backed evidence:
 — with every bracketed clause filled by E1–E6, not by intuition. If H2/H3 are falsified, that *is*
 the result: "decompose maximally; shift-left holds for LLM builders too" is just as publishable, and
 the apparatus will have been the thing that could tell the difference.
+
+## 10. Pending revisions (reconciliation 2026-06-11) — read §0–§9 *through* these
+
+These are pre-registered **revisions**, not yet executed. Each is gated on the $0 kill-tests in
+[`RECONCILIATION.md`](RECONCILIATION.md) §6 (cost-weighted hearth re-score + build-batch history), which
+confirm or refute the quadrant structure **before** the campaign spends. Until then the §0–§9 text stands
+as written; where the two conflict, §10 governs the interpretation. Severity: **CORRECT** = §0–§9 as
+written would yield a wrong result; **RE-SPEC** = right instrument, wrong target; **HARDEN** = inherited
+failure mode with a known mitigation.
+
+| # | Revises | Change | Severity |
+| --- | --- | --- | --- |
+| A | §2.6, H3, §6 | **ρ is quadrant-censored.** Silent+expensive omissions produce no build-record repair event, so they never enter ρ; the median over a cheap-only sample mechanically "confirms" deferral. Report ρ **per quadrant**; decide on the silent-expensive tail, never the median. | CORRECT |
+| B | §2.5, A2 | **Partition the primary endpoint.** A thin-fixture acceptance suite tests dataflow (the self-revealing quadrant) and is blind to silent obligations. Add lethal-quadrant (obligation/**seam**) recall as a **veto** endpoint — a deferral policy that lifts aggregate coverage while dropping seam coverage is *rejected*. | CORRECT |
+| C | §2.4 | Retarget **τ** at the lethal quadrant (silent+expensive obligations, [`OBLIGATIONS.md`](OBLIGATIONS.md)) instead of an equal-weighted 4-factor risk blend. | RE-SPEC |
+| D | (the deletion) | The **obligations layer is restored** to the trunk ([`OBLIGATIONS.md`](OBLIGATIONS.md)) — the typed definition the deferral economics depend on. The edge-*join* mechanism stays parked (Step 2, [`../archive/`](../archive/)). | DONE (reshape) |
+| E | §4.7 | Corpus must be **multi-feature with intra/seam partition tags** — seams *are* the lethal quadrant; single-feature fixtures under-sample it. `hearth` seeds this. | RE-SPEC |
+| F | §0, A2 | A static completeness predictor, if kept, must be the **capture-recapture residual over ≥4 decorrelated generators** ([`PRIOR-ART-COMPLETENESS.md`](PRIOR-ART-COMPLETENESS.md)), not a manifest-coverage ratio (which biases toward false completeness). | HARDEN |
+| G | A7 | Treat the hand oracle as **incomplete by construction** (all 6 authored archetypes smuggled edges). Grow-the-manifest with an adversarial verifier + a confirmed-real-beyond-manifest rate. | HARDEN |
+
+Full argument + evidence per row: [`RECONCILIATION.md`](RECONCILIATION.md) §2–§4.
