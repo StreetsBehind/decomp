@@ -1,0 +1,20 @@
+{
+  "fixture": "sso-greenfield",
+  "manifestSha": "see fixtures/sso-greenfield/outcome-manifest.json",
+  "_note": "STEP 1 (join-ceiling) annotation. One node per manifest requirement planKey. produces/consumes are authored from each component's GENUINE semantics over the lattice (eval/lattice.mjs) — what artifact does this packet actually read and write — NOT reverse-engineered from the target requiredEdges. Resources flow through their real owner (e.g. the client secret reaches the token exchange THROUGH provider-config, so callback-handler consumes Config:provider, not Credential:client-secret directly — modelling it otherwise would manufacture a spurious callback->secret-management edge). The ceiling = how many of the manifest's required edges fall out of the deterministic join over this honest annotation. Edges that do NOT fall out reveal which deps are not resource-mediated (pure flow/ordering/containment).",
+  "nodes": [
+    { "planKey": "secret-management", "produces": ["Credential:client-secret", "Credential:session-keys"], "consumes": [] },
+    { "planKey": "provider-config", "produces": ["Config:provider"], "consumes": ["Credential:client-secret"] },
+    { "planKey": "user-store", "produces": ["Store:user", "Schema:user"], "consumes": [] },
+    { "planKey": "csrf-protection", "produces": ["Token:state"], "consumes": [] },
+    { "planKey": "login-route", "produces": ["Route:login"], "consumes": ["Config:provider", "Token:state"] },
+    { "planKey": "token-validation", "produces": ["Middleware:token-validation"], "consumes": ["Config:provider"] },
+    { "planKey": "account-linking", "produces": ["Middleware:account-link"], "consumes": ["Store:user"] },
+    { "planKey": "session-store", "produces": ["Store:session"], "consumes": ["Store:user"] },
+    { "planKey": "callback-handler", "produces": ["Route:callback"], "consumes": ["Config:provider", "Token:state", "Middleware:token-validation", "Middleware:account-link", "Store:session"] },
+    { "planKey": "session-middleware", "produces": ["Middleware:session"], "consumes": ["Store:session"] },
+    { "planKey": "token-refresh", "produces": ["Job:token-refresh"], "consumes": ["Store:session", "Middleware:token-validation"] },
+    { "planKey": "logout-route", "produces": ["Route:logout"], "consumes": ["Store:session"] },
+    { "planKey": "error-states", "produces": ["ErrorState:auth"], "consumes": [] }
+  ]
+}

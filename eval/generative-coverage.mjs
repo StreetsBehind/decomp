@@ -61,6 +61,28 @@ function pooledOverall(reqResults, edgeResults, field) {
   return totalItems ? (totalItems - totalMissing) / totalItems : 1;
 }
 
+// Per-partition SUFFICIENCY edge recall, computed ONLY when the manifest tags requiredEdges with a
+// `partition` (e.g. intra-feature vs seam). This is the library-covered-vs-seam split the anchoring
+// metric reads: a primed arm is safe iff it raises library-covered recall AND does not lower SEAM
+// recall. Returns undefined (no partitioning) so untagged fixtures are byte-for-byte unchanged.
+// edgeResults[i] aligns with requiredEdges[i] (mapPool preserves order).
+function edgeCoverageByPartition(requiredEdges, edgeResults) {
+  if (!requiredEdges.some((e) => e && e.partition)) return undefined;
+  const buckets = {};
+  for (let i = 0; i < requiredEdges.length; i++) {
+    const p = requiredEdges[i] && requiredEdges[i].partition;
+    if (!p) continue;
+    const b = (buckets[p] ||= { total: 0, missing: [] });
+    b.total++;
+    if (!edgeResults[i].sufficiency) b.missing.push(edgeResults[i].miss);
+  }
+  const out = {};
+  for (const [p, b] of Object.entries(buckets)) {
+    out[p] = { score: b.total ? (b.total - b.missing.length) / b.total : 1, total: b.total, missing: b.missing };
+  }
+  return out;
+}
+
 // Bounded-concurrency map preserving input order (results[i] aligns with items[i]), so the
 // aggregation + missing[] order stay deterministic regardless of completion order. Pure control
 // flow — the only I/O is the injected judge. A worker pool keeps at most `limit` judge calls in
@@ -177,7 +199,10 @@ export async function scoreGenerativeCoverage(snapshot, manifest, judge, opts = 
     overall: pooledOverall(reqResults, edgeResults, 'presence'),
   };
 
-  return { requirementCoverage, edgeCoverage, overall, presence };
+  // Per-partition edge recall (library-covered vs seam) — present only on a partitioned manifest.
+  const byPartition = edgeCoverageByPartition(requiredEdges, edgeResults);
+
+  return { requirementCoverage, edgeCoverage, overall, presence, ...(byPartition ? { edgeCoverageByPartition: byPartition } : {}) };
 }
 
 export default scoreGenerativeCoverage;

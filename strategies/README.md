@@ -19,9 +19,14 @@ export default {
    * Decompose one fixture into a bead graph.
    * @param {object} fixture  { name, lock, planMd, dir }  — `dir` is a FRESH empty workspace
    * @param {object} ctx      { signal }  — abort signal; future: token meter handle
-   * @returns {Promise<{ snapshot: Snapshot, cost: CostRecord }>}
+   * @returns {Promise<{ snapshot: Snapshot, cost: CostRecord, gaps?: Gap[] }>}
    *          snapshot conforms to schemas/snapshot.schema.json
    *          cost     conforms to schemas/cost-record.schema.json
+   *          gaps     OPTIONAL open-question channel: [{ class, location?, note? }] — the
+   *                   floor-not-ceiling signals the model surfaced (suspected missing requirements,
+   *                   unresolved decisions, dependencies it is unsure about). The runner routes
+   *                   them to scoreCatchRate (omission catch-rate / open-question yield). Omit the
+   *                   field entirely if the method does not surface open questions. NEVER an edge.
    */
   async run(fixture, ctx) { /* ... */ }
 }

@@ -36,7 +36,8 @@
         "properties": {
           "id": { "type": "string" },
           "planKey": { "type": "string", "description": "the provenance key a covering bead must carry" },
-          "description": { "type": "string" }
+          "description": { "type": "string" },
+          "feature": { "type": "string", "description": "OPTIONAL: the feature this requirement belongs to. On a multi-feature fixture this is what lets requiredEdges be partitioned into intra-feature (library-covered) vs inter-feature (seam)." }
         }
       }
     },
@@ -92,7 +93,12 @@
         "properties": {
           "fromPlanKey": { "type": "string", "description": "the dependent work" },
           "toPlanKey": { "type": "string", "description": "the prerequisite work" },
-          "why": { "type": "string" }
+          "why": { "type": "string" },
+          "partition": {
+            "type": "string",
+            "enum": ["intra-feature", "seam", "ordering-only", "policy-only"],
+            "description": "OPTIONAL: which class of dependency this edge is. intra-feature = both endpoints inside one feature (library-coverable, the EASY edges). seam = endpoints in DIFFERENT features (the hard, commonly-missed, anchoring-sensitive edges a per-feature template cannot hold). ordering-only / policy-only = not resource-mediated (won't fall out of the join — see Step 1). The runner reports library-covered-vs-seam edge recall separately when this tag is present."
+          }
         }
       }
     }

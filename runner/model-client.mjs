@@ -62,8 +62,10 @@ import process from 'node:process';
 
 const DEFAULT_MODEL = 'claude-sonnet-4-6';
 const DEFAULT_MAX_TURNS = 1;
-// A few seconds of model latency is normal; a decompose pass can be long. 5 min ceiling.
-const DEFAULT_TIMEOUT_MS = 300_000;
+// A few seconds of model latency is normal, but a single-shot decompose of a large multi-feature
+// plan emits a very large JSON and can run several minutes — a 5-min ceiling SIGTERMs it mid-stream.
+// 10-min ceiling; callers can override per-call via args.timeoutMs (e.g. a short cap for tiny judge calls).
+const DEFAULT_TIMEOUT_MS = 600_000;
 
 /**
  * Strip a single wrapping markdown code fence (```json ... ``` or ``` ... ```) from text.
@@ -154,6 +156,7 @@ export async function claudeInvoke(args = {}) {
     system,
     model = DEFAULT_MODEL,
     maxTurns = DEFAULT_MAX_TURNS,
+    timeoutMs = DEFAULT_TIMEOUT_MS,
     signal,
   } = args;
 
@@ -173,6 +176,11 @@ export async function claudeInvoke(args = {}) {
     ? system
     : 'Output ONLY the requested JSON. No prose, no markdown code fences, no commentary.';
 
+  // TRANSPORT: the prompt is piped via STDIN, not passed as an argv element. Big decompose
+  // prompts (swarm's integrator, the no-audit re-expander, an archetype-primed single-session)
+  // embed the whole current decomposition and blow past the OS argv limit (~32 KB on Windows;
+  // FINDINGS §6.1 — 2/26 L1 runs failed exactly this way, with "no stdin data received"). `-p`
+  // with NO positional reads the prompt from stdin, which the headless CLI wants anyway.
   const argv = [
     '-p',
     '--output-format', 'json',
@@ -183,7 +191,7 @@ export async function claudeInvoke(args = {}) {
   ];
 
   const start = process.hrtime.bigint();
-  const { stdout } = await spawnWithStdin('claude', argv, prompt, { signal, timeoutMs: DEFAULT_TIMEOUT_MS });
+  const { stdout } = await spawnCapture('claude', argv, { input: prompt, signal, timeoutMs });
   const end = process.hrtime.bigint();
   const measuredSec = Number(end - start) / 1e9;
 
@@ -193,61 +201,63 @@ export async function claudeInvoke(args = {}) {
   return { text, outputTokens, usd, wallClockSec };
 }
 
-// Output buffer ceiling: a full bead-graph JSON can be large.
-const MAX_OUTPUT_BYTES = 64 * 1024 * 1024;
+const MAX_STDOUT_BYTES = 64 * 1024 * 1024; // a full bead-graph JSON can be large
 
 /**
- * Spawn a process, write `stdinData` to its stdin (then end it), and collect stdout/stderr.
- * Promise wrapper with a byte-bounded buffer + timeout + abort-signal support — the stdin
- * write is the whole point (no prompt ever rides argv; FINDINGS §6.1).
- * Resolves { stdout, stderr } on exit code 0; rejects with a descriptive error otherwise.
+ * Spawn a process, write `input` to its stdin, and capture stdout/stderr with a byte-bounded
+ * buffer + timeout. Resolves { stdout, stderr } on exit code 0; rejects with a descriptive error
+ * otherwise. Exported so the transport can be exercised against a stand-in binary without the
+ * real CLI (see tools/transport-smoke.mjs).
  * @param {string} file
  * @param {string[]} argv
- * @param {string} stdinData
- * @param {{ signal?: AbortSignal, timeoutMs?: number }} opts
+ * @param {{ input?: string, signal?: AbortSignal, timeoutMs?: number }} opts
+ * @returns {Promise<{ stdout: string, stderr: string }>}
  */
-function spawnWithStdin(file, argv, stdinData, opts = {}) {
+export function spawnCapture(file, argv, opts = {}) {
+  const { input = '', signal, timeoutMs = DEFAULT_TIMEOUT_MS } = opts;
   return new Promise((resolve, reject) => {
-    const child = spawn(file, argv, {
-      signal: opts.signal,
-      windowsHide: true,
-      stdio: ['pipe', 'pipe', 'pipe'],
-    });
+    let child;
+    try {
+      child = spawn(file, argv, {
+        signal,
+        timeout: timeoutMs,
+        killSignal: 'SIGTERM',
+        windowsHide: true,
+        stdio: ['pipe', 'pipe', 'pipe'],
+      });
+    } catch (e) {
+      reject(new Error(`${file} failed to spawn: ${e.message}`));
+      return;
+    }
 
-    let stdout = '';
-    let stderr = '';
-    let settled = false;
-    const settle = (fn, v) => { if (!settled) { settled = true; clearTimeout(timer); fn(v); } };
+    const out = [];
+    const err = [];
+    let outBytes = 0;
+    let sizeKilled = false;
 
-    const timer = setTimeout(() => {
-      child.kill('SIGKILL');
-      settle(reject, new Error(`claude CLI timed out after ${opts.timeoutMs ?? DEFAULT_TIMEOUT_MS}ms`));
-    }, opts.timeoutMs ?? DEFAULT_TIMEOUT_MS);
-
-    child.stdout.setEncoding('utf8');
-    child.stderr.setEncoding('utf8');
     child.stdout.on('data', (d) => {
-      stdout += d;
-      if (stdout.length > MAX_OUTPUT_BYTES) {
-        child.kill('SIGKILL');
-        settle(reject, new Error('claude CLI stdout exceeded the buffer ceiling'));
-      }
+      outBytes += d.length;
+      if (outBytes > MAX_STDOUT_BYTES) { sizeKilled = true; child.kill('SIGKILL'); return; }
+      out.push(d);
     });
-    child.stderr.on('data', (d) => { if (stderr.length < 64 * 1024) stderr += d; });
+    child.stderr.on('data', (d) => err.push(d));
 
-    child.on('error', (err) => settle(reject, new Error(`claude CLI failed to spawn: ${err.message}`)));
-    child.on('close', (code) => {
-      if (code === 0) settle(resolve, { stdout, stderr });
-      else {
-        const msg = stderr ? `exit ${code}\n${stderr.slice(0, 2000)}` : `exit ${code}`;
-        settle(reject, new Error(`claude CLI failed: ${msg}`));
-      }
+    child.once('error', (e) => {
+      const tail = err.length ? `\n${Buffer.concat(err).toString('utf8').slice(0, 2000)}` : '';
+      reject(new Error(`${file} CLI failed: ${e.message}${tail}`));
+    });
+    child.once('close', (code, sigName) => {
+      if (sizeKilled) { reject(new Error(`${file} output exceeded ${MAX_STDOUT_BYTES} bytes (killed)`)); return; }
+      const stderr = Buffer.concat(err).toString('utf8');
+      const stdout = Buffer.concat(out).toString('utf8');
+      if (code === 0) { resolve({ stdout, stderr }); return; }
+      const tail = stderr ? `\n${stderr.slice(0, 2000)}` : '';
+      reject(new Error(`${file} CLI exited ${code === null ? `via signal ${sigName}` : `with code ${code}`}${tail}`));
     });
 
-    // EPIPE here (CLI exited before reading stdin) surfaces via 'close' with the real exit
-    // status — swallow the write error so it cannot mask the descriptive one.
-    child.stdin.on('error', () => {});
-    child.stdin.end(stdinData, 'utf8');
+    // Deliver the prompt on stdin, then EOF. Ignore EPIPE if the child exited early.
+    child.stdin.once('error', () => {});
+    child.stdin.end(input, 'utf8');
   });
 }
 

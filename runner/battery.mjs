@@ -351,6 +351,7 @@ export async function runBattery(opts = {}) {
         const buildReadinesses = [];
         const genOveralls = [];
         const granAtoms = []; // measured dose (G.atoms) per repeat
+        const partitionSeries = {}; // partition -> [edge-sufficiency score per repeat] (partitioned fixtures only)
         let lastBuildComplete = null;
         let anyScored = false;
 
@@ -434,6 +435,12 @@ export async function runBattery(opts = {}) {
                 presenceRequirement: generativeCoverage.presence.requirementCoverage.score,
                 presenceEdge: generativeCoverage.presence.edgeCoverage.score,
                 presenceOverall: generativeCoverage.presence.overall,
+                // PER-PARTITION edge recall (library-covered vs SEAM) — present ONLY on a partitioned
+                // manifest. The anchoring read: a primed arm is safe iff covered recall rises AND seam
+                // recall does not fall. Bare sufficiency scores per partition.
+                ...(generativeCoverage.edgeCoverageByPartition
+                  ? { edgeByPartition: Object.fromEntries(Object.entries(generativeCoverage.edgeCoverageByPartition).map(([p, v]) => [p, round(v.score, 4)])) }
+                  : {}),
               },
               buildCompleteness: {
                 buildComplete: buildCompleteness.buildComplete,
@@ -471,6 +478,11 @@ export async function runBattery(opts = {}) {
           buildReadinesses.push(scorecard.axes.buildCompleteness.buildReadiness);
           genOveralls.push(scorecard.axes.generativeCoverage.overall);
           granAtoms.push(granularity.atomsPerRequirement);
+          if (generativeCoverage.edgeCoverageByPartition) {
+            for (const [p, v] of Object.entries(generativeCoverage.edgeCoverageByPartition)) {
+              (partitionSeries[p] ||= []).push(v.score);
+            }
+          }
           lastBuildComplete = buildCompleteness.buildComplete;
           anyScored = true;
 
@@ -504,6 +516,10 @@ export async function runBattery(opts = {}) {
           edgeCoverage: { mean: round(mean(edgeCoverages), 4), stddev: round(sampleStddev(edgeCoverages), 4) },
           beadPresence: { mean: round(mean(beadPresences), 4), stddev: round(sampleStddev(beadPresences), 4) },
           buildReadiness: { mean: round(mean(buildReadinesses), 4), stddev: round(sampleStddev(buildReadinesses), 4) },
+          // per-partition edge recall (library-covered vs SEAM), mean±stddev over K — partitioned fixtures only.
+          ...(Object.keys(partitionSeries).length
+            ? { edgeByPartition: Object.fromEntries(Object.entries(partitionSeries).map(([p, xs]) => [p, { mean: round(mean(xs), 4), stddev: round(sampleStddev(xs), 4) }])) }
+            : {}),
         };
         aggregate[`${variant}::${fixture.name}`] = agg;
         summaryRows.push({

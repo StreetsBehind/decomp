@@ -8,8 +8,13 @@ import leaderboard from './leaderboard.selftest.mjs';
 import outcomeCoverage from './outcome-coverage.selftest.mjs';
 import generativeCoverage from './generative-coverage.selftest.mjs';
 import granularity from './granularity.selftest.mjs';
+import rulerMutation from './ruler-mutation.selftest.mjs';
+import openQuestionChannel from './open-question-channel.selftest.mjs';
+import c1Lint from './c1-lint.selftest.mjs';
+import partitionRecall from './partition-recall.selftest.mjs';
+import extractInterfaces from './extract-interfaces.selftest.mjs';
 
-const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity];
+const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity, rulerMutation, openQuestionChannel, c1Lint, partitionRecall, extractInterfaces];
 
 let failed = 0;
 for (const suite of SUITES) {

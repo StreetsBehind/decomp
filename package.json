@@ -12,6 +12,7 @@
     "battery": "node runner/battery.mjs",
     "battery:mock": "node runner/battery.mjs --mode mock",
     "battery:live": "node runner/battery.mjs --mode live",
+    "join-ceiling": "node eval/join-ceiling.mjs",
     "leaderboard": "node runner/leaderboard.mjs"
   }
 }
