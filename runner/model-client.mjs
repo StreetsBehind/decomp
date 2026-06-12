@@ -329,3 +329,124 @@ export function makeMockInvoke(scriptTable = {}, defaults = {}) {
     };
   };
 }
+
+// ---------------------------------------------------------------------------
+// GATEWAY invoke — the cheap-tier method/builder model supply (RESEARCH-PROGRAM §4.3, E0.5).
+//
+// jnoccio-fusion is a standalone OpenAI-compatible gateway (default http://127.0.0.1:4317/v1)
+// that exposes ONE visible model, `jnoccio/jnoccio-fusion`, and routes each call across many
+// free/cheap upstreams (OpenRouter, Cerebras, Fireworks, NVIDIA, Groq, ...). We use it in
+// ADAPTIVE mode: the gateway picks the upstream; we RECORD which one served (reproducibility, A8).
+//
+// VALIDITY — uniform instructions + uniform mechanical constraints across every routed builder:
+//   * The gateway forwards messages + params FAITHFULLY (verified in src/providers/openai_compatible.rs
+//     build_body: no system-prompt injection, sanitize only whitelists message keys, temperature /
+//     max_tokens pass through by value). So the instructions a builder sees are exactly ours.
+//   * The ONE asymmetry the gateway can introduce is `clamp_output_tokens` (src/fusion.rs): it caps
+//     max_tokens to the routed model's output cap. We DISABLE the few free upstreams with sub-16k
+//     output caps in the gateway roster, so the minimum enabled cap is >= 16384; we then PIN
+//     max_tokens = 16384 → the clamp can NEVER fire → every builder gets the identical output budget,
+//     with enough room that a reasoning model's JSON does not truncate (the E0.5-smoke failure mode).
+//   * temperature is pinned to 0 (uniform sampling). Nothing model-specific is sent.
+// What still varies is MODEL CAPABILITY (JSON discipline, reasoning leakage) — the accepted nature of
+// adaptive supply, absorbed by the parse + retry + fail-closed path and recorded via `model`/`route`.
+const GATEWAY_BASE_URL = process.env.JNOCCIO_BASE_URL || 'http://127.0.0.1:4317/v1';
+const GATEWAY_API_KEY = process.env.JNOCCIO_API_KEY || 'jnoccio-local';
+const GATEWAY_MODEL = 'jnoccio/jnoccio-fusion';
+// Uniform output budget. The sub-16k-cap free upstreams (poolside-laguna, ling-26) are DISABLED in
+// the gateway roster, so the min enabled output cap is >= 16384. Pinning the request here makes the
+// gateway's per-model clamp (src/fusion.rs) a no-op for EVERY route — an IDENTICAL budget for every
+// builder — while leaving reasoning models room so the JSON never truncates (E0.5-smoke fix).
+const GATEWAY_MAX_TOKENS = 16384;
+
+/**
+ * Build a gateway invoker with the SAME signature/return shape as claudeInvoke. Free-tier, so
+ * usd is always 0; outputTokens + wallClockSec still meter the Cost/Efficiency axes (A9). The
+ * return additionally carries the RESOLVED upstream (`model`), the gateway's `route`
+ * (winner_model_id) and `requestId` for the cost record / ledger reproducibility.
+ *
+ * @param {{ baseURL?: string, apiKey?: string, model?: string, maxTokens?: number,
+ *           timeoutMs?: number, fetch?: typeof fetch }} [opts]
+ *        opts.fetch is injectable so the request-shape guards can be selftested with no network.
+ * @returns {(args: InvokeArgs) => Promise<InvokeResult & {model:string, route:?string, requestId:?string, finishReason:?string}>}
+ */
+export function makeGatewayInvoke(opts = {}) {
+  const baseURL = (opts.baseURL || GATEWAY_BASE_URL).replace(/\/+$/, '');
+  const apiKey = opts.apiKey || GATEWAY_API_KEY;
+  const model = opts.model || GATEWAY_MODEL;
+  // Clamp our own request to the safe ceiling so jnoccio's per-route clamp never changes the budget.
+  const maxTokens = Math.min(Number.isFinite(opts.maxTokens) ? opts.maxTokens : GATEWAY_MAX_TOKENS, GATEWAY_MAX_TOKENS);
+  const timeoutMs = Number.isFinite(opts.timeoutMs) ? opts.timeoutMs : DEFAULT_TIMEOUT_MS;
+  const doFetch = opts.fetch || fetch;
+
+  return async function gatewayInvoke(args = {}) {
+    const { prompt, system, signal } = args;
+    if (typeof prompt !== 'string' || !prompt) {
+      throw new Error('gatewayInvoke: prompt (non-empty string) is required');
+    }
+    const sys = system && typeof system === 'string'
+      ? system
+      : 'Output ONLY the requested JSON. No prose, no markdown code fences, no commentary.';
+
+    // The request body is held IDENTICAL across every routed builder (uniformity guard).
+    const body = {
+      model,
+      messages: [
+        { role: 'system', content: sys },
+        { role: 'user', content: prompt },
+      ],
+      temperature: 0,
+      max_tokens: maxTokens,
+      stream: false,
+    };
+
+    // Compose the caller's abort signal with our own timeout.
+    const ctrl = new AbortController();
+    const onAbort = () => ctrl.abort();
+    if (signal) {
+      if (signal.aborted) ctrl.abort();
+      else signal.addEventListener('abort', onAbort, { once: true });
+    }
+    const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+
+    const start = process.hrtime.bigint();
+    let raw;
+    try {
+      const res = await doFetch(`${baseURL}/chat/completions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${apiKey}` },
+        body: JSON.stringify(body),
+        signal: ctrl.signal,
+      });
+      const textBody = await res.text();
+      if (!res.ok) {
+        throw new Error(`jnoccio gateway HTTP ${res.status}: ${textBody.slice(0, 500)}`);
+      }
+      raw = JSON.parse(textBody);
+    } finally {
+      clearTimeout(timer);
+      if (signal) signal.removeEventListener('abort', onAbort);
+    }
+
+    const wallClockSec = Number(process.hrtime.bigint() - start) / 1e9;
+    const choice = Array.isArray(raw.choices) ? raw.choices[0] : null;
+    const message = choice && choice.message ? choice.message : {};
+    // The visible answer is `content`; some free upstreams emit chain-of-thought in a separate
+    // reasoning_content field which we deliberately drop (it is not part of the snapshot).
+    const text = stripCodeFences(typeof message.content === 'string' ? message.content : '');
+    const usage = raw.usage && typeof raw.usage === 'object' ? raw.usage : null;
+    const outputTokens = usage && Number.isFinite(usage.completion_tokens) ? usage.completion_tokens : 0;
+    const jn = raw.jnoccio && typeof raw.jnoccio === 'object' ? raw.jnoccio : null;
+
+    return {
+      text,
+      outputTokens,
+      usd: 0, // free tier (A9: tokens + wallClock still meter Cost/Efficiency; usd stays 0)
+      wallClockSec,
+      model: typeof raw.model === 'string' ? raw.model : model, // RESOLVED upstream (A8 reproducibility)
+      route: jn && typeof jn.winner_model_id === 'string' ? jn.winner_model_id : null,
+      requestId: jn && typeof jn.request_id === 'string' ? jn.request_id : null,
+      finishReason: choice && typeof choice.finish_reason === 'string' ? choice.finish_reason : null,
+    };
+  };
+}
