@@ -85,7 +85,13 @@ prior forks were merged and their branches deleted; PR #1 auto-merged). `npm run
 - **C — the hearth 3-arm sweep** (obligation-priming → seam recall; Step 3 headroom was GO). Now scored
   with the re-spec'd endpoint: `lethalEdgeRecall` is the veto (a primed arm that lifts aggregate while
   dropping lethal recall is rejected) — this falls out of the scorer automatically on the quadrant-tagged
-  hearth oracle.
+  hearth oracle. **$0 viability probe (`tools/hearth-gateway-probe.mjs`, 5/5 valid, no judge):** free
+  models CAN decompose hearth (avg 1.4 attempts; ~50% of first draws empty/aborted, all recovered by the
+  A8 retry, 0 truncations on winning draws), **BUT the free pool is an uncontrolled, high-variance model
+  MIXTURE** — each run drew a different model and produced 12–30 task beads / 11–50 edges (oracle has 65
+  reqs / 162 edges). So `@gateway` ≈ `@random-free-model`; the method-model is not a controlled variable.
+  **Open decision before C spends (see §00.2):** how to control the method model + whether to calibrate
+  the judge (E0.4) first, so the 3-arm prime effect isn't buried under model-mixture + judge noise.
 - Then the v2 Phase-0 remainder: **E0.4** (judge calibration + ensemble), **E0.6** (corpus growth —
   multi-feature & seam-partitioned per `RECONCILIATION.md` change E, each fixture quadrant-tagged like
   hearth now is), **E0.8** (Tier-2 builder loop = §4.5 host-enforced apparatus; per KT#2 it must measure
