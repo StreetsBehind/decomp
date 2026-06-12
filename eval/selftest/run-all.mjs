@@ -16,8 +16,9 @@ import quadrantRecall from './quadrant-recall.selftest.mjs';
 import gatewayInvoke from './gateway-invoke.selftest.mjs';
 import batteryRetry from './battery-retry.selftest.mjs';
 import epicOracle from '../../tools/epic-oracle-selftest.mjs';
+import scaleOracle from '../../tools/scale-oracle-selftest.mjs';
 
-const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity, rulerMutation, openQuestionChannel, c1Lint, partitionRecall, quadrantRecall, gatewayInvoke, batteryRetry, epicOracle];
+const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity, rulerMutation, openQuestionChannel, c1Lint, partitionRecall, quadrantRecall, gatewayInvoke, batteryRetry, epicOracle, scaleOracle];
 
 let failed = 0;
 for (const suite of SUITES) {
