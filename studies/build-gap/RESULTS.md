@@ -244,10 +244,96 @@ $0.** Two consequences that set up the next milestones:
    isn't only "optimal chunk size" — it's **"at what epic size does monolithic-frontier break, and does the
    skeleton+cheap harness hold past it?"** That is the money chart and the real form of the U-curve.
 
+## M-coh-3 — the SIZE × HARNESS surface (2026-06-12) — C3 LOCATED
+
+The money chart: scale the epic UP past one frontier context and ask **at what epic SIZE does
+monolithic-frontier-bare break, and does the skeleton+cheap harness hold past it?** New instrument — a
+parametric scale ladder `epics/scale-d{1..4}` (`lib/scale-oracle.mjs` + `gen-epic.mjs`): the epic is `D`
+lexically-distinct multi-tenant domains (a board/card, vault/file, tracker/ticket, channel/message clone of
+the workspace pattern), `4D+1` surfaces, every domain carrying the **same hidden cross-cutting obligations**
+(tenancy/authz/mass-assign) + its own membership seam. `domainsFor(1)` reproduces the workspace fixture
+byte-for-byte (the anchor); the obligations live only in the frozen skeleton, so the drift+fragmentation
+trap is identical to workspace and **grows with `D`**. Oracle mutation-tested at every size
+(`tools/scale-oracle-selftest.mjs`, in `npm run selftest`). Frontier K=3, free K=5; grading free.
+
+### The crossover — opus-whole (BAR) vs cheap-skeleton-retry (CONTENDER)
+
+| size (D / N surfaces) | bar X-CUT | **con X-CUT** | bar EPIC✓ | con EPIC✓ | bar $/epic | con $/epic |
+|---|---|---|---|---|---|---|
+| D1 / N5  | 100% | 97% | 100% (3/3) | 80% (4/5) | $0.278 | $0 |
+| D2 / N9  | 94%  | **97%** | 67% (2/3) | 60% (3/5) | $0.361 | $0 |
+| D3 / N13 | 78%  | **93%** | 33% (1/3) | 20% (1/5) | $0.387 | $0 |
+| D4 / N17 | 80%  | **95%** | **0% (0/3)** | 0% (0/5) | $0.431 | $0 |
+
+(wire/happy ≈ 100% for both at every size; the epic never fails on linking or per-surface behaviour — only
+on the cross-cutting/seam metrics. sonnet-whole-bare: X-CUT 29/33/35/45%, EPIC✓ **0% at every size**.)
+
+### Finding 1 — the BAR degrades with epic size; opus-whole's cross-cutting uniformity ERODES
+opus-whole-bare's X-CUT slides **100→94→78→80%** and its fully-cohesive-epic rate **collapses 100→67→33→0%**
+as the epic grows 5→17 surfaces — while wire/happy/**integ all stay 100%**. So monolithic-frontier does
+*not* break by interface drift (one context can't drift against itself) or by dropping a feature; it breaks
+by **silently dropping a hidden cross-cutting guard on *some* surface** as it has to hold more of them in one
+context. The crosscut-failure histogram pins the mechanism precisely and monotonically: the first and most
+consistent casualty is **`authz@add*Member` (the admin-only check)** — absent in 0/3 runs at D1, 1 domain at
+D2, 3 domains at D3, and **all 4 domains in all 3 runs at D4** (then `tenancy@add*Member` and the
+`updateProfile` guards start going too). And it gets **more expensive** as it gets less cohesive ($0.28→$0.43).
+This is the monolithic-frontier break the reframe predicted, now measured and named.
+
+### Finding 2 — the CONTENDER's uniformity is size-FLAT; it crosses the bar at N=9
+cheap-skeleton-retry holds **X-CUT ≈ 93–97% and INTEG ≈ 92–100% across the whole ladder at $0** — it does
+*not* erode with `N`, because the frozen skeleton re-states every obligation to every isolated builder
+regardless of epic size, and each builder sees only one small surface (no context dilution). So on **X-CUT —
+the cross-cutting/lethal-quadrant metric — the contender crosses ABOVE opus-whole-bare at N=9 (97% vs 94%)
+and pulls away**: +15 points by N=13 (93% vs 78%) and N=17 (95% vs 80%), at **$0 vs a rising $0.43/epic**.
+Its histogram shows only **sporadic single-surface misses** (mass-assign×1, tenancy@create×1–3) scattered
+across guards/draws — free-pool noise, never the systematic obligation-class hole opus develops.
+
+### Finding 3 — the all-or-nothing EPIC✓ falls for BOTH past N≈5 — and the residue is RELIABILITY, not cohesion
+EPIC✓ demands *every* one of `4D+1`+`3D+1`+`5D+2`+`3D` checks perfect in a single run, so it compounds
+combinatorially with `N`; both conditions decline to 0% by D4. But the two zeros are different failures: the
+bar's is **systematic** (authz erosion — a real lethal hole), the contender's is **statistical** (X-CUT 95% /
+integ 92% means ~1 stray missed guard or seam slip somewhere in 34 checks → no *perfect* run in 5, even
+though average uniformity is high). The contender's gap to a *guaranteed* cohesive epic is therefore the same
+**reliability residue** M-coh-1.5 closed at D1 with a structural retry — but at scale a validity-only retry
+no longer suffices; the unclosed lever is a per-surface **obligation checker / integration-gate + repair**
+(the M-coh-2 lever), which targets exactly those sporadic single-surface misses. Flagged; not yet run.
+
+### Finding 4 — "more context" is still not the fix, at ANY size (sonnet)
+sonnet-whole-bare sees the entire epic in one call and scores **X-CUT 29–45% / EPIC✓ 0% at every size**,
+dropping the same hidden guards (tenancy@list, tenancy/authz@add*Member, both updateProfile guards) in
+essentially every run. The M-coh-0 finding — whole-context ≠ cohesion below opus — holds across the size axis.
+
+### The deliverable: `(s*, harness*)` for the decompose stage
+- **`harness*` = frozen-skeleton + isolated cheap chunks + retry**, decomposed to ≈1 surface/chunk. It holds
+  cross-cutting uniformity FLAT as the epic scales, at $0; monolithic-frontier-bare does not.
+- **`s*` (the size knob decompose must respect): do not pour more than ≈ one workspace-sized cluster
+  (~5 surfaces / 2 cross-cutting obligations) into a single bare frontier context.** That is opus-whole's
+  cohesion ceiling — it is a *fully* cohesive epic 100% of the time only at N=5, its X-CUT is already
+  beaten by the cheap harness by N=9, and it ships *no* cohesive epic by N=17. Above ~5 surfaces, decompose
+  into isolated chunks under a frozen skeleton: the skeleton flattens the cohesion-risk side of the U-curve
+  (DESIGN §3), so finer decomposition costs no seam tax — the predicted shape, confirmed.
+
+### C3 verdict (DESIGN §8) — the interior optimum EXISTS and the crossover is LOCATED
+Reframed and answered: monolithic-frontier-bare breaks on cross-cutting uniformity at **N≈9** and is
+non-cohesive (EPIC✓=0) by **N≈17**; cheap-skeleton-retry holds X-CUT/integ flat across that range at $0, so
+it **wins above N≈9 on the lethal-quadrant metric** — with a residual all-or-nothing reliability gap that the
+per-surface checker lever (M-coh-2) is positioned to close. Data: `runs/mcoh-scale-d{1..4}-*.json`, analysis
+`runs/_mcoh3-analyze.mjs`.
+
+### Caveats
+- Frontier K=3 (noisy per cell), but the X-CUT erosion is **monotone in `N` and obligation-specific** (same
+  `authz@add*Member` casualty advancing across domains), which is far stronger evidence than any single cell.
+- The scale domains are lexically-distinct but structurally homogeneous replicas of one pattern; a real epic
+  mixes surface shapes, so this isolates the size effect rather than imitating a specific product. The
+  contender's flat uniformity is a property of the skeleton, which is pattern-agnostic, so it should transfer;
+  opus's erosion could be milder or worse on heterogeneous surfaces (untested).
+- Conditional on a correct skeleton (the M-coh-2.5 provenance question is orthogonal and still open).
+
 ## Next
 - **M-coh-2 — ablate the skeleton** (shape-only clause vs obligations-only clause) to attribute which
-  metric each buys; add the integration-gate+repair lever as an alternative to up-front knowledge.
+  metric each buys; add the integration-gate+repair lever — now doubly motivated as the lever that closes
+  M-coh-3's residual reliability gap at scale.
 - **M-coh-2.5 — skeleton provenance:** cheap-generated vs frontier-generated vs hand skeleton → is the one
   frontier call necessary, and does it amortize?
-- **M-coh-3 — the size×harness surface:** scale the epic UP past one frontier context; trace where
-  opus-whole degrades and whether skeleton+cheap holds; emit `(s*, harness*)` for decompose. (DESIGN §3.)
+- **M-coh-3 — DONE (above).** Open follow-on: push past N=17 (scale-d5/N21 fixture exists) and run the
+  per-surface checker lever to test whether the contender's EPIC✓ recovers toward 1.0 at scale.

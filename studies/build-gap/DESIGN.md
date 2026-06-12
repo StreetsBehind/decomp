@@ -209,8 +209,15 @@ fraction enforcing authz.
 - **M-coh-2 — ablate the skeleton** (shape-only vs obligations-only) + the integration-gate+repair lever.
 - **M-coh-2.5 — skeleton provenance (NEW, the crux):** cheap- vs frontier- vs hand-generated skeleton. Is
   the win "all free" or "one amortizable frontier call + N free builds"? (RESULTS "crux caveat".)
-- **M-coh-3 — the size × harness surface.** Scale the epic UP past one frontier context; find where
-  opus-whole degrades and whether skeleton+cheap holds. Output `(s*, harness*)` for decompose.
+- **M-coh-3 — the size × harness surface. ✅ DONE (2026-06-12). C3 LOCATED.** Scale ladder
+  `epics/scale-d{1..4}` (D domains = 4D+1 surfaces). **opus-whole-bare degrades with size** — X-CUT
+  100→94→78→80%, EPIC✓ 100→67→33→0%, cost $0.28→$0.43 — by silently dropping a hidden cross-cutting guard
+  (`authz@add*Member` first, then spreading) as it holds more in one context. **cheap-skeleton-retry holds
+  X-CUT≈93–97% / integ≈92–100% FLAT across the ladder at $0**, so on the lethal-quadrant metric **the
+  contender crosses the bar at N≈9 and pulls away** (+15pts by N=17). `s*` ≈ **don't pour >~5 surfaces /
+  2 cross-cutting obligations into one bare frontier context**; `harness*` = frozen-skeleton + isolated
+  cheap chunks + retry. Residual: EPIC✓ falls for BOTH past N≈5 (combinatorial) — the contender's residue is
+  reliability noise, closable by a per-surface checker (M-coh-2 lever). See RESULTS M-coh-3.
 - **M-coh-4 — verdict.** The Build-stage row of the proposal's stage-by-stage map. _Partial verdict already
   in hand: given a skeleton, cheap+retry meets opus-bare on epic cohesion at ~$0; open on skeleton
   provenance + scale._
@@ -223,14 +230,19 @@ fraction enforcing authz.
   collapse for everything except opus-whole; cheap-isolated lands 31% X-CUT / 27% integ / 0 epics.
 - **C2 (a lever closes it): ✅ CONFIRMED (M-coh-1.5).** skeleton + retry over free isolated chunks = 5/5
   cohesive epics at $0 = the opus-bare bar. Conditional on a correct skeleton (see provenance caveat).
-- **C3 (interior optimum): OPEN — M-coh-3.** Reframed: not only "optimal chunk size" but "at what epic size
-  does monolithic-frontier break, and does skeleton+cheap hold past it?" The instrument exists; the sweep
-  is next.
+- **C3 (interior optimum): ✅ LOCATED (M-coh-3).** Monolithic-frontier-bare breaks on cross-cutting
+  uniformity at **N≈9** (opus X-CUT 94%→78%→80% as N goes 9→13→17) and ships no cohesive epic by **N≈17**;
+  cheap-skeleton-retry holds X-CUT≈93–97% FLAT across that range at $0, so the contender **wins above N≈9 on
+  the lethal-quadrant metric**. `s*` ≈ ~5 surfaces / 2 cross-cutting obligations per bare frontier context;
+  above it, decompose into skeleton-fed isolated chunks. Residual all-or-nothing reliability gap → the
+  per-surface checker lever (M-coh-2) is the closer. See RESULTS M-coh-3.
 
-C1 and C2 hold, so the reframe is alive and the leading harness shape is identified (frozen-skeleton +
-retry). The remaining deliverable is the size×harness surface + the skeleton-provenance accounting — i.e.
-*how much* frontier (if any) the harness still needs, and at what epic scale the cheap harness wins
-outright. That concrete recommendation is the thing nobody currently has.
+C1, C2, **and C3** now hold, so the reframe is settled on the cohesion axis: the leading harness shape is
+**frozen-skeleton + retry over isolated cheap chunks**, it equals/beats opus-whole-bare on cross-cutting
+uniformity from ≈one workspace-cluster upward, and the crossover size `s*` (the instruction decompose needs)
+is located. The two remaining open threads are orthogonal: **skeleton provenance** (M-coh-2.5 — *how much*
+frontier the harness still needs to author the skeleton) and the **per-surface checker** (M-coh-2 — the
+lever that converts the contender's high *average* uniformity into a *guaranteed* cohesive epic at scale).
 
 ---
 
