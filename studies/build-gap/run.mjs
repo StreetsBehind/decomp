@@ -31,7 +31,8 @@ const arg = (name, def) => {
 const K = Number(arg('k', 5));
 const TRANSPORT = arg('transport', 'gateway'); // gateway | claude | both
 const FRONTIER_MODEL = arg('frontier-model', 'claude-sonnet-4-6');
-const ONLY_TASK = arg('task', null);
+const ONLY_TASK = arg('task', null); // comma-separated list, or null = all discovered tasks
+const TASK_FILTER = ONLY_TASK ? new Set(ONLY_TASK.split(',').map((s) => s.trim()).filter(Boolean)) : null;
 const CONCURRENCY = Number(arg('concurrency', 3));
 
 const SYSTEM = 'You are an expert software engineer. Output ONLY a single JavaScript ES module that implements the requested function. No prose, no explanation, no markdown code fences.';
@@ -39,7 +40,7 @@ const SYSTEM = 'You are an expert software engineer. Output ONLY a single JavaSc
 function discoverTasks() {
   return fs.readdirSync(TASKS_DIR)
     .filter((d) => fs.existsSync(path.join(TASKS_DIR, d, 'spec.md')) && fs.existsSync(path.join(TASKS_DIR, d, 'tests.mjs')))
-    .filter((d) => !ONLY_TASK || d === ONLY_TASK)
+    .filter((d) => !TASK_FILTER || TASK_FILTER.has(d))
     .map((d) => ({ name: d, spec: fs.readFileSync(path.join(TASKS_DIR, d, 'spec.md'), 'utf8'), testsPath: path.join(TASKS_DIR, d, 'tests.mjs') }));
 }
 

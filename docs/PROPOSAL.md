@@ -32,7 +32,7 @@ self-contained mini-study** with its own input, its own "quality" metric, and it
 |---|---|---|---|
 | **1. Plan** | vague intent → structured plan | captures the real requirements + the dangerous obligations | No (grade vs oracle) |
 | **2. Decompose** | plan → atomic task DAG | covers the latent work incl. the dangerous misses; sane topology | No (grade vs oracle) |
-| **3. Build** | task → working code | passes the task's acceptance checks | Yes |
+| **3. Build** | task → working code | passes the task's acceptance checks — **as a function of task SIZE** | Yes |
 | **4. Test** | code/spec → tests | the tests actually catch real (esp. silent) defects | Yes |
 | **5. Validate/Review** | code → defects found | catch-rate of known/planted defects, low false positives | Partly (feed known-buggy code) |
 
