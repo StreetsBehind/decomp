@@ -4,3 +4,6 @@ runs/*
 !runs/.gitkeep
 *.log
 .DS_Store
+
+# Study run outputs — reproducible scratch
+studies/**/runs/
