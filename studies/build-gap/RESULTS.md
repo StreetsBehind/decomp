@@ -268,6 +268,13 @@ trap is identical to workspace and **grows with `D`**. Oracle mutation-tested at
 (wire/happy ≈ 100% for both at every size; the epic never fails on linking or per-surface behaviour — only
 on the cross-cutting/seam metrics. sonnet-whole-bare: X-CUT 29/33/35/45%, EPIC✓ **0% at every size**.)
 
+**Controls — every non-skeleton cheap shape is flat-low at every size, 0 cohesive epics:**
+`cheap-isolated-retry` (naive `/build-batch`, no skeleton) holds X-CUT **37/48/44/39%** across N=5→17;
+`cheap-whole` (cheap tier, whole context, bare) **17/45/45/37%**. Both 0/5 epics at every size — neither
+retry nor whole-context buys cohesion. So the **only** two conditions that ever produce a cohesive epic are
+opus-whole (at small N) and cheap-skeleton-retry (at all N), which isolates the **frozen skeleton** as the
+single active ingredient and shows the contender's win is the skeleton, not the cheap tier or the retry.
+
 ### Finding 1 — the BAR degrades with epic size; opus-whole's cross-cutting uniformity ERODES
 opus-whole-bare's X-CUT slides **100→94→78→80%** and its fully-cohesive-epic rate **collapses 100→67→33→0%**
 as the epic grows 5→17 surfaces — while wire/happy/**integ all stay 100%**. So monolithic-frontier does
