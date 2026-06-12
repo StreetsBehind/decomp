@@ -40,7 +40,29 @@ prior forks were merged and their branches deleted; PR #1 auto-merged). `npm run
   in exactly the predicted categories, and **larger than observable**.
 - **Decision:** RESEARCH-PROGRAM §10 revisions are **substantiated** (report recall/ρ per quadrant; gate
   deferral on the `lethalEdgeRecall` veto; never the median). The campaign runs with the re-spec'd
-  endpoint. **A is DONE; B/C are the next work.**
+  endpoint. **A is DONE; B is DONE; C is the next work.**
+
+### 00.2 — PAUSED at the A+B milestone — the C-setup decision is the human's (2026-06-11)
+
+A and B are complete and committed (`042198f` kill-tests, `98498d0` gateway transport, `dda2632`
+cross-check, `44648ba` viability probe). **The human paused here before C (the hearth 3-arm
+obligation-priming sweep, the first campaign-scale judge spend) to steer the campaign phase.** The
+probe surfaced the open setup decision C must resolve first — **the prime effect has to clear two noise
+sources**:
+
+1. **Method-model is uncontrolled.** The free gateway pool is a high-variance MIXTURE (probe: 12–30 task
+   beads / 11–50 edges per run, a different free model each draw vs an oracle of 65 reqs / 162 edges).
+   `@gateway` ≈ `@random-free-model`. Options: pin a single free upstream (if the gateway supports it —
+   unverified; it routes via the `jnoccio/jnoccio-fusion` alias), use a fixed cheap claude (haiku) as the
+   cheap-tier stand-in, or keep the pool and absorb the variance with high K. **Note the tension with the
+   standing directive "free models are the method supply" — pinning departs from it.**
+2. **Judge is uncalibrated.** E0.4 (calibration set + ensemble) is still open; CHARTER says calibrate
+   before scaling, so the lethal-recall numbers aren't yet trustworthy for a real comparison.
+
+Recommended path when resumed: **E0.4 (judge calibration) + pin a single cheap method model, then run a
+clean 3-arm sweep on a strong pinned judge** (the `lethalEdgeRecall` veto falls out of the scorer
+automatically on the quadrant-tagged hearth oracle). The other live-considered options were: pin-model +
+run-C-now (skip E0.4), or keep-the-pool + high-K. The apparatus for all of these is in place.
 
 **What the prior session did (newest first):**
 
