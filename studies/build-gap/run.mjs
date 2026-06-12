@@ -10,8 +10,13 @@
 //
 // Run:
 //   node studies/build-gap/run.mjs --transport gateway --k 5
-//   node studies/build-gap/run.mjs --transport claude --frontier-model claude-sonnet-4-6 --k 5
-//   node studies/build-gap/run.mjs --transport both --k 5            (gateway + claude)
+//   node studies/build-gap/run.mjs --transport claude --frontier-model claude-sonnet-4-6,claude-opus-4-8 --k 5
+//   node studies/build-gap/run.mjs --transport both --k 5            (gateway + every frontier model)
+//
+// "Frontier" is now a LIST (default sonnet + opus): --frontier-model accepts a comma-separated set so a
+// single claude run measures the whole frontier tier ladder (sonnet vs opus) in one shot. This tests
+// whether the M0 finding — obligation-blindness is model-tier-independent — holds at the TOP of the
+// ladder (opus), not just at the sonnet proxy.
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
@@ -30,7 +35,9 @@ const arg = (name, def) => {
 
 const K = Number(arg('k', 5));
 const TRANSPORT = arg('transport', 'gateway'); // gateway | claude | both
-const FRONTIER_MODEL = arg('frontier-model', 'claude-sonnet-4-6');
+// Frontier is a LADDER, not a single proxy: default to sonnet AND opus so one claude run measures both.
+const FRONTIER_MODELS = arg('frontier-model', 'claude-sonnet-4-6,claude-opus-4-8')
+  .split(',').map((s) => s.trim()).filter(Boolean);
 const ONLY_TASK = arg('task', null); // comma-separated list, or null = all discovered tasks
 const TASK_FILTER = ONLY_TASK ? new Set(ONLY_TASK.split(',').map((s) => s.trim()).filter(Boolean)) : null;
 const CONCURRENCY = Number(arg('concurrency', 3));
@@ -44,9 +51,14 @@ function discoverTasks() {
     .map((d) => ({ name: d, spec: fs.readFileSync(path.join(TASKS_DIR, d, 'spec.md'), 'utf8'), testsPath: path.join(TASKS_DIR, d, 'tests.mjs') }));
 }
 
-function makeInvoke(transport) {
-  if (transport === 'gateway') return { invoke: makeGatewayInvoke({ timeoutMs: 240000 }), model: null, label: 'gateway' };
-  return { invoke: claudeInvoke, model: FRONTIER_MODEL, label: `claude:${FRONTIER_MODEL}` };
+// A "tier" is one model-supply under test: the free gateway pool, or a pinned frontier claude model.
+// TRANSPORT selects which tiers run; --frontier-model expands the claude side into one tier per model.
+function makeTiers(transport) {
+  const gateway = () => ({ invoke: makeGatewayInvoke({ timeoutMs: 240000 }), model: null, label: 'gateway' });
+  const frontier = () => FRONTIER_MODELS.map((m) => ({ invoke: claudeInvoke, model: m, label: `claude:${m}` }));
+  if (transport === 'gateway') return [gateway()];
+  if (transport === 'claude') return frontier();
+  return [gateway(), ...frontier()]; // both
 }
 
 async function oneRun(task, t) {
@@ -82,8 +94,7 @@ async function pool(items, limit, fn) {
 
 function pct(n, d) { return d ? `${((100 * n) / d).toFixed(0)}%` : '—'; }
 
-async function measure(transport) {
-  const t = makeInvoke(transport);
+async function measure(t) {
   const tasks = discoverTasks();
   console.error(`\n[${t.label}] K=${K} over ${tasks.length} task(s)...`);
   const perTask = [];
@@ -117,9 +128,9 @@ async function measure(transport) {
 }
 
 (async () => {
-  const transports = TRANSPORT === 'both' ? ['gateway', 'claude'] : [TRANSPORT];
+  const tiers = makeTiers(TRANSPORT);
   const results = [];
-  for (const tr of transports) results.push(await measure(tr));
+  for (const t of tiers) results.push(await measure(t));
 
   // Aggregate table
   console.log(`\n=== M0 BUILD-STAGE GAP — cost vs quality (K=${K}) ===\n`);
@@ -130,8 +141,8 @@ async function measure(transport) {
       console.log(`${r.transport.padEnd(19)}  ${r.task.padEnd(14)}  ${pct(r.validRate * r.k, r.k).padStart(5)}  ${pct(r.happyRate * r.k, r.k).padStart(5)}  ${pct(r.obligationRate * r.k, r.k).padStart(10)}  ${pct(r.obligationRateGivenValid * 100, 100).padStart(9)}  ${('$' + r.avgUsd.toFixed(4)).padStart(8)}`);
     }
   }
-  const outPath = path.join(HERE, 'runs', `m0-${transports.join('-')}-k${K}.json`);
+  const outPath = path.join(HERE, 'runs', `m0-${TRANSPORT}-k${K}.json`);
   fs.mkdirSync(path.dirname(outPath), { recursive: true });
-  fs.writeFileSync(outPath, JSON.stringify({ k: K, frontierModel: FRONTIER_MODEL, results }, null, 2) + '\n');
+  fs.writeFileSync(outPath, JSON.stringify({ k: K, transport: TRANSPORT, frontierModels: FRONTIER_MODELS, results }, null, 2) + '\n');
   console.log(`\nwrote ${path.relative(path.join(HERE, '..', '..'), outPath)}`);
 })();

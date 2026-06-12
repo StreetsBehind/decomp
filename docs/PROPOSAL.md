@@ -142,3 +142,22 @@ work must **scale tasks up** (to stress happy-path at the bare baseline) and/or 
 lift obligations off the floor so size can modulate them). Apparatus seed in place: 3 atomic concerns +
 `mono-user-content` (size {1,3} measured, flat). Next: concern-registry + chunk composer, more concerns
 (→6), rungs {1,2,3,6}.
+
+### The reframe + the COHESION turn (2026-06-12) — see [`../studies/build-gap/DESIGN.md`](../studies/build-gap/DESIGN.md)
+
+The user sharpened the Build stage to: **what combination of harness _shape_ × task _size_ lets a cheap
+model match a frontier model run BARE — measured not only per task, but as one cohesive epic?** Two
+changes: (1) the bar is now `frontier-bare`, the contender is `cheap+harness` (M0's tier-independence
+makes that a beatable bar); (2) **the unit of success is an epic** — build sessions that each pass their
+own tests but don't assemble into one consistent system are a failure. Cohesion is first-class.
+
+- **Opus added to the frontier ladder.** `run.mjs` now sweeps sonnet **and** opus. Result: opus
+  _partially_ breaks tier-independence — `update-profile` obligation 0% (sonnet) → 100% (opus); the bar is
+  higher than the sonnet proxy implied, but opus still misses validation and costs ~4–5× sonnet. (RESULTS)
+- **The cohesion instrument is built + mutation-tested.** A `workspace` epic fixture (5 connected
+  surfaces, shared multi-tenant model, an addMember→postComment membership seam that drifts under naive
+  decomposition), a multi-module sandbox, and a 3-bucket oracle (wireability / integration / cross-cutting
+  uniformity). `tools/epic-oracle-selftest.mjs` proves it scores a correct epic full marks and DETECTS
+  both interface drift and fragmented guards. **This is the apparatus M0 lacked — cross-cutting uniformity
+  is not floored at 0, so task size finally modulates a measurable outcome.** Next: run M-coh-0 (the two
+  anchors) → M-coh-1 (the skeleton lever) → the size×harness surface.
