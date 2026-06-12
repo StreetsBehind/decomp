@@ -124,6 +124,21 @@ A small corpus of self-contained build tasks under `studies/build-gap/`. Each ta
   never sees the obligation tests.
 
 Grading is deterministic + free (run the tests). Measure **frontier (claude) vs cheap (gateway)**, N runs
-each → pass-rate on happy-path **vs** obligations, plotted against cost. Hypothesis: cheap models pass the
-happy path but silently skip the obligations — the gap a harness lever (verification/priming) should close.
-Cheapest-first: prove the rig on the free gateway ($0), then add the frontier baseline.
+each → pass-rate on happy-path **vs** obligations, plotted against cost.
+
+### M0 result + the size reframe (2026-06-12) — see [`../studies/build-gap/RESULTS.md`](../studies/build-gap/RESULTS.md)
+
+**Key finding:** the obligation miss is **model-tier-independent** — frontier (sonnet) skips authz /
+mass-assignment / validation just like the cheap pool (both 0%; both pass happy-path ~100%). Only an
+*idiomatic* obligation (tenancy filter) gets added unprompted. So on the requirements that matter,
+paying for frontier barely helps → it's a **spec/harness gap, not a model gap** (good for the thesis).
+The two real gaps: **reliability** (cheap emits invalid code more often → retry/sampling lever) and
+**obligations** (everyone misses → name-in-assignment + checker levers).
+
+**Decided next (user, 2026-06-12): "both, size axis first."** But note the methodological catch logged
+in RESULTS: with a BARE model the obligation floor is 0 at every size tested, so a bare size sweep is
+flat/uninformative on obligations and happy-path doesn't break at ≤3 concerns. The next session's size
+work must **scale tasks up** (to stress happy-path at the bare baseline) and/or **bring a lever** (to
+lift obligations off the floor so size can modulate them). Apparatus seed in place: 3 atomic concerns +
+`mono-user-content` (size {1,3} measured, flat). Next: concern-registry + chunk composer, more concerns
+(→6), rungs {1,2,3,6}.

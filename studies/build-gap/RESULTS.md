@@ -54,7 +54,48 @@ frontier generations cost money.
   partly a spec-quality question. That's the point: it tells us the decompose/plan stages must put the
   obligations *into* the assignment, OR a checker must enforce them. M1 tests exactly that.
 
-## Next (M1) — the two levers × task size
+## M0 follow-up — cheap-side at K=5, and the atomic-vs-mono size contrast (2026-06-12)
+
+Cheap (gateway) at K=5, atomic concerns + the monolithic bundle:
+
+| task | valid | happy | obligation |
+|---|---|---|---|
+| list-projects (tenancy) | 100% | 100% | **100%** (the K=3 67% was noise) |
+| update-profile (authz) | 100% | 100% | **0%** |
+| post-comment (validation) | 80% | 80% | **0%** (one invalid draw) |
+| mono-user-content (all 3, size≈3) | 100% | 100% | **0%** |
+
+**Two things consolidated across cheap+frontier, K=3 and K=5:**
+
+1. **The obligation floor is model-tier-independent AND, so far, size-independent.** The non-idiomatic
+   obligations (authz, mass-assignment, validation) sit at **0% for both tiers at both sizes** (atomic
+   *and* the size-3 monolith). The one idiomatic obligation (tenancy filter) is done by both tiers.
+2. **Happy-path is robust at these sizes** (≤3 concerns) for both tiers — the monolith did not drop a
+   sub-feature.
+
+**The methodological consequence for "size axis first" (important for the next session):** with a BARE
+model, obligations are floored at 0, so a size curve over obligations is **flat at 0 — uninformative**;
+and happy-path doesn't break until tasks are much bigger than 3 concerns. So the size effect only
+becomes visible when EITHER (a) tasks are scaled up enough to break the happy path / validity at the
+bare baseline, OR (b) a lever lifts obligations off the floor so task size can modulate them. Pure
+bare-model size sweeps at small sizes won't show a curve.
+
+## Next (M1) — size axis, made informative (per the "both, size axis first" decision)
+
+Concrete next moves for a fresh session, cheapest-first:
+
+1. **Scale the size ladder up.** Author ~3 more concerns (→ 6) so the monolith is big enough to stress
+   the happy path; build a concern-registry + chunk composer so the SAME work can be built at chunk
+   sizes {1, 2, 3, 6}; sweep cheap vs frontier and plot happy/validity vs chunk size → find each tier's
+   bare break-point. (The current 3 concerns + `mono-user-content` are the seed; size {1,3} is already
+   measured and flat — need bigger + more rungs.)
+2. **Then the obligation-size curve needs a lever** (since bare obligations are floored): add the
+   **assignment lever** (name the obligations in the spec) and re-sweep size — does naming fix it, and
+   do big chunks drop *named* obligations? That interaction is the optimal-size-×-harness signal that
+   tells decompose what to emit.
+3. **Checker lever** (verify + re-prompt) as the model-tier-independent fix for the obligation floor.
+
+## Original M1 sketch — the two levers × task size
 
 1. **Assignment lever:** re-run with the obligations *named* in the spec. Do both tiers then pass? Does
    it hold as task size grows (atomic → monolithic), or do big tasks drop named obligations?
