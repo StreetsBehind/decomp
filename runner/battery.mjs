@@ -30,7 +30,7 @@ import { scoreOutcomeCoverage } from '../eval/outcome-coverage.mjs';
 import { scoreGenerativeCoverage } from '../eval/generative-coverage.mjs';
 import { scoreGranularity } from '../eval/granularity.mjs';
 import { GRANULARITY_LEVEL_IDS } from '../strategies/granularity.mjs';
-import { claudeInvoke } from './model-client.mjs';
+import { claudeInvoke, makeGatewayInvoke } from './model-client.mjs';
 import { makeBatteryMockInvoke, makeStubJudge } from './mock-table.mjs';
 import { makeClaudeJudge } from './judge.mjs';
 import { validate } from './validate-schema.mjs';
@@ -157,6 +157,25 @@ function resolveJudgeModel(opts = {}) {
   return undefined; // makeClaudeJudge falls back to its fixed mid-tier default
 }
 
+/**
+ * The METHOD transport in LIVE mode: 'claude' (the CLI) or 'gateway' (the jnoccio free-model supply,
+ * the A1 cheap-tier precondition). The JUDGE NEVER moves — it stays on the pinned claude regardless
+ * (CHARTER §5.3). CLI: `--transport gateway`. Default 'claude'. Ignored in mock mode.
+ */
+function resolveTransport(opts = {}) {
+  const t = (opts.transport || readStringFlag('transport') || 'claude').toLowerCase();
+  if (t !== 'claude' && t !== 'gateway') {
+    throw new Error(`--transport: unknown '${t}' (expected 'claude' or 'gateway')`);
+  }
+  return t;
+}
+
+// A8: a method that can't produce a valid snapshot gets a budgeted number of RETRIES (the gateway
+// re-routes to a different free upstream each time), and an EXHAUSTED method scores 0 (an empty
+// snapshot) rather than being silently dropped — dropping would bias its average upward by counting
+// only its lucky runs. Free models are the flakiest, so this lives in the runner, not the smoke.
+const METHOD_MAX_ATTEMPTS = 3;
+
 // --- fixture discovery ------------------------------------------------------
 const FIXTURE_FILES = ['plan.lock.json', 'outcome-manifest.json', 'planted-gaps.json'];
 
@@ -189,6 +208,40 @@ function loadFixture(fx) {
   // generativeCoverage, not build-completeness. This is read from the immutable lock, not declared.
   const thin = !lock || typeof lock.features !== 'object' || lock.features === null;
   return { name: fx.name, dir: fx.dir, fixtureHash, lock, manifest, plantedGaps, planMd, thin };
+}
+
+// A8 score-0: the snapshot a method that exhausted its retries is scored on — an epic-only
+// decomposition. Every coverage axis scores ~0 against it (verified: fidelity/granularity/outcome/
+// generative all return 0/empty), so an unrecoverable method counts as a miss, not a dropped run.
+export function emptySnapshot(fixtureName) {
+  return { beads: [{ id: 'epic-0', type: 'epic', title: fixtureName, status: 'open', metadata: {} }], edges: [], ready: [] };
+}
+
+/**
+ * Run one strategy with A8 budgeted retries. Each attempt re-invokes the strategy (with the gateway
+ * transport that means re-routing to a different free upstream). An attempt is VALID iff the result
+ * passes assertRunResult + assertSnapshotShape AND has ≥1 non-epic bead — the last guard rejects a
+ * truncated/garbled response that parsed into a structurally-valid but EMPTY snapshot (the exact
+ * gateway output-cap failure mode; without it that scores a silent 0 and never retries).
+ * @returns {Promise<{result:object|null, lastErr:Error|null, attemptsUsed:number}>} result=null ⇒ exhausted.
+ */
+export async function attemptRun({ strategy, fixtureArg, ctx, attempts, onRetry }) {
+  let lastErr = null;
+  for (let attempt = 1; attempt <= attempts; attempt++) {
+    try {
+      const cand = await strategy.run(fixtureArg, ctx);
+      assertRunResult(strategy.name, cand);
+      assertSnapshotShape(strategy.name, cand.snapshot);
+      if (cand.snapshot.beads.filter((b) => b.type !== 'epic').length === 0) {
+        throw new Error('empty decomposition (0 task beads) — likely truncated/invalid model output');
+      }
+      return { result: cand, lastErr: null, attemptsUsed: attempt };
+    } catch (e) {
+      lastErr = e;
+      if (attempt < attempts && onRetry) onRetry(attempt, e);
+    }
+  }
+  return { result: null, lastErr, attemptsUsed: attempts };
 }
 
 // --- minimal snapshot validation (no ajv; reuse assertRunResult + extra) ----
@@ -282,6 +335,7 @@ export async function runBattery(opts = {}) {
   const models = resolveModels(opts);       // the sweep dimension (labels; [null] = one bare run)
   const granularities = resolveGranularities(opts); // the dose dimension ([null] = no knob)
   const judgeModel = resolveJudgeModel(opts); // HELD FIXED across the whole sweep
+  const transport = resolveTransport(opts);   // method transport in LIVE mode (claude|gateway)
   const fixtureFilter = resolveFixtureFilter(opts); // null = all; else a Set of fixture names
   const strategyFilter = resolveStrategyFilter(opts); // null = all; else a Set of strategy names
   if (strategyFilter) {
@@ -306,11 +360,12 @@ export async function runBattery(opts = {}) {
     invoke = makeBatteryMockInvoke(fixtures.map((f) => ({ name: f.name, manifest: f.manifest })));
     judge = makeStubJudge();
   } else {
-    invoke = claudeInvoke;
-    // The judge model is HELD FIXED for the whole run (a separate control from the swept method model).
+    // METHOD transport: the swept cheap-tier gateway, or the claude CLI. The JUDGE is ALWAYS claude
+    // (apparatus stays on the pinned strong model — CHARTER §5.3), independent of the method transport.
+    invoke = transport === 'gateway' ? makeGatewayInvoke() : claudeInvoke;
     judge = makeClaudeJudge(claudeInvoke, judgeModel ? { model: judgeModel } : {});
   }
-  console.log(`Battery mode: ${mode.toUpperCase()}${mode === 'mock' ? ' (ZERO spend — deterministic mock invoke + stub judge)' : ' (real claude CLI — spends money)'}`);
+  console.log(`Battery mode: ${mode.toUpperCase()}${mode === 'mock' ? ' (ZERO spend — deterministic mock invoke + stub judge)' : ` (real ${transport === 'gateway' ? 'jnoccio GATEWAY (free cheap-tier) methods + claude JUDGE' : 'claude CLI'} — ${transport === 'gateway' ? 'judge spends' : 'spends money'})`}`);
   console.log(`Model sweep: ${models.map((m) => m ?? '(strategy default)').join(', ')}   |   judge model (fixed): ${judgeModel ?? '(judge default)'}`);
   console.log(`Granularity sweep: ${granularities.map((g) => g ?? '(none)').join(', ')}`);
 
@@ -364,20 +419,60 @@ export async function runBattery(opts = {}) {
             dir: ws,
           };
 
-          let result;
-          try {
-            // ctx carries the mode's invoke + the swept knobs; a strategy NEVER reaches for the
-            // CLI itself. ctx.model / ctx.granularity are read by generative strategies.
-            result = await strategy.run(fixtureArg, { signal: undefined, invoke, model, granularity: gran });
-          } catch (e) {
-            // One strategy must never crash the matrix. Record + continue.
-            const note = { variant, strategy: strategy.name, fixture: fixture.name, skipped: true, reason: e.message };
-            skipped.push(note);
-            break; // skip remaining repeats for this (variant, fixture)
+          // A8 retries: the gateway re-routes to a different free upstream on each attempt, so a flaky
+          // free model gets METHOD_MAX_ATTEMPTS tries; claude/mock keep their single deterministic try
+          // (claudeInvoke does its own transient retry). Per-call resolved routes are captured for A8
+          // reproducibility and persisted alongside the snapshot.
+          const gatewayLive = mode === 'live' && transport === 'gateway';
+          const attempts = gatewayLive && !strategy.deterministic ? METHOD_MAX_ATTEMPTS : 1;
+          const routes = [];
+          const runInvoke = gatewayLive
+            ? async (a) => {
+                const rr = await invoke(a);
+                routes.push({ model: rr.model ?? null, route: rr.route ?? null, requestId: rr.requestId ?? null, finishReason: rr.finishReason ?? null });
+                return rr;
+              }
+            : invoke;
+
+          // ctx carries the mode's invoke + the swept knobs; a strategy NEVER reaches for the CLI itself.
+          const { result: ran, lastErr } = await attemptRun({
+            strategy,
+            fixtureArg,
+            ctx: { signal: undefined, invoke: runInvoke, model, granularity: gran },
+            attempts,
+            onRetry: (attempt, e) => console.log(`  ${variant}/${fixture.name}/r${r}: attempt ${attempt}/${attempts} invalid (${e.message.slice(0, 80)}) — re-routing`),
+          });
+          let result = ran;
+
+          if (!result) {
+            if (attempts === 1) {
+              // claude/mock: a failure here is most likely a real bug, not a routing flake. Preserve the
+              // original behavior — record + skip the remaining repeats for this (variant, fixture).
+              skipped.push({ variant, strategy: strategy.name, fixture: fixture.name, skipped: true, reason: lastErr.message });
+              break;
+            }
+            // gateway exhausted its budgeted retries → SCORE 0 (epic-only snapshot), don't drop the run
+            // (dropping biases the method's average upward). Repeats are independent draws, so continue.
+            skipped.push({ variant, strategy: strategy.name, fixture: fixture.name, scoredZero: true, reason: `gateway method exhausted ${attempts} attempts: ${lastErr.message}` });
+            result = { snapshot: emptySnapshot(fixture.name), gaps: [], cost: { outputTokens: 0, agents: 0, wallClockSec: 0, usd: 0, model: model ?? null } };
           }
 
-          assertRunResult(strategy.name, result);
-          assertSnapshotShape(strategy.name, result.snapshot);
+          // A8: record WHICH free upstream(s) actually served this run on the cost record (the gateway
+          // route is the resolved model; the requested model is just the gateway alias). The variant
+          // label keeps the requested id; the cost record carries ground truth for reproducibility.
+          if (gatewayLive && routes.length && result.cost) {
+            const distinct = [...new Set(routes.map((x) => x.route || x.model).filter(Boolean))];
+            if (distinct.length) result.cost.model = distinct.join('+');
+          }
+
+          // Persist the snapshot (KT#1: the literal kill-test re-score was impossible because Step-2/3
+          // discarded theirs — never again) + the resolved routes (A8 reproducibility) into the run's ws.
+          if (mode === 'live') {
+            try {
+              fs.writeFileSync(path.join(ws, 'snapshot.json'), JSON.stringify(result.snapshot, null, 2));
+              if (routes.length) fs.writeFileSync(path.join(ws, 'routes.json'), JSON.stringify(routes, null, 2));
+            } catch { /* persistence is best-effort; never fail a scored run over it */ }
+          }
 
           const fidelity = scoreFidelity(result.snapshot, fixture.manifest);
           const catchRate = scoreCatchRate(result.gaps || [], fixture.plantedGaps);

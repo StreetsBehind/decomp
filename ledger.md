@@ -38,3 +38,8 @@ partially compromise this run (argv-limit skips; confounded audit A/B).**
 Run cost ≈ $25–55 (method-side measured $6.81; ~600 sonnet judge calls are grader cost, not captured per
 scorecard). No method reached `buildComplete` on this thin plan. Edges are the universal weak point
 (0.27–0.57). No clean model winner. The expensive methods did not clearly out-earn cheap single-session.
+
+| 1 | single-session | sso-greenfield | 8aceba61b344 | 2 | 38 | false | recall=n/a fp=0 | 4096 | 1 | 29.363 | gen=0 edge=0 present=0 ready=1 | scored |
+| 2 | single-session | sso-greenfield | 8aceba61b344 | 2 | 30 | false | recall=n/a fp=8 | 2066 | 1 | 93.5492 | gen=0.167 edge=0.059 present=0.308 ready=1 | scored |
+| 1 | single-session | sso-greenfield | 8aceba61b344 | 2 | 18 | false | recall=n/a fp=9 | 3522 | 1 | 10.671 | gen=0.3 edge=0.294 present=0.308 ready=1 | scored |
+| 2 | single-session | sso-greenfield | 8aceba61b344 | 2 | 30 | false | recall=n/a fp=8 | 2869 | 1 | 257.2319 | gen=0.233 edge=0.118 present=0.385 ready=1 | scored |

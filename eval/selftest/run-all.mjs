@@ -14,8 +14,9 @@ import c1Lint from './c1-lint.selftest.mjs';
 import partitionRecall from './partition-recall.selftest.mjs';
 import quadrantRecall from './quadrant-recall.selftest.mjs';
 import gatewayInvoke from './gateway-invoke.selftest.mjs';
+import batteryRetry from './battery-retry.selftest.mjs';
 
-const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity, rulerMutation, openQuestionChannel, c1Lint, partitionRecall, quadrantRecall, gatewayInvoke];
+const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity, rulerMutation, openQuestionChannel, c1Lint, partitionRecall, quadrantRecall, gatewayInvoke, batteryRetry];
 
 let failed = 0;
 for (const suite of SUITES) {

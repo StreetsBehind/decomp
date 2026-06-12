@@ -69,12 +69,19 @@ prior forks were merged and their branches deleted; PR #1 auto-merged). `npm run
    proof-staircase **Step 2** killed the naive join — see `STAIRCASE-RESULTS.md`). The proven rulers, the
    partition (seam vs intra) scorer, and the 3-arm obligation-priming experiment stayed LIVE.
 
-**Next-work order (A — the kill-tests — is now DONE; see §00.1 + `KILL-TESTS.md`):**
+**Next-work order (A done; B done; C is next):**
 
-- **B — grid-mode wiring for the gateway.** Make jnoccio a battery transport (`--mode`/`--transport
-  gateway`; the JUDGE stays on the pinned strong claude). **Move retry-on-invalid from the smoke into the
-  runner** (A8: retries budgeted to the method, exhausted → score 0) and record the resolved model on the
-  cost record / ledger. **NEW from KT#1: persist the snapshot per run** so re-scores never need a re-run.
+- **B — grid-mode gateway transport — ✅ DONE (commit pending this session).** `node runner/battery.mjs
+  --mode live --transport gateway` runs methods on the free jnoccio supply; the JUDGE stays on pinned
+  claude (`--judge-model`). A8 retry-on-invalid is in the runner (`attemptRun`, selftested): the gateway
+  re-routes per attempt, an **empty/truncated (0-task-bead) snapshot is rejected** (the real failure mode
+  — a free model that hits the output cap parses into a structurally-valid empty snapshot), and an
+  exhausted method scores 0 (epic-only snapshot) instead of being dropped. **Snapshots + resolved routes
+  now persist** to `runs/live/<variant>/<fixture>/rK/ws/{snapshot,routes}.json`; the resolved upstream is
+  stamped on the cost record. Validated live on `sso-greenfield` (free models gpt-oss-120b /
+  gemini-flash-lite / qwen3-coder produced valid decompositions; one kimi draw truncated → now retried).
+  **Live lesson banked:** free models are flaky on real decomposition (truncation/empty draws are common)
+  — the retry is load-bearing, and large fixtures (hearth) may exhaust more often.
 - **C — the hearth 3-arm sweep** (obligation-priming → seam recall; Step 3 headroom was GO). Now scored
   with the re-spec'd endpoint: `lethalEdgeRecall` is the veto (a primed arm that lifts aggregate while
   dropping lethal recall is rejected) — this falls out of the scorer automatically on the quadrant-tagged
