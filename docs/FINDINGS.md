@@ -9,6 +9,64 @@ dollar under a cheap-model precondition?**_
 
 ---
 
+## 00. RESUME HERE — session 2026-06-11 (latest; SUPERSEDES §0a/§0b below)
+
+The repo is **reshaped around the reconciled direction and is all on `main`** (single branch — the two
+prior forks were merged and their branches deleted; PR #1 auto-merged). `npm run selftest` = **12 suites
+/ 289 assertions** green; `battery:mock` clean. Everything below §0a/§0b is kept as history.
+
+**What this session did (newest first):**
+
+1. **E0.5 — cheap-tier transport WIRED + proven (commit `71bbb74`).** `makeGatewayInvoke`
+   (`runner/model-client.mjs`) calls **jnoccio**, an OpenAI-compatible gateway running live on
+   `http://127.0.0.1:4317` (model `jnoccio/jnoccio-fusion`, bearer `jnoccio-local`), as the FREE
+   adaptive cheap-model supply. It routes each call across many free upstreams and returns the
+   **resolved** model + `winner_model_id` + `request_id` (record these — A8 reproducibility). Live
+   smoke `tools/jnoccio-smoke.mjs`: **10/10 valid snapshots across 9 distinct upstreams, 0 truncations,
+   $0.** Uniformity guards (temperature 0, `max_tokens=16384` so the gateway's per-model output clamp is
+   a no-op) are pinned by `eval/selftest/gateway-invoke.selftest.mjs`. **Decision: keep the FULL gateway
+   roster** — do NOT disable low-cap models or restart the shared gateway; the 16k budget +
+   **retry-on-invalid** (re-routes past a weak draw) handles truncation/disobedience. **ZYAL was
+   evaluated and rejected** (Jekko-runtime-coupled; would inject a confound) — builder uniformity lives
+   in our byte-identical prompt-contract + transport. Full detail: memory `jnoccio-gateway-access.md`.
+
+2. **The two research forks were RECONCILED + unified.** A blind v2 program (granularity × deferral ×
+   build economics) and the archetype/obligations evidence converged on the same spine
+   (build-as-discovery). Read **`docs/RECONCILIATION.md`** — the bridge, and the keystone finding: v2's
+   repair-premium **ρ is quadrant-censored**, so the §2.6/H3 median rule would falsely crown deferral.
+   The 7 resulting revisions live in **`RESEARCH-PROGRAM.md` §10**, each marked *pending* a $0 kill-test.
+
+3. **Reshaped trunk.** The obligations layer (the typed *lethal quadrant*) is promoted to
+   **`docs/OBLIGATIONS.md`**. The dormant edge-join *mechanism* + the original surface-discovery/curation
+   specs are parked in **`archive/`** with a tombstone + revival path (dictionary-first canonicalization;
+   proof-staircase **Step 2** killed the naive join — see `STAIRCASE-RESULTS.md`). The proven rulers, the
+   partition (seam vs intra) scorer, and the 3-arm obligation-priming experiment stayed LIVE.
+
+**Next-work order (the §0b order below is SUPERSEDED — E0.5 is DONE):**
+
+- **A — the two $0 quadrant kill-tests** (`BUILD-TOLERANT-REFRAME.md` kill-tests; `RECONCILIATION.md`
+  §6): cost-weighted hearth re-score + build-batch history. They confirm/refute the quadrant structure
+  and decide whether the §10 ρ revision is *forced*. This is the original "before we run the research"
+  gate — run before any spend.
+- **B — grid-mode wiring for the gateway.** Make jnoccio a battery transport (`--mode`/`--transport
+  gateway`; the JUDGE stays on the pinned strong claude). **Move retry-on-invalid from the smoke into the
+  runner** (A8: retries budgeted to the method, exhausted → score 0) and record the resolved model on the
+  cost record / ledger.
+- **C — the hearth 3-arm sweep** (obligation-priming → seam recall; Step 3 headroom was GO).
+- Then the v2 Phase-0 remainder: **E0.4** (judge calibration + ensemble), **E0.6** (corpus growth —
+  multi-feature & seam-partitioned per `RECONCILIATION.md` change E), **E0.8** (Tier-2 builder loop =
+  §4.5 host-enforced apparatus, the lightweight in-harness version of the ZYAL principle).
+
+**Blocked on human:** where the big grids run (a persistent machine — wall-clock is the real cost:
+~95 s per valid gateway call). Gateway access + an authenticated `claude` (for the judge) are both
+present on this machine.
+
+**Durable memory** (loaded every session via `~/.claude/.../memory/MEMORY.md`): see
+`v2-archetype-reconciliation`, `jnoccio-gateway-access`, `build-tolerant-reframe`, plus the staircase /
+prior-art notes.
+
+---
+
 ## 0a. Apparatus update (2026-06-11) — Phase-0 instrument work landed
 
 Four of the v2 program's Phase-0 items are built, selftested (186 assertions), and verified on the
