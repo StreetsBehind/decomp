@@ -441,6 +441,16 @@ export async function runBattery(opts = {}) {
                 ...(generativeCoverage.edgeCoverageByPartition
                   ? { edgeByPartition: Object.fromEntries(Object.entries(generativeCoverage.edgeCoverageByPartition).map(([p, v]) => [p, round(v.score, 4)])) }
                   : {}),
+                // PER-QUADRANT edge recall (cost-of-omission 2x2) + COST-WEIGHTED recall — present
+                // ONLY on a quadrant-tagged manifest (BUILD-TOLERANT-REFRAME.md kill-test #1). The
+                // kill-test read: if cost-weighting re-orders methods vs uniform edgeCoverage, uniform
+                // recall measured the wrong thing. lethalRecall is the veto scalar (RECONCILIATION B).
+                ...(generativeCoverage.edgeCoverageByQuadrant
+                  ? { edgeByQuadrant: Object.fromEntries(Object.entries(generativeCoverage.edgeCoverageByQuadrant).map(([q, v]) => [q, round(v.score, 4)])) }
+                  : {}),
+                ...(generativeCoverage.costWeightedEdgeRecall
+                  ? { costWeightedEdgeRecall: round(generativeCoverage.costWeightedEdgeRecall.costWeighted, 4), lethalEdgeRecall: round(generativeCoverage.costWeightedEdgeRecall.lethalRecall, 4) }
+                  : {}),
               },
               buildCompleteness: {
                 buildComplete: buildCompleteness.buildComplete,

@@ -954,973 +954,1622 @@
       "fromPlanKey": "sso-auth-initiate",
       "toPlanKey": "sso-idp-config",
       "why": "Initiating the handshake needs the org's registered IdP endpoints/credentials.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "sso-assertion-callback",
       "toPlanKey": "sso-idp-config",
       "why": "Validating the assertion needs the IdP's signing certificate/JWKS and audience config.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "sso-assertion-callback",
       "toPlanKey": "sso-auth-initiate",
       "why": "The callback validates the state/nonce produced when the handshake was initiated.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "sso-assertion-callback",
       "toPlanKey": "user-model",
       "why": "A validated assertion provisions or matches a user record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "session-establish",
       "toPlanKey": "sso-assertion-callback",
       "why": "A session is only established after the assertion is validated.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "session-establish",
       "toPlanKey": "user-model",
       "why": "The session is bound to the resolved user identity.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "session-validate-middleware",
       "toPlanKey": "session-establish",
       "why": "Middleware validates the session token/cookie that establishment issues.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "sign-out",
       "toPlanKey": "session-establish",
       "why": "Sign-out destroys the session that was established.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "auth-ui",
       "toPlanKey": "sso-auth-initiate",
       "why": "The sign-in UI triggers the SSO initiation flow.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "auth-ui",
       "toPlanKey": "sign-out",
       "why": "The UI exposes the sign-out control.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "team-model",
       "toPlanKey": "org-model",
       "why": "Teams are nested under an organization.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "org-membership-model",
       "toPlanKey": "org-model",
       "why": "Membership links a user into an organization.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "org-create",
       "toPlanKey": "org-model",
       "why": "Creating an org writes the org record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "team-manage",
       "toPlanKey": "team-model",
       "why": "Team management operates on team records.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "team-manage",
       "toPlanKey": "org-membership-model",
       "why": "Placing members on teams operates on membership.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-model",
       "toPlanKey": "org-model",
       "why": "An invitation belongs to an organization.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-create",
       "toPlanKey": "invite-model",
       "why": "Creating an invite writes an invitation record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "invite-email-send",
       "toPlanKey": "invite-create",
       "why": "The email is sent for the invitation that was created.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "invite-email-send",
       "toPlanKey": "invite-model",
       "why": "The email carries the invitation token from the record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "invite-accept",
       "toPlanKey": "invite-model",
       "why": "Acceptance validates and consumes the invitation token.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-accept",
       "toPlanKey": "org-membership-model",
       "why": "Accepting creates the org membership.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "invite-decline",
       "toPlanKey": "invite-model",
       "why": "Declining updates the invitation status.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-ui",
       "toPlanKey": "invite-create",
       "why": "The UI drives invite creation.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "invite-ui",
       "toPlanKey": "invite-accept",
       "why": "The accept landing page drives acceptance.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "invite-ui",
       "toPlanKey": "invite-decline",
       "why": "The landing page drives decline.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "roster-read",
       "toPlanKey": "org-membership-model",
       "why": "The roster reads membership records.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "member-remove",
       "toPlanKey": "org-membership-model",
       "why": "Removal deletes/deactivates a membership.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "org-create",
       "toPlanKey": "org-membership-model",
       "why": "Creating an org makes the creator the first member/owner.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "role-model",
       "toPlanKey": "org-membership-model",
       "why": "Roles attach to an org membership.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "permission-model",
       "toPlanKey": "role-model",
       "why": "Permission mapping is defined over roles.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "role-assignment",
       "toPlanKey": "role-model",
       "why": "Assignment sets a membership's role.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "role-assignment",
       "toPlanKey": "org-membership-model",
       "why": "Role assignment operates on a membership record.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "authz-enforcement-middleware",
       "toPlanKey": "permission-model",
       "why": "Enforcement consults the role-to-permission mapping.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "authz-enforcement-middleware",
       "toPlanKey": "role-model",
       "why": "Enforcement reads the principal's role.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "authz-enforcement-middleware",
       "toPlanKey": "session-validate-middleware",
       "why": "Authorization needs the authenticated principal resolved by session validation.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "authz-ui-gating",
       "toPlanKey": "role-model",
       "why": "The UI gates affordances on the viewer's role.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "tenant-scoping",
       "toPlanKey": "org-membership-model",
       "why": "Scoping resolves the principal's org from their membership.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "tenant-scoping",
       "toPlanKey": "session-validate-middleware",
       "why": "Scoping needs the authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-create",
       "toPlanKey": "session-validate-middleware",
       "why": "Only an authenticated principal can send an invite.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-create",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Only owners/admins may invite; the action is authorization-gated.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "invite-accept",
       "toPlanKey": "sso-assertion-callback",
       "why": "Acceptance must bind to a verified SSO identity for the invited email.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-accept",
       "toPlanKey": "user-model",
       "why": "Acceptance ties the invite to the accepting user identity.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-accept",
       "toPlanKey": "role-model",
       "why": "The membership created on accept is assigned the invited role.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "member-remove",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Removing a member is an owner/admin-only people-management action.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "role-assignment",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Changing roles is an owner/admin-only action.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "team-manage",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Managing teams is a privileged org-management action.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "roster-read",
       "toPlanKey": "tenant-scoping",
       "why": "Roster reads must be scoped to the caller's org.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "roster-read",
       "toPlanKey": "session-validate-middleware",
       "why": "Reading the roster requires an authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-ui",
       "toPlanKey": "app-shell-ui",
       "why": "The invite management UI lives inside the authenticated app shell.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-ui",
       "toPlanKey": "authz-ui-gating",
       "why": "The invite affordance is shown only to owners/admins.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "roster-read",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Reading the roster is org/people-management gated server-side.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "project-model",
       "toPlanKey": "org-model",
       "why": "Projects are nested under an organization.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-create",
       "toPlanKey": "project-model",
       "why": "Creating a project writes the project record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-membership",
       "toPlanKey": "project-model",
       "why": "Project access is defined against a project.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-membership",
       "toPlanKey": "org-membership-model",
       "why": "Only org members can be on a project.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-model",
       "toPlanKey": "project-model",
       "why": "Tasks belong to a project.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "task-create",
       "toPlanKey": "task-model",
       "why": "Creating a task writes a task record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "task-create",
       "toPlanKey": "project-membership",
       "why": "A member creates a task only within a project they have access to.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-assign",
       "toPlanKey": "task-model",
       "why": "Assignment sets the task's assignee.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "task-assign",
       "toPlanKey": "project-membership",
       "why": "A task may only be assigned to someone with project access.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-edit",
       "toPlanKey": "task-model",
       "why": "Editing mutates task fields.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "task-complete",
       "toPlanKey": "task-model",
       "why": "Completion flips the task status.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "task-read",
       "toPlanKey": "task-model",
       "why": "Reading lists task records.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "task-comment",
       "toPlanKey": "task-model",
       "why": "Comments attach to a task.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-task-ui",
       "toPlanKey": "task-create",
       "why": "The UI drives task creation.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-task-ui",
       "toPlanKey": "task-assign",
       "why": "The UI drives assignment.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-task-ui",
       "toPlanKey": "task-edit",
       "why": "The UI drives editing.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-task-ui",
       "toPlanKey": "task-complete",
       "why": "The UI drives completion.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-task-ui",
       "toPlanKey": "task-read",
       "why": "The UI lists projects and tasks.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-create",
       "toPlanKey": "session-validate-middleware",
       "why": "Creating a project requires an authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "project-create",
       "toPlanKey": "tenant-scoping",
       "why": "Projects are created within the caller's org only.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "task-create",
       "toPlanKey": "session-validate-middleware",
       "why": "Creating a task requires an authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-create",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Task creation is permission-gated to members with project access.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-assign",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Assignment is permission-checked server-side.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-assign",
       "toPlanKey": "org-membership-model",
       "why": "The assignee must be a member of the org.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-edit",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Editing is permission-checked server-side.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-complete",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Completion is permission-checked server-side.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-read",
       "toPlanKey": "tenant-scoping",
       "why": "Task reads are scoped to the caller's org/project access.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "project-task-ui",
       "toPlanKey": "app-shell-ui",
       "why": "Project/task views live in the authenticated app shell.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "project-task-ui",
       "toPlanKey": "authz-ui-gating",
       "why": "Task affordances reflect the viewer's permissions.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "file-model",
       "toPlanKey": "task-model",
       "why": "An attachment links to a task.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "file-upload",
       "toPlanKey": "file-model",
       "why": "Upload creates the attachment record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-upload",
       "toPlanKey": "file-storage",
       "why": "Upload stores the file bytes in object storage.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-av-scan",
       "toPlanKey": "file-upload",
       "why": "Scanning runs against the uploaded bytes.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "file-av-scan",
       "toPlanKey": "file-storage",
       "why": "The scanner reads the stored object.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "file-download",
       "toPlanKey": "file-model",
       "why": "Download resolves the attachment metadata.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-download",
       "toPlanKey": "file-storage",
       "why": "Download streams bytes from object storage.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-download",
       "toPlanKey": "file-av-scan",
       "why": "Files are only downloadable after passing the AV scan.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "file-ui",
       "toPlanKey": "file-upload",
       "why": "The UI drives attaching files.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-ui",
       "toPlanKey": "file-download",
       "why": "The UI drives downloading files.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-upload",
       "toPlanKey": "session-validate-middleware",
       "why": "Uploading requires an authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "file-upload",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Attaching to a task requires permission on that task's project.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-upload",
       "toPlanKey": "project-membership",
       "why": "Only people with project access can attach files to its tasks.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "file-download",
       "toPlanKey": "session-validate-middleware",
       "why": "Downloading requires an authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "file-download",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Every download re-checks authorization for the file's task/project.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-download",
       "toPlanKey": "tenant-scoping",
       "why": "Downloads are scoped so no cross-tenant file access is possible.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "file-ui",
       "toPlanKey": "project-task-ui",
       "why": "File attachments are surfaced within task detail.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "audit-log-model",
       "why": "Writing audit events appends to the audit log.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "audit-log-read",
       "toPlanKey": "audit-log-model",
       "why": "Review reads from the audit log.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "audit-log-ui",
       "toPlanKey": "audit-log-read",
       "why": "The review UI calls the read surface.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "invite-accept",
       "why": "Joining (accept) is a compliance-relevant event to audit.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "member-remove",
       "why": "Leaving/removal is a compliance-relevant event to audit.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "role-assignment",
       "why": "Role changes are compliance-relevant events to audit.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "task-edit",
       "why": "Changes to work are compliance-relevant events to audit.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "task-complete",
       "why": "Completing work is a compliance-relevant change to audit.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "file-download",
       "why": "Access to files is a compliance-relevant event to audit.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "file-upload",
       "why": "Adding files to work is a compliance-relevant event to audit.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "billing-webhook-handler",
       "why": "Billing events are compliance-relevant and must be audited.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "audit-event-write",
       "toPlanKey": "session-establish",
       "why": "Sign-in is a security-relevant event to audit.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "audit-log-read",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Audit review is restricted to owners/admins.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "audit-log-read",
       "toPlanKey": "tenant-scoping",
       "why": "Audit review only shows the caller's own org.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "audit-log-ui",
       "toPlanKey": "app-shell-ui",
       "why": "The audit UI lives in the authenticated app shell.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "notification-model",
       "toPlanKey": "activity-event-model",
       "why": "Notifications derive from activity events.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "notification-fanout",
       "toPlanKey": "activity-event-model",
       "why": "Fanout consumes activity events.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "notification-fanout",
       "toPlanKey": "notification-model",
       "why": "Fanout produces per-recipient notification records.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "notification-worker",
       "toPlanKey": "notification-fanout",
       "why": "The worker runs fanout asynchronously.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "notification-inapp-deliver",
       "toPlanKey": "notification-model",
       "why": "In-app delivery reads notification records.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "notification-email-deliver",
       "toPlanKey": "notification-model",
       "why": "Email delivery reads notification records.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "notification-inapp-deliver",
       "toPlanKey": "notification-worker",
       "why": "The worker drives in-app delivery.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "notification-email-deliver",
       "toPlanKey": "notification-worker",
       "why": "The worker drives email delivery.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "activity-feed-read",
       "toPlanKey": "activity-event-model",
       "why": "The feed reads activity events.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "notification-ui",
       "toPlanKey": "notification-inapp-deliver",
       "why": "The notification center renders in-app notifications.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "notification-ui",
       "toPlanKey": "activity-feed-read",
       "why": "The UI renders the activity feed.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "activity-event-model",
       "toPlanKey": "task-assign",
       "why": "Assigning a task is an activity event source.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "activity-event-model",
       "toPlanKey": "task-comment",
       "why": "A comment is an activity event source.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "activity-event-model",
       "toPlanKey": "task-edit",
       "why": "A project/task update is an activity event source.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "activity-event-model",
       "toPlanKey": "invite-accept",
       "why": "An accepted invite is an activity event source.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "notification-fanout",
       "toPlanKey": "org-membership-model",
       "why": "Fanout decides recipients from org/team membership.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "notification-fanout",
       "toPlanKey": "project-membership",
       "why": "Fanout targets the people with access to the relevant project.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "notification-email-deliver",
       "toPlanKey": "user-model",
       "why": "Email delivery needs the recipient's email address.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "activity-feed-read",
       "toPlanKey": "tenant-scoping",
       "why": "The feed is scoped to the caller's org/project access.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "activity-feed-read",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "A person only sees feed items they are authorized to see.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "notification-inapp-deliver",
       "toPlanKey": "session-validate-middleware",
       "why": "In-app notifications are shown to the authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "notification-ui",
       "toPlanKey": "app-shell-ui",
       "why": "The notification center and feed live in the app shell.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "billing-subscription-model",
       "toPlanKey": "org-model",
       "why": "A subscription belongs to an organization.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "billing-subscription-model",
       "toPlanKey": "billing-plan-model",
       "why": "A subscription references a plan/price.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "billing-checkout",
       "toPlanKey": "billing-plan-model",
       "why": "Checkout selects a plan and seat quantity.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "billing-checkout",
       "toPlanKey": "billing-provider-integration",
       "why": "Checkout completes payment via the provider.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "billing-checkout",
       "toPlanKey": "billing-subscription-model",
       "why": "Checkout creates/updates the org's subscription record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "billing-webhook-handler",
       "toPlanKey": "billing-provider-integration",
       "why": "The handler reconciles events from the provider.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "billing-webhook-handler",
       "toPlanKey": "billing-subscription-model",
       "why": "Webhook reconciliation updates the subscription record.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "seat-count-enforcement",
       "toPlanKey": "billing-subscription-model",
       "why": "Enforcement compares headcount against paid seat quantity.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "seat-quantity-sync",
       "toPlanKey": "billing-subscription-model",
       "why": "Seat sync updates the subscription's seat quantity.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "seat-quantity-sync",
       "toPlanKey": "billing-provider-integration",
       "why": "Seat sync pushes quantity changes to the provider.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "billing-ui",
       "toPlanKey": "billing-checkout",
       "why": "The UI drives plan/seat selection and checkout.",
-      "partition": "intra-feature"
+      "partition": "intra-feature",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "billing-checkout",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Only owners may subscribe/pay; checkout is privilege-gated.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "billing-checkout",
       "toPlanKey": "session-validate-middleware",
       "why": "Checkout requires an authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "seat-count-enforcement",
       "toPlanKey": "org-membership-model",
       "why": "Enforcement counts active members against paid seats.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "seat-count-enforcement",
       "toPlanKey": "invite-model",
       "why": "Outstanding invites count toward consumed seats.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "invite-create",
       "toPlanKey": "seat-count-enforcement",
       "why": "Inviting is blocked when paid seats are exhausted.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "invite-accept",
       "toPlanKey": "seat-count-enforcement",
       "why": "Accepting is blocked when it would exceed paid seats.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     },
     {
       "fromPlanKey": "seat-quantity-sync",
       "toPlanKey": "org-membership-model",
       "why": "Membership growth/shrink drives billed seat quantity.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "seat-quantity-sync",
       "toPlanKey": "invite-create",
       "why": "Adding to the team (invites) is reflected in billed seats.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "seat-quantity-sync",
       "toPlanKey": "member-remove",
       "why": "Letting people go is reflected in billed seats.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "billing-ui",
       "toPlanKey": "app-shell-ui",
       "why": "Billing management lives in the authenticated app shell.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "billing-ui",
       "toPlanKey": "authz-ui-gating",
       "why": "Billing affordances are shown only to owners.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "app-shell-ui",
       "toPlanKey": "session-validate-middleware",
       "why": "The app shell only routes authenticated principals.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "authz-ui-gating",
       "toPlanKey": "session-validate-middleware",
       "why": "UI gating needs the resolved principal and their role.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "org-create",
       "toPlanKey": "session-validate-middleware",
       "why": "Creating an org requires an authenticated principal.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "low"
     },
     {
       "fromPlanKey": "billing-checkout",
       "toPlanKey": "org-model",
       "why": "Subscribing is scoped to the caller's organization.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "task-comment",
       "toPlanKey": "authz-enforcement-middleware",
       "why": "Commenting requires project access.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "med"
     },
     {
       "fromPlanKey": "team-manage",
       "toPlanKey": "tenant-scoping",
       "why": "Team management is scoped to the caller's org.",
-      "partition": "seam"
+      "partition": "seam",
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "quadrantConf": "high"
     }
-  ]
+  ],
+  "_quadrantNote": "Each requiredEdge carries selfRevealing/recovery/quadrant/quadrantConf (rubric v1.0). quadrant: lethal=silent+expensive, loud-exp=selfRevealing+expensive, cheap=selfRevealing+cheap, silent-cheap=silent+cheap. Authored by tools/author-hearth-quadrants.mjs; sidecar in quadrant-tags.json."
 }

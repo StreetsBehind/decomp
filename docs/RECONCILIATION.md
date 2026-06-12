@@ -153,8 +153,18 @@ campaign spends anything measuring the wrong statistic.
 
 ---
 
-## 7. Status
+## 7. Status — §6 kill-tests RAN (2026-06-11); the keystone correction is substantiated
 
-Reconciliation only — no v2 section has been edited, no spec un-deleted, no kill-test run. This note
-is the input to the §5 merge decision. Next concrete step is the §6 kill-tests (free) or the §5
-merge (a human-gated call about which branch becomes the trunk).
+The §5 merge happened (single trunk on `main`). The §6 kill-tests have now **both run** — see
+[`KILL-TESTS.md`](KILL-TESTS.md):
+
+- **KT#1** tagged the canonical 162-edge hearth oracle on the 2×2: **37% lethal**, separable, only
+  coarsely aligned with the seam partition (so quadrant-weighting carries information the partition does
+  not); uniform edge recall is 58% cheap-quadrant. The quadrants are real on a real fixture.
+- **KT#2** found ~11 shipped lethal-quadrant misses in real build history, **all past a green gate** — the
+  production form of §2's censoring argument (a silent omission produces no repair event).
+
+**The §2 keystone correction (ρ is quadrant-censored) is confirmed, and the §3 changes A–C are forced.**
+The cost-weighted scorer + `lethalEdgeRecall` veto are built/selftested. RESEARCH-PROGRAM §10 moves from
+*pending a $0 kill-test* to **substantiated**. Next concrete step is **B/C** (gateway grid + the hearth
+3-arm sweep, scored on the re-spec'd lethal-quadrant endpoint), per `FINDINGS.md` §00.1.

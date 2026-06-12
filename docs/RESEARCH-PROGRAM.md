@@ -5,13 +5,15 @@ _Drafted 2026-06-11. This document extends [`CHARTER.md`](CHARTER.md) and builds
 assumptions, the constructs, the hypotheses, the harness extensions, and the experiments that will
 answer the sharpened question below. Nothing here invalidates the charter; it re-aims the apparatus._
 
-> **⚠ Pre-registered, with pending revisions (2026-06-11).** This program was drafted **blind** to the
-> archetype-premise evidence now merged onto the trunk. The cross-review in
+> **⚠ Pre-registered, with SUBSTANTIATED revisions (2026-06-11).** This program was drafted **blind** to
+> the archetype-premise evidence now merged onto the trunk. The cross-review in
 > [`RECONCILIATION.md`](RECONCILIATION.md) found the spine corroborated but **seven strategies in need of
 > revision** — most importantly, the repair premium **ρ is quadrant-censored**, so the §2.6 / H3 median
-> rule would falsely crown deferral. The revisions are catalogued in **§10**, each marked *pending* its
-> gating $0 kill-test. The pre-registered §0–§9 text is left intact (pre-registration discipline); read
-> it **through** §10.
+> rule would falsely crown deferral. The revisions are catalogued in **§10**. Their gating $0 kill-tests
+> have now **run and confirmed the quadrant structure** ([`KILL-TESTS.md`](KILL-TESTS.md): 37% of hearth's
+> edges are lethal; ~11 shipped lethal-quadrant misses in real build history, all past a green gate), so
+> §10 is no longer conditional. The pre-registered §0–§9 text is left intact (pre-registration discipline);
+> read it **through** §10.
 
 ---
 
@@ -348,14 +350,15 @@ The program is finished when the repo can state, with ledger-backed evidence:
 the result: "decompose maximally; shift-left holds for LLM builders too" is just as publishable, and
 the apparatus will have been the thing that could tell the difference.
 
-## 10. Pending revisions (reconciliation 2026-06-11) — read §0–§9 *through* these
+## 10. Revisions (reconciliation 2026-06-11) — SUBSTANTIATED by the kill-tests; read §0–§9 *through* these
 
-These are pre-registered **revisions**, not yet executed. Each is gated on the $0 kill-tests in
-[`RECONCILIATION.md`](RECONCILIATION.md) §6 (cost-weighted hearth re-score + build-batch history), which
-confirm or refute the quadrant structure **before** the campaign spends. Until then the §0–§9 text stands
-as written; where the two conflict, §10 governs the interpretation. Severity: **CORRECT** = §0–§9 as
-written would yield a wrong result; **RE-SPEC** = right instrument, wrong target; **HARDEN** = inherited
-failure mode with a known mitigation.
+These are pre-registered **revisions**. Their gating $0 kill-tests
+([`RECONCILIATION.md`](RECONCILIATION.md) §6, [`KILL-TESTS.md`](KILL-TESTS.md)) have now **both run and
+confirmed the quadrant structure** (KT#1: 37% of hearth's edges are lethal, separable; KT#2: ~11 shipped
+lethal-quadrant misses in real build history, all past a green gate). The revisions are no longer
+conditional — they govern the campaign. Where §10 conflicts with §0–§9, §10 wins. Severity: **CORRECT** =
+§0–§9 as written would yield a wrong result; **RE-SPEC** = right instrument, wrong target; **HARDEN** =
+inherited failure mode with a known mitigation.
 
 | # | Revises | Change | Severity |
 | --- | --- | --- | --- |

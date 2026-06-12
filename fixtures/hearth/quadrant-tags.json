@@ -1,0 +1,1139 @@
+{
+  "_rubricVersion": "1.0",
+  "tags": {
+    "sso-auth-initiate->sso-idp-config": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Initiating the handshake needs the org's registered IdP endpoints/credentials."
+    },
+    "sso-assertion-callback->sso-idp-config": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Validating the assertion needs the IdP's signing certificate/JWKS and audience config."
+    },
+    "sso-assertion-callback->sso-auth-initiate": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "The callback validates the state/nonce produced when the handshake was initiated."
+    },
+    "sso-assertion-callback->user-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "A validated assertion provisions or matches a user record."
+    },
+    "session-establish->sso-assertion-callback": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "low",
+      "why": "A session is only established after the assertion is validated."
+    },
+    "session-establish->user-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The session is bound to the resolved user identity."
+    },
+    "session-validate-middleware->session-establish": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Middleware validates the session token/cookie that establishment issues."
+    },
+    "sign-out->session-establish": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "low",
+      "why": "Sign-out destroys the session that was established."
+    },
+    "auth-ui->sso-auth-initiate": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The sign-in UI triggers the SSO initiation flow."
+    },
+    "auth-ui->sign-out": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI exposes the sign-out control."
+    },
+    "team-model->org-model": {
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "conf": "high",
+      "why": "Teams are nested under an organization."
+    },
+    "org-membership-model->org-model": {
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "conf": "high",
+      "why": "Membership links a user into an organization."
+    },
+    "org-create->org-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Creating an org writes the org record."
+    },
+    "team-manage->team-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Team management operates on team records."
+    },
+    "team-manage->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Placing members on teams operates on membership."
+    },
+    "invite-model->org-model": {
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "conf": "med",
+      "why": "An invitation belongs to an organization."
+    },
+    "invite-create->invite-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Creating an invite writes an invitation record."
+    },
+    "invite-email-send->invite-create": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The email is sent for the invitation that was created."
+    },
+    "invite-email-send->invite-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The email carries the invitation token from the record."
+    },
+    "invite-accept->invite-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Acceptance validates and consumes the invitation token."
+    },
+    "invite-accept->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Accepting creates the org membership."
+    },
+    "invite-decline->invite-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Declining updates the invitation status."
+    },
+    "invite-ui->invite-create": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI drives invite creation."
+    },
+    "invite-ui->invite-accept": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The accept landing page drives acceptance."
+    },
+    "invite-ui->invite-decline": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The landing page drives decline."
+    },
+    "roster-read->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The roster reads membership records."
+    },
+    "member-remove->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Removal deletes/deactivates a membership."
+    },
+    "org-create->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Creating an org makes the creator the first member/owner."
+    },
+    "role-model->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "conf": "med",
+      "why": "Roles attach to an org membership."
+    },
+    "permission-model->role-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Permission mapping is defined over roles."
+    },
+    "role-assignment->role-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Assignment sets a membership's role."
+    },
+    "role-assignment->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Role assignment operates on a membership record."
+    },
+    "authz-enforcement-middleware->permission-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Enforcement consults the role-to-permission mapping."
+    },
+    "authz-enforcement-middleware->role-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Enforcement reads the principal's role."
+    },
+    "authz-enforcement-middleware->session-validate-middleware": {
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "conf": "med",
+      "why": "Authorization needs the authenticated principal resolved by session validation."
+    },
+    "authz-ui-gating->role-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The UI gates affordances on the viewer's role."
+    },
+    "tenant-scoping->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Scoping resolves the principal's org from their membership."
+    },
+    "tenant-scoping->session-validate-middleware": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Scoping needs the authenticated principal."
+    },
+    "invite-create->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Only an authenticated principal can send an invite."
+    },
+    "invite-create->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Only owners/admins may invite; the action is authorization-gated."
+    },
+    "invite-accept->sso-assertion-callback": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Acceptance must bind to a verified SSO identity for the invited email."
+    },
+    "invite-accept->user-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Acceptance ties the invite to the accepting user identity."
+    },
+    "invite-accept->role-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The membership created on accept is assigned the invited role."
+    },
+    "member-remove->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Removing a member is an owner/admin-only people-management action."
+    },
+    "role-assignment->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Changing roles is an owner/admin-only action."
+    },
+    "team-manage->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Managing teams is a privileged org-management action."
+    },
+    "roster-read->tenant-scoping": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Roster reads must be scoped to the caller's org."
+    },
+    "roster-read->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Reading the roster requires an authenticated principal."
+    },
+    "invite-ui->app-shell-ui": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The invite management UI lives inside the authenticated app shell."
+    },
+    "invite-ui->authz-ui-gating": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The invite affordance is shown only to owners/admins."
+    },
+    "roster-read->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Reading the roster is org/people-management gated server-side."
+    },
+    "project-model->org-model": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Projects are nested under an organization."
+    },
+    "project-create->project-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Creating a project writes the project record."
+    },
+    "project-membership->project-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Project access is defined against a project."
+    },
+    "project-membership->org-membership-model": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Only org members can be on a project."
+    },
+    "task-model->project-model": {
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "conf": "high",
+      "why": "Tasks belong to a project."
+    },
+    "task-create->task-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Creating a task writes a task record."
+    },
+    "task-create->project-membership": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "A member creates a task only within a project they have access to."
+    },
+    "task-assign->task-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Assignment sets the task's assignee."
+    },
+    "task-assign->project-membership": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "A task may only be assigned to someone with project access."
+    },
+    "task-edit->task-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Editing mutates task fields."
+    },
+    "task-complete->task-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Completion flips the task status."
+    },
+    "task-read->task-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Reading lists task records."
+    },
+    "task-comment->task-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Comments attach to a task."
+    },
+    "project-task-ui->task-create": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI drives task creation."
+    },
+    "project-task-ui->task-assign": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI drives assignment."
+    },
+    "project-task-ui->task-edit": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI drives editing."
+    },
+    "project-task-ui->task-complete": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI drives completion."
+    },
+    "project-task-ui->task-read": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI lists projects and tasks."
+    },
+    "project-create->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Creating a project requires an authenticated principal."
+    },
+    "project-create->tenant-scoping": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Projects are created within the caller's org only."
+    },
+    "task-create->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Creating a task requires an authenticated principal."
+    },
+    "task-create->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Task creation is permission-gated to members with project access."
+    },
+    "task-assign->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Assignment is permission-checked server-side."
+    },
+    "task-assign->org-membership-model": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "The assignee must be a member of the org."
+    },
+    "task-edit->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Editing is permission-checked server-side."
+    },
+    "task-complete->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Completion is permission-checked server-side."
+    },
+    "task-read->tenant-scoping": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Task reads are scoped to the caller's org/project access."
+    },
+    "project-task-ui->app-shell-ui": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Project/task views live in the authenticated app shell."
+    },
+    "project-task-ui->authz-ui-gating": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Task affordances reflect the viewer's permissions."
+    },
+    "file-model->task-model": {
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "conf": "med",
+      "why": "An attachment links to a task."
+    },
+    "file-upload->file-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Upload creates the attachment record."
+    },
+    "file-upload->file-storage": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Upload stores the file bytes in object storage."
+    },
+    "file-av-scan->file-upload": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Scanning runs against the uploaded bytes."
+    },
+    "file-av-scan->file-storage": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The scanner reads the stored object."
+    },
+    "file-download->file-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Download resolves the attachment metadata."
+    },
+    "file-download->file-storage": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Download streams bytes from object storage."
+    },
+    "file-download->file-av-scan": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Files are only downloadable after passing the AV scan."
+    },
+    "file-ui->file-upload": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI drives attaching files."
+    },
+    "file-ui->file-download": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI drives downloading files."
+    },
+    "file-upload->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Uploading requires an authenticated principal."
+    },
+    "file-upload->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Attaching to a task requires permission on that task's project."
+    },
+    "file-upload->project-membership": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Only people with project access can attach files to its tasks."
+    },
+    "file-download->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Downloading requires an authenticated principal."
+    },
+    "file-download->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Every download re-checks authorization for the file's task/project."
+    },
+    "file-download->tenant-scoping": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Downloads are scoped so no cross-tenant file access is possible."
+    },
+    "file-ui->project-task-ui": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "File attachments are surfaced within task detail."
+    },
+    "audit-event-write->audit-log-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Writing audit events appends to the audit log."
+    },
+    "audit-log-read->audit-log-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Review reads from the audit log."
+    },
+    "audit-log-ui->audit-log-read": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The review UI calls the read surface."
+    },
+    "audit-event-write->invite-accept": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Joining (accept) is a compliance-relevant event to audit."
+    },
+    "audit-event-write->member-remove": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Leaving/removal is a compliance-relevant event to audit."
+    },
+    "audit-event-write->role-assignment": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Role changes are compliance-relevant events to audit."
+    },
+    "audit-event-write->task-edit": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Changes to work are compliance-relevant events to audit."
+    },
+    "audit-event-write->task-complete": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Completing work is a compliance-relevant change to audit."
+    },
+    "audit-event-write->file-download": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Access to files is a compliance-relevant event to audit."
+    },
+    "audit-event-write->file-upload": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Adding files to work is a compliance-relevant event to audit."
+    },
+    "audit-event-write->billing-webhook-handler": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Billing events are compliance-relevant and must be audited."
+    },
+    "audit-event-write->session-establish": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Sign-in is a security-relevant event to audit."
+    },
+    "audit-log-read->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Audit review is restricted to owners/admins."
+    },
+    "audit-log-read->tenant-scoping": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Audit review only shows the caller's own org."
+    },
+    "audit-log-ui->app-shell-ui": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The audit UI lives in the authenticated app shell."
+    },
+    "notification-model->activity-event-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Notifications derive from activity events."
+    },
+    "notification-fanout->activity-event-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Fanout consumes activity events."
+    },
+    "notification-fanout->notification-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Fanout produces per-recipient notification records."
+    },
+    "notification-worker->notification-fanout": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The worker runs fanout asynchronously."
+    },
+    "notification-inapp-deliver->notification-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "In-app delivery reads notification records."
+    },
+    "notification-email-deliver->notification-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Email delivery reads notification records."
+    },
+    "notification-inapp-deliver->notification-worker": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The worker drives in-app delivery."
+    },
+    "notification-email-deliver->notification-worker": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The worker drives email delivery."
+    },
+    "activity-feed-read->activity-event-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The feed reads activity events."
+    },
+    "notification-ui->notification-inapp-deliver": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The notification center renders in-app notifications."
+    },
+    "notification-ui->activity-feed-read": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI renders the activity feed."
+    },
+    "activity-event-model->task-assign": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Assigning a task is an activity event source."
+    },
+    "activity-event-model->task-comment": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "A comment is an activity event source."
+    },
+    "activity-event-model->task-edit": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "A project/task update is an activity event source."
+    },
+    "activity-event-model->invite-accept": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "An accepted invite is an activity event source."
+    },
+    "notification-fanout->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Fanout decides recipients from org/team membership."
+    },
+    "notification-fanout->project-membership": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Fanout targets the people with access to the relevant project."
+    },
+    "notification-email-deliver->user-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Email delivery needs the recipient's email address."
+    },
+    "activity-feed-read->tenant-scoping": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "The feed is scoped to the caller's org/project access."
+    },
+    "activity-feed-read->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "A person only sees feed items they are authorized to see."
+    },
+    "notification-inapp-deliver->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "low",
+      "why": "In-app notifications are shown to the authenticated principal."
+    },
+    "notification-ui->app-shell-ui": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "The notification center and feed live in the app shell."
+    },
+    "billing-subscription-model->org-model": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "A subscription belongs to an organization."
+    },
+    "billing-subscription-model->billing-plan-model": {
+      "selfRevealing": true,
+      "recovery": "expensive",
+      "quadrant": "loud-exp",
+      "conf": "med",
+      "why": "A subscription references a plan/price."
+    },
+    "billing-checkout->billing-plan-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Checkout selects a plan and seat quantity."
+    },
+    "billing-checkout->billing-provider-integration": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Checkout completes payment via the provider."
+    },
+    "billing-checkout->billing-subscription-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Checkout creates/updates the org's subscription record."
+    },
+    "billing-webhook-handler->billing-provider-integration": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "The handler reconciles events from the provider."
+    },
+    "billing-webhook-handler->billing-subscription-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "low",
+      "why": "Webhook reconciliation updates the subscription record."
+    },
+    "seat-count-enforcement->billing-subscription-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "Enforcement compares headcount against paid seat quantity."
+    },
+    "seat-quantity-sync->billing-subscription-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Seat sync updates the subscription's seat quantity."
+    },
+    "seat-quantity-sync->billing-provider-integration": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Seat sync pushes quantity changes to the provider."
+    },
+    "billing-ui->billing-checkout": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "high",
+      "why": "The UI drives plan/seat selection and checkout."
+    },
+    "billing-checkout->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Only owners may subscribe/pay; checkout is privilege-gated."
+    },
+    "billing-checkout->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Checkout requires an authenticated principal."
+    },
+    "seat-count-enforcement->org-membership-model": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Enforcement counts active members against paid seats."
+    },
+    "seat-count-enforcement->invite-model": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "low",
+      "why": "Outstanding invites count toward consumed seats."
+    },
+    "invite-create->seat-count-enforcement": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Inviting is blocked when paid seats are exhausted."
+    },
+    "invite-accept->seat-count-enforcement": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Accepting is blocked when it would exceed paid seats."
+    },
+    "seat-quantity-sync->org-membership-model": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "low",
+      "why": "Membership growth/shrink drives billed seat quantity."
+    },
+    "seat-quantity-sync->invite-create": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "low",
+      "why": "Adding to the team (invites) is reflected in billed seats."
+    },
+    "seat-quantity-sync->member-remove": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "low",
+      "why": "Letting people go is reflected in billed seats."
+    },
+    "billing-ui->app-shell-ui": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Billing management lives in the authenticated app shell."
+    },
+    "billing-ui->authz-ui-gating": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "Billing affordances are shown only to owners."
+    },
+    "app-shell-ui->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "low",
+      "why": "The app shell only routes authenticated principals."
+    },
+    "authz-ui-gating->session-validate-middleware": {
+      "selfRevealing": true,
+      "recovery": "cheap",
+      "quadrant": "cheap",
+      "conf": "med",
+      "why": "UI gating needs the resolved principal and their role."
+    },
+    "org-create->session-validate-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "low",
+      "why": "Creating an org requires an authenticated principal."
+    },
+    "billing-checkout->org-model": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Subscribing is scoped to the caller's organization."
+    },
+    "task-comment->authz-enforcement-middleware": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "med",
+      "why": "Commenting requires project access."
+    },
+    "team-manage->tenant-scoping": {
+      "selfRevealing": false,
+      "recovery": "expensive",
+      "quadrant": "lethal",
+      "conf": "high",
+      "why": "Team management is scoped to the caller's org."
+    }
+  }
+}

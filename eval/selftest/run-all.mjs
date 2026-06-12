@@ -12,9 +12,10 @@ import rulerMutation from './ruler-mutation.selftest.mjs';
 import openQuestionChannel from './open-question-channel.selftest.mjs';
 import c1Lint from './c1-lint.selftest.mjs';
 import partitionRecall from './partition-recall.selftest.mjs';
+import quadrantRecall from './quadrant-recall.selftest.mjs';
 import gatewayInvoke from './gateway-invoke.selftest.mjs';
 
-const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity, rulerMutation, openQuestionChannel, c1Lint, partitionRecall, gatewayInvoke];
+const SUITES = [buildCompleteness, catchRate, fidelity, leaderboard, outcomeCoverage, generativeCoverage, granularity, rulerMutation, openQuestionChannel, c1Lint, partitionRecall, quadrantRecall, gatewayInvoke];
 
 let failed = 0;
 for (const suite of SUITES) {

@@ -12,10 +12,37 @@ dollar under a cheap-model precondition?**_
 ## 00. RESUME HERE — session 2026-06-11 (latest; SUPERSEDES §0a/§0b below)
 
 The repo is **reshaped around the reconciled direction and is all on `main`** (single branch — the two
-prior forks were merged and their branches deleted; PR #1 auto-merged). `npm run selftest` = **12 suites
-/ 289 assertions** green; `battery:mock` clean. Everything below §0a/§0b is kept as history.
+prior forks were merged and their branches deleted; PR #1 auto-merged). `npm run selftest` = **13 suites
+/ 308 assertions** green; `battery:mock` clean. Everything below §0a/§0b is kept as history.
 
-**What this session did (newest first):**
+### 00.1 — the two $0 quadrant kill-tests RAN (newest; gates the campaign) → see [`KILL-TESTS.md`](KILL-TESTS.md)
+
+**Both kill-tests confirm the lethal quadrant; the §10 ρ re-spec is FORCED (no longer *pending*).**
+
+- **KT#1 (cost-weighted re-score on hearth).** Tagged the canonical **162-edge** hearth oracle
+  (`fixtures/hearth/outcome-manifest.json`) on the cost-of-omission 2×2 (`tools/author-hearth-quadrants.mjs`
+  + sidecar `fixtures/hearth/quadrant-tags.json`). **37% lethal (60/162)** — silent+expensive, typed
+  (authz/authn/tenancy/audit/seat/SSO-validation), separable, only *coarsely* aligned with the seam
+  proxy. **58% of uniform edge recall is cheap-quadrant edges the build recovers for free.** Built +
+  selftested the cost-weighted scorer (`edgeCoverageByQuadrant`, `costWeightedEdgeRecall`/`lethalRecall`),
+  wired through battery+schema; the re-ordering effect is pinned in
+  `eval/selftest/quadrant-recall.selftest.mjs`. **Gotcha banked:** two hearth manifests exist with
+  disjoint vocabularies — the canonical 162-edge fixtures one (what the battery + Step-3 use) vs the
+  dead 84-edge `experiments/.../outcome-manifest.partitioned.json`. We tagged the canonical one.
+  **Banked for B/C:** Step-2/3 snapshots were never persisted, so the literal re-score was impossible —
+  *persist snapshots* (`runs/<variant>/hearth/rK/ws/snapshot.json`) going forward.
+- **KT#2 (build-batch history as ground truth).** Mined autonomous-build + ForgeFlow/PickleMatch/
+  ExchangeManager (~1,360 app beads). ~11 concrete **shipped-then-detonated** lethal-quadrant misses
+  (authz/RLS, tenancy, consistency, race, data-loss, prod-blinding observability) — **every one passed
+  the automated gate**, caught only later by smoke/audit/user-report. The data structurally
+  *under*-records silent misses (the gate manufactures evidence for self-revealing misses but is blind
+  to silent ones; ExchangeManager with no later session → B=0 observed). The lethal quadrant is real,
+  in exactly the predicted categories, and **larger than observable**.
+- **Decision:** RESEARCH-PROGRAM §10 revisions are **substantiated** (report recall/ρ per quadrant; gate
+  deferral on the `lethalEdgeRecall` veto; never the median). The campaign runs with the re-spec'd
+  endpoint. **A is DONE; B/C are the next work.**
+
+**What the prior session did (newest first):**
 
 1. **E0.5 — cheap-tier transport WIRED + proven (commit `71bbb74`).** `makeGatewayInvoke`
    (`runner/model-client.mjs`) calls **jnoccio**, an OpenAI-compatible gateway running live on
@@ -42,20 +69,20 @@ prior forks were merged and their branches deleted; PR #1 auto-merged). `npm run
    proof-staircase **Step 2** killed the naive join — see `STAIRCASE-RESULTS.md`). The proven rulers, the
    partition (seam vs intra) scorer, and the 3-arm obligation-priming experiment stayed LIVE.
 
-**Next-work order (the §0b order below is SUPERSEDED — E0.5 is DONE):**
+**Next-work order (A — the kill-tests — is now DONE; see §00.1 + `KILL-TESTS.md`):**
 
-- **A — the two $0 quadrant kill-tests** (`BUILD-TOLERANT-REFRAME.md` kill-tests; `RECONCILIATION.md`
-  §6): cost-weighted hearth re-score + build-batch history. They confirm/refute the quadrant structure
-  and decide whether the §10 ρ revision is *forced*. This is the original "before we run the research"
-  gate — run before any spend.
 - **B — grid-mode wiring for the gateway.** Make jnoccio a battery transport (`--mode`/`--transport
   gateway`; the JUDGE stays on the pinned strong claude). **Move retry-on-invalid from the smoke into the
   runner** (A8: retries budgeted to the method, exhausted → score 0) and record the resolved model on the
-  cost record / ledger.
-- **C — the hearth 3-arm sweep** (obligation-priming → seam recall; Step 3 headroom was GO).
+  cost record / ledger. **NEW from KT#1: persist the snapshot per run** so re-scores never need a re-run.
+- **C — the hearth 3-arm sweep** (obligation-priming → seam recall; Step 3 headroom was GO). Now scored
+  with the re-spec'd endpoint: `lethalEdgeRecall` is the veto (a primed arm that lifts aggregate while
+  dropping lethal recall is rejected) — this falls out of the scorer automatically on the quadrant-tagged
+  hearth oracle.
 - Then the v2 Phase-0 remainder: **E0.4** (judge calibration + ensemble), **E0.6** (corpus growth —
-  multi-feature & seam-partitioned per `RECONCILIATION.md` change E), **E0.8** (Tier-2 builder loop =
-  §4.5 host-enforced apparatus, the lightweight in-harness version of the ZYAL principle).
+  multi-feature & seam-partitioned per `RECONCILIATION.md` change E, each fixture quadrant-tagged like
+  hearth now is), **E0.8** (Tier-2 builder loop = §4.5 host-enforced apparatus; per KT#2 it must measure
+  realized **lethal-quadrant** coverage per deferral policy, since the real gate catches none of it).
 
 **Blocked on human:** where the big grids run (a persistent machine — wall-clock is the real cost:
 ~95 s per valid gateway call). Gateway access + an authenticated `claude` (for the judge) are both

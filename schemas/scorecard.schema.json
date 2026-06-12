@@ -51,7 +51,14 @@
               "type": "object",
               "description": "per-partition SUFFICIENCY edge recall (e.g. {\"intra-feature\":0.9,\"seam\":0.4}). Present ONLY when the fixture's outcome-manifest tags requiredEdges with a `partition`. The library-covered-vs-seam split the archetype experiment's anchoring rule reads (primed is safe iff covered recall rises AND seam recall does not fall).",
               "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
-            }
+            },
+            "edgeByQuadrant": {
+              "type": "object",
+              "description": "per-quadrant SUFFICIENCY edge recall on the cost-of-omission 2x2 (e.g. {\"lethal\":0.2,\"loud-exp\":0.5,\"cheap\":0.8}). Present ONLY when the manifest tags requiredEdges with a `quadrant` (BUILD-TOLERANT-REFRAME.md kill-test #1).",
+              "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+            },
+            "costWeightedEdgeRecall": { "type": "number", "minimum": 0, "maximum": 1, "description": "edge recall weighted by per-quadrant cost-of-omission (default lethal=1, loud-exp=.5, cheap=0). If this re-orders methods vs the uniform edgeCoverage, uniform recall measured the wrong thing. Present ONLY on a quadrant-tagged manifest." },
+            "lethalEdgeRecall": { "type": "number", "minimum": 0, "maximum": 1, "description": "recall over the lethal (silent+expensive) quadrant only — the veto scalar (RECONCILIATION §3 change B): a policy that lifts aggregate coverage while dropping this is rejected. Present ONLY on a quadrant-tagged manifest." }
           }
         },
         "buildCompleteness": {

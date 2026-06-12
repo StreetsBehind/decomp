@@ -61,16 +61,20 @@ function pooledOverall(reqResults, edgeResults, field) {
   return totalItems ? (totalItems - totalMissing) / totalItems : 1;
 }
 
-// Per-partition SUFFICIENCY edge recall, computed ONLY when the manifest tags requiredEdges with a
-// `partition` (e.g. intra-feature vs seam). This is the library-covered-vs-seam split the anchoring
-// metric reads: a primed arm is safe iff it raises library-covered recall AND does not lower SEAM
-// recall. Returns undefined (no partitioning) so untagged fixtures are byte-for-byte unchanged.
+// Per-bucket SUFFICIENCY edge recall, keyed on an arbitrary edge field, computed ONLY when at least
+// one requiredEdge carries that field. Two uses:
+//   - field='partition' (intra-feature vs seam): the library-covered-vs-seam split the anchoring
+//     metric reads — a primed arm is safe iff it raises library-covered recall AND does not lower
+//     SEAM recall.
+//   - field='quadrant' (lethal/loud-exp/cheap/silent-cheap): the cost-of-omission 2x2 split
+//     (BUILD-TOLERANT-REFRAME.md). lethal-quadrant recall is the veto endpoint (RECONCILIATION §3 B).
+// Returns undefined (no such field) so untagged fixtures are byte-for-byte unchanged.
 // edgeResults[i] aligns with requiredEdges[i] (mapPool preserves order).
-function edgeCoverageByPartition(requiredEdges, edgeResults) {
-  if (!requiredEdges.some((e) => e && e.partition)) return undefined;
+function edgeCoverageByField(requiredEdges, edgeResults, field) {
+  if (!requiredEdges.some((e) => e && e[field])) return undefined;
   const buckets = {};
   for (let i = 0; i < requiredEdges.length; i++) {
-    const p = requiredEdges[i] && requiredEdges[i].partition;
+    const p = requiredEdges[i] && requiredEdges[i][field];
     if (!p) continue;
     const b = (buckets[p] ||= { total: 0, missing: [] });
     b.total++;
@@ -81,6 +85,41 @@ function edgeCoverageByPartition(requiredEdges, edgeResults) {
     out[p] = { score: b.total ? (b.total - b.missing.length) / b.total : 1, total: b.total, missing: b.missing };
   }
   return out;
+}
+
+// Default cost-of-omission weights per quadrant — the value of discovering an edge UPFRONT.
+// Operationalizes value(edge) ∝ P(missed) × cost(discover late) × cost(recover late): the build
+// drives both late-costs → 0 for the cheap quadrant (weight ≈ 0 — let the build find it), so the
+// metric concentrates on the expensive-recovery column and emphasizes the silent (lethal) row.
+const DEFAULT_QUADRANT_WEIGHTS = { lethal: 1.0, 'loud-exp': 0.5, cheap: 0.0, 'silent-cheap': 0.1 };
+
+// Cost-weighted edge recall: Σ(w_q · covered_q) / Σ(w_q · total_q). The uniform edge recall is the
+// special case w≡1. If cost-weighting RE-ORDERS methods vs uniform recall, uniform recall was
+// measuring the wrong thing (BUILD-TOLERANT-REFRAME.md kill-test #1). Undefined on an untagged
+// manifest. Also returns the pure lethal-quadrant recall (the veto scalar).
+function costWeightedEdgeRecall(requiredEdges, edgeResults, weights = DEFAULT_QUADRANT_WEIGHTS) {
+  if (!requiredEdges.some((e) => e && e.quadrant)) return undefined;
+  let num = 0;
+  let den = 0;
+  let lethalHit = 0;
+  let lethalTot = 0;
+  for (let i = 0; i < requiredEdges.length; i++) {
+    const q = requiredEdges[i] && requiredEdges[i].quadrant;
+    if (!q) continue;
+    const w = weights[q] ?? 0;
+    const hit = edgeResults[i].sufficiency ? 1 : 0;
+    num += w * hit;
+    den += w;
+    if (q === 'lethal') {
+      lethalTot++;
+      lethalHit += hit;
+    }
+  }
+  return {
+    costWeighted: den ? num / den : 1,
+    lethalRecall: lethalTot ? lethalHit / lethalTot : 1,
+    weights,
+  };
 }
 
 // Bounded-concurrency map preserving input order (results[i] aligns with items[i]), so the
@@ -200,9 +239,20 @@ export async function scoreGenerativeCoverage(snapshot, manifest, judge, opts = 
   };
 
   // Per-partition edge recall (library-covered vs seam) — present only on a partitioned manifest.
-  const byPartition = edgeCoverageByPartition(requiredEdges, edgeResults);
+  const byPartition = edgeCoverageByField(requiredEdges, edgeResults, 'partition');
+  // Per-quadrant edge recall + cost-weighted recall — present only on a 2x2-tagged manifest.
+  const byQuadrant = edgeCoverageByField(requiredEdges, edgeResults, 'quadrant');
+  const costWeighted = costWeightedEdgeRecall(requiredEdges, edgeResults, opts.quadrantWeights);
 
-  return { requirementCoverage, edgeCoverage, overall, presence, ...(byPartition ? { edgeCoverageByPartition: byPartition } : {}) };
+  return {
+    requirementCoverage,
+    edgeCoverage,
+    overall,
+    presence,
+    ...(byPartition ? { edgeCoverageByPartition: byPartition } : {}),
+    ...(byQuadrant ? { edgeCoverageByQuadrant: byQuadrant } : {}),
+    ...(costWeighted ? { costWeightedEdgeRecall: costWeighted } : {}),
+  };
 }
 
 export default scoreGenerativeCoverage;

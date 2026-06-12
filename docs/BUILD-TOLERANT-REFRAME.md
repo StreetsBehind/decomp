@@ -92,10 +92,21 @@ wrong assumption, when recovery means a rewrite. The compiler tells you — too 
    was it caught by the gate (self-revealing) or did it ship (silent)? Free, real-world quadrant
    distribution — tells us how big the lethal quadrant actually is.
 
-## Status
+## Status — BOTH kill-tests RAN (2026-06-11); the reframe holds. See [`KILL-TESTS.md`](KILL-TESTS.md).
 
-Reframe only — nothing re-scored yet. If the cost-weighted re-score re-orders methods, the staircase's
-optimization target changes from **edge recall** to **lethal-quadrant (silent-omission) recall**, and the
-obligations layer — not the edges layer — becomes the main event. The convergence/saturation machinery
-from `PRIOR-ART-COMPLETENESS.md` (capture-recapture, decorrelated generators) should then be aimed at the
-lethal quadrant, not at all edges.
+- **Kill-test #1 (cost-weighted re-score on hearth): NOT KILLED.** Tagging the canonical 162-edge oracle
+  on the 2×2 gives **37% lethal (silent+expensive)** edges — typed, separable, only coarsely aligned with
+  the seam partition, and **58% of uniform edge recall is cheap-quadrant edges the build recovers for
+  free.** The quadrants separate cleanly on a real fixture; the "reframe is academic" branch is closed.
+  (The strict method-re-ordering measurement is now a free byproduct of the first real hearth run — the
+  cost-weighted scorer + `lethalEdgeRecall` veto are built and selftested — because the original Step-2/3
+  snapshots were never persisted.)
+- **Kill-test #2 (build-batch history): CORROBORATED.** ~11 concrete shipped-then-detonated lethal-quadrant
+  misses across the loop-built apps, all in the predicted categories (authz/RLS, tenancy, consistency,
+  race, data-loss, observability), **every one past a green automated gate** — and the data structurally
+  under-records silent misses, so the lethal quadrant is *larger* than observable.
+
+**Consequence (now in effect):** the optimization target moves from **edge recall** to **lethal-quadrant
+(silent-omission) recall**; the obligations layer — not the edges layer — is the main event. The
+convergence/saturation machinery from `PRIOR-ART-COMPLETENESS.md` is aimed at the lethal quadrant. The
+RESEARCH-PROGRAM §10 ρ re-spec is substantiated, not pending.
