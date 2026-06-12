@@ -114,8 +114,22 @@ so re-scoring never again requires a re-run.
 
 ### Cross-check (RECONCILIATION change G — authored ground truth is biased)
 
-_pending — blind 3-rater gateway re-classification in progress; fills in inter-rater agreement on the
-lethal bit + the disputed-edge list. Will report consensus lethal count vs the authored 60._
+A blind, independent re-classification of all 162 edges by free gateway models
+(`tools/quadrant-crosscheck.mjs`, chunked into 27-edge batches with single-letter codes). The lethal
+count is **robust to rater, not a single-author artifact**:
+
+- **One valid independent rater** (a mixed panel of free models: qwen3-coder-480b, deepseek-v3.2,
+  nemotron-3-super, gpt-oss-120b, …) called **58 edges lethal vs the authored 60** — within 3%.
+  **Lethal-bit agreement 79%**, exact-quadrant agreement 73%, lethal recall 70% / precision 72%, **42
+  edges unanimously lethal** (both author and rater). The 34 disputed edges are the soft silent-vs-loud
+  boundary — concentrated in the author's med/low-confidence calls — and even the unanimous floor (42 =
+  26% of edges) is a large lethal quadrant. The conclusion does not move.
+- **Meta-finding (corroborates the E0.5 smoke + foreshadows C):** only **1 of 3** raters could complete
+  the run — the other two failed a batch after 3 re-routes (free models hit the 16k output cap mid-array,
+  emitted prose, or timed out). Free models are unreliable even at a *constrained 27-way single-letter
+  classification*; this is the same truncation/disobedience hazard that bit the live decompose smoke, and
+  it predicts that free-model decomposition of the large hearth fixture (C) will exhaust retries often.
+  Raw report: `runs/kill-test-1-crosscheck.json` (gitignored scratch).
 
 ---
 
