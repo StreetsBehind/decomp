@@ -121,6 +121,17 @@ Milestones are re-pointed at the win condition, not discarded:
 - **The stage-by-stage map survives** as the means of locating where the system needs frontier vs
   lightweight; decomposition (v1 Stage 2) sits inside the orchestration layer.
 
+### Two live tensions in the research plan (open, before the next experiment)
+
+1. **The all-frontier baseline is not free to define.** "Optimally route across opus/sonnet/haiku" is
+   *itself* a routing problem; a lazy bar (all-opus) makes the cost win hollow, an honest one is real
+   work. The bar is load-bearing for the entire result and must be built deliberately, not defaulted.
+2. **Generalization beyond the synthetic epics is the kill-condition that actually threatens the thesis.**
+   The existence proof lives on the `workspace` epic + the `scale-d{1..4}` ladder. "Reliable on a
+   measurable task set" needs an explicit **task-distribution decision** — what corpus of real
+   build-tasks the system is claimed to hold on. Without it, the win is "true on our fixtures," not
+   "true."
+
 ## Where the recently-imported research (the OKF) sits relative to this
 
 The OKF (`okf/agentic-workflow-optimization/`) does **not** contradict any finding, but it pulls in a
