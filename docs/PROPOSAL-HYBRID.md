@@ -1,143 +1,150 @@
-# Proposal (v2, hybrid) — The optimal mix of cloud-frontier vs cheap/local inference for building software
+# Proposal (v2, hybrid) — Can a frontier-orchestrated, lightweight-coded system beat all-frontier on cost at equal reliability?
 
-_Draft north-star, 2026-06-16. **Reframes the headline question of [`PROPOSAL.md`](PROPOSAL.md)**;
+_Draft north-star, 2026-06-16 (rev. 2). **Reframes the headline question of [`PROPOSAL.md`](PROPOSAL.md)**;
 does not replace its machinery. The stage-by-stage method, the lever menu, the battery, the oracle, and
-every M0 → M-coh finding survive unchanged — they are now read through an economic lens instead of a
-substitution lens. Plain-language on purpose, matching v1._
+every M0 → M-coh finding survive unchanged — they are now read in service of one product question.
+Plain-language on purpose, matching v1._
 
 ---
 
 ## The question
 
-The v1 north-star asked a **substitution** question: _can a cheap/local model + harness **replace** a
-frontier model?_ The repo's own data answered something sharper and more useful — and it points at a
-different question worth asking.
+This is **research, not design.** We are not searching for an "optimal mix" of models — the architecture
+is **fixed by hypothesis**, and the research is whether that fixed architecture *works and pays*:
 
-> **What is the optimal division of labor between expensive cloud-frontier inference and cheap/local
-> inference for building software — and where exactly is the boundary?**
+> **Can we build a system in which a cloud frontier model handles the planning and orchestration, and
+> cheaper lightweight coding models handle all the actual coding — such that the system delivers
+> reliable software-building performance at lower total cost than using cloud frontier models throughout
+> (opus / sonnet / haiku)?**
 
-Concretely, the system this is in service of: a company **buys its own hardware** to run the high-volume
-work and pays a cloud frontier model **per token only for the low-volume orchestration**. Instead of
-$25/M tokens to *write the code*, you pay $25/M tokens to *orchestrate* — and the cost of the coding
-agents themselves becomes **fixed** (hardware + maintenance), not metered. The frontier model is not
-eliminated; it is **reserved for the part where its cognitive superiority actually earns the premium.**
+The deliverable this research is aimed at is **that system itself** — a harness, a router, or whatever
+form turns out to fit (the term is open; "harness" is the working word). The system is the product.
+**Every decision in the program should support building it and proving it beats all-frontier on cost.**
+
+## The win condition (both must hold, both are measurable)
+
+The system wins iff:
+
+1. **Reliability parity** — frontier-orchestration + lightweight-coding delivers reliability **at least as
+   good as** an all-frontier setup, on a measurable task set. ("Reliable performance" is the whole point —
+   a cheaper system that ships broken software is not a win.) Reliability is exactly what the repo already
+   measures: epic cohesion, end-to-end integration, and **enforcement of the dangerous cross-cutting
+   obligations** (the lethal quadrant: authz, tenancy, validation, idempotency, audit).
+2. **Cost dominance** — total cost is **lower** than a cost-optimized all-frontier baseline:
+   - **hybrid total** = (orchestration tokens × frontier $/token) + (coding inference amortized to **fixed**
+     hardware + maintenance)
+   - **all-frontier total** = (all tokens, routed optimally across opus/sonnet/haiku, × their prices)
+
+The baseline must be **cost-optimized** (an all-cloud setup is allowed to route haiku/sonnet for the easy
+work and reserve opus for the hard parts) — otherwise beating it is a strawman. The honest comparison is
+hybrid vs. *the best you can do with cloud frontier alone.*
+
+**Kill conditions:**
+- If lightweight coding can't be made reliable enough even with frontier orchestration → fails the
+  reliability gate → thesis dead (useful negative: "you still need frontier in the loop for coding").
+- If, after honest accounting (hardware amortization + a cost-optimized all-frontier bar), there is no
+  cost win → thesis dead.
+- If the existence proof on the workspace epic doesn't generalize to a real task distribution → scope
+  shrinks to where it does.
 
 ## Why this is a promotion of the existing work, not a restart
 
-The repo already located the boundary — it just hadn't named the economics. The frontier premium is
-**not** writing functions; it is **enforcing cross-cutting obligations uniformly via the frozen
-skeleton.** Every load-bearing finding says so:
+The repo has already produced an **existence proof on one epic** — the result line *is* this system, it
+just hadn't been named as the product. The frontier premium is **not** writing functions; it is the
+**planning/orchestration artifact** (the frozen skeleton: shared shapes + typed obligation contract).
+Every load-bearing finding supports both halves of the win condition:
 
-| Finding | What it established | Role in the hybrid frame |
+| Finding | What it established | Evidence for the win condition |
 |---|---|---|
-| **M0** — obligation-blindness is tier-independent | cheap & frontier both pass happy-path ~100%, both floor authz/validation/mass-assignment | the *code-writing* sub-task is tier-independent → safe to push onto cheap/local |
-| **M-coh-1.5** — skeleton+retry = bare opus at $0 | the frontier's contribution is the skeleton (shared shapes + typed obligation contract), not the body | this **is** "frontier orchestrates, cheap codes," already demonstrated on the workspace epic |
-| **M-coh-3** — size×harness crossover | monolithic frontier *erodes* past N≈9 (silently drops `authz@add*Member`); cheap-skeleton-retry stays flat | above ~9 surfaces you don't just *may* split — you *must*; one frontier context can't hold the epic |
-| **M-coh-2** — skeleton double dissociation | the skeleton must carry **both** shapes (→integration) AND typed obligations (→uniformity) | defines exactly what the frontier orchestration layer has to emit |
+| **M0** — obligation-blindness is tier-independent | cheap & frontier both pass happy-path ~100%, both floor authz/validation | the *coding* sub-task is tier-independent → safe to run on lightweight models (cost) |
+| **M-coh-1.5** — skeleton+retry = bare opus at $0 | frontier-orchestration (skeleton) + cheap-coding+retry matched bare opus on cohesion, coding at $0 | **reliability parity + cost dominance on one epic, already shown** |
+| **M-coh-3** — size×harness crossover | monolithic frontier *erodes* past N≈9 (silently drops `authz@add*Member`); the harness stays flat | above ~9 surfaces the hybrid **beats** all-frontier on *both* reliability and cost — and the gap widens |
+| **M-coh-2** — skeleton double dissociation | the orchestration artifact must carry **both** shapes (→integration) AND typed obligations (→uniformity) | defines what the frontier planning layer must emit to hit the reliability gate |
 
-So the hybrid claim is a **weaker, more achievable bar** than v1's substitution claim: cheap/local does
-not have to match frontier on *everything* — only on the *coding* sub-task, while frontier keeps the
-small, high-leverage orchestration. v1's "cheap matches frontier" becomes a **sub-claim** ("cheap matches
-frontier *on code-fill, given the skeleton*"), which the M-coh ladder already supports.
+So v1's "cheap matches frontier" is **demoted to a sub-claim** — "lightweight coding matches frontier *on
+the code-fill, given the orchestration artifact*" — which the M-coh ladder already supports. The new
+headline is the **whole-system cost-vs-reliability comparison.**
 
-## The claim (falsifiable)
+## What "planning and orchestration" means here (sharp, evidenced)
 
-> For building real software, the work splits into a **low-token-volume orchestration layer** (where
-> frontier cognition earns its per-token price) and a **high-token-volume coding layer** (where cheap or
-> local inference, given the orchestration artifacts, matches frontier output). A harness that routes the
-> two accordingly delivers **frontier-grade results at a cost that is fixed in the coding volume** —
-> dominated by hardware, not tokens.
+The frontier-resident layer is small, high-leverage, and precisely defined by the findings — keep it
+sharp; it is the moat:
 
-Two conditions must both hold for the arbitrage to pay, and each is a measurable, killable hypothesis:
+- **The frozen skeleton** — shared shapes **and** the typed cross-cutting obligation contract. Authored
+  **once per epic**, reused across every coding chunk. (M-coh-2 proved both clauses are necessary for
+  reliability.)
+- **Decomposition** — turning a thin plan into the atomic build packets nobody enumerated (v1 Stage 2,
+  the most-developed apparatus). Low-volume, high-leverage → frontier-resident.
+- **Verification-design** — *choosing and placing* the deterministic checkers / per-surface obligation
+  gates. Note the split: **designing** the verification is frontier orchestration; **running** it is a
+  free deterministic gate (the lethal-quadrant lever — a cheap checker guarding cheap generators). The
+  frontier designs the net; it does not run it.
 
-1. **Orchestration genuinely needs frontier.** If a cheap/local model can author an adequate skeleton
-   (the M-coh-2.5 *provenance* question), then you need frontier for *nothing* — the system collapses to
-   **all-local** (still a great outcome, but a *different product* than "frontier orchestrates"). This
-   fork is currently **open** and is the experiment that decides the whole pivot.
-2. **Orchestration tokens ≪ coding tokens.** The skeleton + decomposition + verification-design must be a
-   small fraction of total tokens, so that metering only that layer is cheap while the bulk runs at fixed
-   cost. M-coh-3 is encouraging here — one skeleton amortizes over N chunk builds, and the ratio improves
-   with epic size — but the **token-volume ratio itself is unmeasured** and is new work this frame adds.
-
-**Kill conditions:** if cheap/local can author the skeleton too → collapse to all-local (condition 1
-fails, pivot redirects). If orchestration is *not* a small token fraction → the arbitrage doesn't pay
-(condition 2 fails). If, post-skeleton, cheap/local *can't* match frontier on code-fill at any harness
-setting → the labor doesn't actually divide (the M-coh result fails to generalize off the workspace epic).
-
-## What "orchestration" means here (sharp, not a vague bucket)
-
-The repo gives a precise, evidenced definition — keep it; it is the moat. The frontier-resident layer is:
-
-- **The frozen skeleton** — shared shapes **and** the typed cross-cutting obligation contract (authz,
-  tenancy, validation, idempotency, audit). Produced **once per epic**, reused across every chunk.
-  (M-coh-2 proved both clauses are necessary.)
-- **Decomposition** — turning a thin plan into the atomic build packets nobody enumerated. Low-volume,
-  high-leverage, the most-developed apparatus in the repo (v1's Stage 2). Frontier-resident by default.
-- **Verification-design** — choosing/placing the deterministic checkers and the per-surface obligation
-  gates that catch what the coding layer silently skips (the lethal-quadrant lever).
-
-Everything downstream of these artifacts — the per-surface code-fill, the retries, the mechanical
-assembly — is the **coding layer**, and that is what moves to cheap/local fixed-cost inference.
+Everything downstream of these artifacts — per-surface code-fill, retries, mechanical assembly — is the
+**coding layer**, run on lightweight models. That is where the token volume (and therefore the cost) lives.
 
 ## Substrate staging — cheap-API first, local as the realization (decided 2026-06-16)
 
-The "fixed cost = hardware + maintenance" property is **only literally true on owned hardware.** Cheap or
-free API is still marginal-cost-per-token and rate-limited. So we are honest about what each substrate
-proves:
+The "fixed coding cost = hardware + maintenance" property is **only literally true on owned hardware.**
+Cheap/free API is still marginal-cost-per-token and rate-limited. So we are honest about what each
+substrate proves:
 
 - **Phase 1 — the free gateway (now).** The jnoccio free-model pool is the **upper bound** of the cost
-  win ($0 marginal coding). Proving "frontier-orchestration + free-gateway-coding" matches frontier
-  establishes the **split's technical viability** — but it *proxies* the fixed-cost story, it does not
-  *realize* it. This is the cheap, fast loop; it reuses the entire existing battery.
-- **Phase 2 — owned local hardware (later).** Stand up a 7B–30B local rig and re-run the proven split.
-  This is where the fixed-cost economics, the privacy/independence story, and the literal product claim
-  become real. The boundary located in Phase 1 is the spec for what the local layer must cover.
-
-This staging is unchanged from v1; only the *reason* changes — Phase 1 is no longer "prove cheap can
-substitute," it is "locate the orchestration↔coding boundary cheaply before paying to realize it."
+  win ($0 marginal coding). Proving "frontier-orchestration + free-gateway-coding" hits the reliability
+  gate establishes the **system's technical viability** — but it *proxies* the fixed-cost story, it does
+  not *realize* it. Cheap, fast loop; reuses the entire existing battery.
+- **Phase 2 — owned local hardware (later).** Stand up a 7B–30B local rig and re-run the proven system.
+  This realizes the fixed-cost economics and the privacy/independence story. **Caveat (load-bearing):**
+  the free gateway is an *uncontrolled mixture* that may include models larger than anything you can run
+  on commodity GPUs — so the reliability shown in Phase 1 is an *upper bound* for Phase 2. Closing that
+  gap (does a literal local 7B–30B still clear the reliability gate?) connects to the
+  one-shot-capacity per-model break-point work.
 
 ## What changes in the roadmap
 
-The milestones are re-axised, not discarded:
+Milestones are re-pointed at the win condition, not discarded:
 
-- **The crux becomes M-coh-2.5 (skeleton provenance).** Under v1 this was a caveat on the cohesion
-  result. Under the hybrid frame it is **the load-bearing experiment**: it directly answers "does the
-  orchestration layer genuinely need frontier?" (condition 1). Run it next.
-- **New measurement: the token-volume ratio** (condition 2). Instrument the battery to report
-  orchestration tokens vs coding tokens per epic, across the scale ladder — the number that says whether
-  metering-only-orchestration is actually cheap. This is small, additive, and currently missing.
+- **The crux is M-coh-2.5 (skeleton provenance).** Two things it decides: (a) the **cost of the
+  orchestration layer** — is it one amortizable frontier call, and how many tokens? (feeds cost
+  dominance); (b) **whether frontier orchestration is necessary at all** — if a *cheap-authored* skeleton
+  is just as reliable, then you don't need frontier in the loop and the cheaper answer is all-local (a
+  *different* system than the one hypothesized, but it would still need to clear the reliability gate).
+  Run it next.
+- **Cost instrumentation** — the battery must report orchestration tokens vs coding tokens per epic, and
+  compute the **hybrid-vs-cost-optimized-all-frontier** total per task. This is the headline metric now,
+  and it is currently missing.
+- **A cost-optimized all-frontier baseline** — implement the bar honestly (cloud routing across
+  opus/sonnet/haiku), not naive all-opus. Without it the cost win is unconvincing.
 - **The per-surface checker lever (M-coh-2)** stays doubly-motivated: it closes the contender's
-  statistical EPIC✓ residue *and* it is the verification-design that lives in the orchestration layer.
-- **The stage-by-stage map survives**, re-axised from "cheap-vs-frontier per stage" to "frontier-
-  orchestration vs local-coding per stage, plus the token-volume ratio that makes the split pay."
-  Decomposition (v1 Stage 2) is now explicitly **inside the orchestration layer**.
+  statistical reliability residue at scale *and* it is the verification-design that lives in the
+  orchestration layer.
+- **The stage-by-stage map survives** as the means of locating where the system needs frontier vs
+  lightweight; decomposition (v1 Stage 2) sits inside the orchestration layer.
 
 ## Where the recently-imported research (the OKF) sits relative to this
 
 The OKF (`okf/agentic-workflow-optimization/`) does **not** contradict any finding, but it pulls in a
-different direction on framing — recorded here so the pivot is deliberate:
+different direction on framing — recorded so the pivot is deliberate:
 
-- **The OKF's "next step" is M5 = automated workflow search (GEPA-first).** That is a contribution to the
-  *academic agentic-workflow-search literature*. This frame's next step is **characterizing the
-  boundary + the amortization economics** — a *systems* contribution. The search is downstream of, not
-  ahead of, knowing the boundary.
-- **The OKF is API-only and silent on local-inference economics** — the exact substrate Phase 2 needs.
-  The toolbox (GEPA/ADAS/OpenEvolve) assumes per-token API; the fixed-cost thesis lives in terrain the
-  OKF doesn't cover.
-- **Contribution re-ranking.** The OKF says "the non-gameable fitness *is* the contribution." Under this
-  frame the fitness is the **measurement instrument** (how we trust the boundary map); the **contribution
-  is the hybrid cost-arbitrage architecture + the empirical map** of which sub-tasks need frontier.
-- **The OKF's own skeptical source supports this pivot.** "Inefficiencies of Meta Agents" (>15,000-example
-  break-even for automated design) argues the *static architecture* — which pays off on day one — should
-  come before the *search*, which is speculative. The pivot is more aligned with that caution than the
-  OKF synthesis is.
+- **The OKF's "next step" is M5 = automated workflow search (GEPA-first)** — a contribution to the
+  *academic agentic-workflow-search literature*. This program's deliverable is a **product** (the system
+  that beats all-frontier on cost). The search is a tool that comes *after* the system is shown to work,
+  not the goal.
+- **The OKF is API-only and silent on local-inference economics** — exactly the substrate Phase 2 (and
+  the fixed-cost thesis) needs.
+- **Contribution re-ranking.** The OKF says "the non-gameable fitness *is* the contribution." Here the
+  fitness is the **instrument** that proves the reliability gate honestly; the **product** is the system.
+- **The OKF's own skeptical source supports this ordering.** "Inefficiencies of Meta Agents"
+  (>15,000-example break-even for automated design) argues the static, hand-built system — which pays off
+  immediately — should precede any search.
 
-M5 / workflow-search and the lens-ensemble precursor remain on the roadmap; they just sit **after** the
-boundary is mapped and the architecture is shown to pay, not before.
+M5 / workflow-search and the lens-ensemble precursor stay on the roadmap; they sit **after** the system
+is shown to clear the reliability gate and beat all-frontier on cost, not before.
 
 ## Status
 
-Draft north-star (2026-06-16), **uncommitted, awaiting review.** Substrate decision: cheap-API/free
-gateway first, local as the Phase-2 realization. Next experiment under this frame: **M-coh-2.5 skeleton
-provenance** (decides condition 1) + the **token-volume-ratio** instrument (condition 2). No findings
-were edited; this doc only reframes the headline question of `PROPOSAL.md`.
+Draft north-star (2026-06-16, rev. 2), **committed for iteration.** Substrate decision: free gateway
+first (proxies fixed cost), owned local hardware later (realizes it). Next experiment under this frame:
+**M-coh-2.5 skeleton provenance** (orchestration cost + necessity) + the **cost-instrumentation /
+cost-optimized-all-frontier baseline** (the headline metric). No findings were edited; this doc only
+reframes the headline question of `PROPOSAL.md`.
