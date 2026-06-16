@@ -336,10 +336,75 @@ per-surface checker lever (M-coh-2) is positioned to close. Data: `runs/mcoh-sca
   opus's erosion could be milder or worse on heterogeneous surfaces (untested).
 - Conditional on a correct skeleton (the M-coh-2.5 provenance question is orthogonal and still open).
 
+## M-coh-2 — the skeleton ABLATION (2026-06-12) — DONE: which clause buys which metric
+
+M-coh-1 left a mechanism question open: the frozen skeleton solves **two** distinct problems at once —
+(a) **interface drift** (pinning the membership shape so addMember↔postComment agree) and (b)
+**cross-cutting fragmentation** (stating tenancy/authz/mass-assign so they don't fragment). This ablation
+splits the skeleton into a **shape-only** clause (shared data shapes + record fields, no policy —
+`skeleton-shape.md`) and an **obligations-only** clause (tenancy/authz/mass-assign rules, no shapes —
+`skeleton-obl.md`) and runs each alone, against a no-skeleton control and the full skeleton. Workspace
+epic (D1/N5), cheap tier (free gateway), **retry on every arm**, K=5, $0. Data
+`runs/mcoh2-{none,shape,obl,full}-k5.json`, per-test attribution `runs/_analyze.mjs`.
+
+| skeleton clause | wire | happy | **X-CUT** | **INTEG** | **EPIC✓** | $/epic |
+|---|---|---|---|---|---|---|
+| **none** (retry only, no skeleton) | 100% | 90%  | 40% | 27% | 0/5 | $0 |
+| **shape-only** (shapes, no policy)  | 100% | 100% | 34% | **67%** | 0/5 | $0 |
+| **obligations-only** (policy, no shapes) | 100% | 90% | **86%** | 40% | 0/5 | $0 |
+| **full** (both) | 100% | 100% | **97%** | **100%** | **4/5** | $0 |
+
+### Finding 1 — a double dissociation: each clause buys its own metric, neither buys both
+The **shape** clause lifts INTEG (27→67%) and leaves X-CUT floored (40→34%); the **obligations** clause
+lifts X-CUT (40→86%) and barely moves INTEG (27→40%). The two metrics come apart along the two clauses,
+exactly as M-coh-1 predicted. And **neither half alone produces a single cohesive epic (both 0/5); only
+the full skeleton does (4/5)** — the cohesion win is not either lever, it's their union.
+
+### Finding 2 — the per-test breakdown shows the mechanism, and exposes one interaction
+Per-(crosscut/integration)-test pass fraction across the K=5 runs:
+
+| bucket | test | none | shape | obl | full |
+|---|---|---|---|---|---|
+| X-CUT | tenancy@createProject | 100% | 100% | 100% | 100% |
+| X-CUT | tenancy@listProjects | 20% | 0% | 100% | 100% |
+| X-CUT | tenancy@addMember | 60% | 0% | 100% | 100% |
+| X-CUT | authz@addMember | 40% | 0% | 100% | 100% |
+| X-CUT | authz@postComment | 0% | **100%** | **20%** | 100% |
+| X-CUT | authz@updateProfile | 20% | 20% | 100% | 100% |
+| X-CUT | mass-assign@updateProfile | 40% | 20% | 80% | 80% |
+| INTEG | SEAM+ (member added can postComment, reps agree) | 60% | **100%** | 40% | 100% |
+| INTEG | SEAM− (same-org non-member still cannot post) | 0% | **100%** | 20% | 100% |
+| INTEG | ISO (different-org user cannot see/comment) | 20% | 0% | **60%** | 100% |
+
+Three readings:
+- **Pure cross-cutting guards** (tenancy@list/@addMember, authz@addMember, authz@updateProfile) are bought
+  by the **obligations** clause (≤60→100%) and untouched by shape (stays 0–20%). They fragment because
+  nobody *states* them to each isolated builder; the data shape is irrelevant to whether each one
+  remembers to scope-by-org.
+- **Seam-representation tests** (SEAM+/SEAM−) are bought by the **shape** clause (→100%) and left low by
+  obligations (40%/20%). They fail by *drift*: with no pinned membership shape, addMember and postComment
+  disagree on the `{projectId,userId,role}` representation, so the member lookup misses.
+- **The interaction — why a partial skeleton never makes a cohesive epic.** `authz@postComment`
+  ("only a member may post") needs **both**: the rule stated *and* the membership shape pinned to enforce
+  it. So it scores 100% under shape-only (the rule is idiomatic/stated in the brief and the shape is
+  pinned) but only 20% under obligations-only (rule stated, enforced against a *guessed* shape → fails),
+  and 100% only under full. Cross-org **ISO** likewise needs the tenancy obligation (0→60% under obl). And
+  **EPIC✓** is combinatorial — only the full skeleton clears all 7 crosscut + 3 integration checks in one
+  run (4/5), vs 0/5 for either half.
+
+### What this nails down (for the decompose stage)
+The M-coh-1 conjecture is confirmed and sharpened: **the frozen skeleton is two levers fused.** The shape
+clause kills interface drift (the part *isolated*-cheap fails that *whole*-anything doesn't — one context
+can't drift against itself); the obligations clause kills cross-cutting fragmentation (the part
+*everyone below opus* fails); and the membership-gated guard sits at their intersection, needing both.
+So the decompose/vision stage's frozen skeleton must carry **both shared shapes AND typed obligations** —
+emitting one without the other recovers at most one of the two failure modes and never a cohesive epic.
+
 ## Next
-- **M-coh-2 — ablate the skeleton** (shape-only clause vs obligations-only clause) to attribute which
-  metric each buys; add the integration-gate+repair lever — now doubly motivated as the lever that closes
-  M-coh-3's residual reliability gap at scale.
+- **M-coh-2 — ablate the skeleton — ✅ DONE (above).** The shape↔INTEG / obligations↔X-CUT double
+  dissociation is measured; both clauses are necessary for a cohesive epic. Still open: the
+  integration-gate + per-surface obligation-checker + repair lever — now doubly motivated as the lever
+  that closes M-coh-3's residual (statistical) reliability gap at scale.
 - **M-coh-2.5 — skeleton provenance:** cheap-generated vs frontier-generated vs hand skeleton → is the one
   frontier call necessary, and does it amortize?
 - **M-coh-3 — DONE (above).** Open follow-on: push past N=17 (scale-d5/N21 fixture exists) and run the
