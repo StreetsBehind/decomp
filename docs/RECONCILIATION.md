@@ -1,5 +1,10 @@
 # Reconciliation — the v2 Research Program × the Surface-Discovery branch
 
+> **⚠️ Headline superseded (2026-06-16) — read [`STATE.md`](../STATE.md) first.** This reconciled two
+> *Era-1* forks (granularity/deferral × obligations/lethal-quadrant). The project has since pivoted to
+> the hybrid cost-vs-reliability product ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)). The findings below
+> remain valid as evidence; the decomposition headline they served is historical.
+
 _Authored 2026-06-11. The v2 program ([`RESEARCH-PROGRAM.md`](RESEARCH-PROGRAM.md), branch
 `claude/optimal-decomposition-strategy-01jwus`) was drafted **blind** to the empirical work on branch
 `archetype-premise-apparatus` (8 commits: the proof-staircase results, the build-tolerant reframe, the

@@ -1,5 +1,10 @@
 # The Obligations Layer — the typed lethal quadrant
 
+> **⚠️ Headline superseded (2026-06-16), but this doc is LOAD-BEARING — read [`STATE.md`](../STATE.md)
+> first.** It predates the hybrid-product reframe ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)), but the
+> **lethal quadrant / obligations layer it defines is exactly the reliability metric the current win
+> condition uses.** Still central, not just history.
+
 _Promoted to the trunk 2026-06-11 during the unified-direction reshape. This is the live statement of
 the obligations layer, extracted from the now-archived `SURFACE-DISCOVERY-SPEC.md` + `CURATION-METHOD.md`
 (see [`../archive/edge-join/`](../archive/edge-join/) for the full original design). It is the typed

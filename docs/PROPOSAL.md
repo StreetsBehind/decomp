@@ -1,5 +1,12 @@
 # Proposal — Can harness design make cheap/local models as good as frontier models?
 
+> **⚠️ This is the Era-2 predecessor — headline reframed 2026-06-16. Read [`STATE.md`](../STATE.md) first.**
+> Its question ("can a harness make cheap/local match frontier, stage by stage?") is reframed by
+> [`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md) into the **hybrid product** question (frontier orchestrates +
+> lightweight codes, beating all-frontier on cost at equal reliability). The stage map, the lever menu,
+> and **every M0/M-coh finding below remain valid** — "cheap matches frontier" is now demoted to a
+> sub-claim. This doc is kept for its machinery; PROPOSAL-HYBRID is the current north star.
+
 _Draft north-star, 2026-06-12. Supersedes the "best decomposition method" framing as the headline
 question (that work becomes one stage-study below). Plain-language on purpose._
 

@@ -1,5 +1,10 @@
 # Decomposition Test-Battery — Charter
 
+> **⚠️ Headline superseded (2026-06-16) — read [`STATE.md`](../STATE.md) first.** The project's current
+> goal is the hybrid cost-vs-reliability product ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)). This doc's
+> Era-1 *framing* (best-decomposition-method / surface-discovery) is historical; its **findings and
+> design rules remain valid** and feed the current program. Read it as evidence, not as the goal.
+
 > **Purpose of this document.** Seed a **new, standalone repo** whose single job is to *empirically
 > find the best way to decompose a plan into atomic work-packet beads.* It is written to be
 > self-contained: it does not assume the reader has access to the existing `autonomous-build`

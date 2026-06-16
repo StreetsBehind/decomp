@@ -1,5 +1,10 @@
 # Proof-Staircase — Results Log
 
+> **⚠️ Headline superseded (2026-06-16) — read [`STATE.md`](../STATE.md) first.** This is an *Era-1*
+> results log (the cheapest-first surface-discovery staircase). The project's current goal is the hybrid
+> cost-vs-reliability product ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)). The settled facts below remain
+> valid as evidence; the staircase headline they served is historical.
+
 _Running log of the cheapest-first proof staircase (archived [`SURFACE-DISCOVERY-SPEC`](../archive/surface-discovery/SURFACE-DISCOVERY-SPEC.md) §7). Each step is a
 falsifiable claim that gates the next. Append results here; do not rewrite history._
 

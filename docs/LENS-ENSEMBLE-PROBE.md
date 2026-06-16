@@ -1,5 +1,10 @@
 # Lens-Ensemble Residual Probe — pre-registered spec (2026-06-16)
 
+> **Roadmap position — read [`STATE.md`](../STATE.md) first.** This is a *proposed-next* experiment. Per
+> the current north star ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)), it sits **after** the system clears
+> the reliability gate and the cost bar (alongside M5 / workflow-search), not before the crux experiments
+> (M-coh-2.5 provenance + cost instrumentation).
+
 _Does decomposing a thin plan through a panel of **lens-diverse** experts recover lethal-quadrant
 obligations that **no single pass** finds — and how much lethal mass remains invisible even to the
 union? A discovery experiment in the archetype-premise / kill-test lineage (hearth oracle, bounded

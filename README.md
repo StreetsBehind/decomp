@@ -1,43 +1,50 @@
-# decomp — the decomposition research battery
+# decomp — the cheap-vs-frontier hybrid research battery
 
-Empirically answer: **for a thin plan that will be decomposed _and built_ by cheap models, what
-decomposition _policy_ maximizes realized outcome coverage per dollar?** The repo is the **measurement
-apparatus** — the test rig, the fixture corpus, the scorers, and the scoreboard. The decomposers are the
-*things under test*, behind one adapter contract so the runner compares them blind.
+> **Current goal (north star).** Can we build a **system** in which a **cloud frontier model plans and
+> orchestrates** while **cheaper lightweight models do all the actual coding** — such that it delivers
+> **reliable** software-building at **lower total cost** than using cloud frontier models throughout
+> (opus/sonnet/haiku)? The system is the product; the repo is the apparatus that builds and proves it.
+> See **[`STATE.md`](STATE.md)** (what/where/next) and **[`docs/PROPOSAL-HYBRID.md`](docs/PROPOSAL-HYBRID.md)**
+> (the full statement + win condition).
 
-The organizing insight (two independent research lines converged on it — see
-[`docs/RECONCILIATION.md`](docs/RECONCILIATION.md)): **the build process is itself a discovery engine.** A
-compiler, a linker, a failing test catch most missing dependencies for free, exactly when they bind. So
-the job is *not* to enumerate every edge upfront — it is to (1) decompose to the right **granularity** for
-a cheap builder, and (2) spend scarce upfront discovery only on the **lethal quadrant**: the omissions
-that ship clean and detonate later (security, privacy, consistency, tenancy, idempotency, compliance).
-Everything else, let the build find.
+This repo is the **measurement apparatus** — the test rig, the fixture corpus, the scorers, and the
+scoreboard. It already produced an **existence proof on one epic**: a frozen *skeleton* (shared shapes +
+a typed cross-cutting obligation contract, authored by the frontier orchestration layer) plus cheap
+isolated code-fill + retry matched bare opus on epic cohesion **at $0 coding cost**, and *beats*
+monolithic frontier once an epic exceeds ~9 surfaces (which silently drops cross-cutting obligations).
+
+> **Heads-up — this repo pivoted twice.** Most docs were written under earlier headlines
+> ("best decomposition method", then "stage-by-stage cheap-vs-frontier"). Their **findings are intact**;
+> only the headline question moved. Each legacy doc carries a one-line banner pointing back to
+> [`STATE.md`](STATE.md). The **lethal quadrant** (silent + expensive cross-cutting obligations) and the
+> **obligations layer** from Era 1 are exactly the reliability metric the current win condition uses.
 
 ## Read in this order
 
-1. **[`docs/RECONCILIATION.md`](docs/RECONCILIATION.md)** — the bridge. Two forks (a granularity/deferral
-   program and an obligations/lethal-quadrant line) were built blind to each other; this reconciles them
-   and flags the one measurement bug (the repair premium ρ is *quadrant-censored*, not a scalar median).
-2. **[`docs/RESEARCH-PROGRAM.md`](docs/RESEARCH-PROGRAM.md)** — the pre-registered program: optimal
-   granularity + risk-thresholded deferral under a cheap-model precondition; the keystone moves from the
-   static artifact to the decompose-then-build **policy** (Tier-2 micro-builds are the endpoint).
-   **§10 carries the pending reconciliation revisions.**
-3. **[`docs/OBLIGATIONS.md`](docs/OBLIGATIONS.md)** — the obligations layer: the typed definition of the
-   lethal quadrant, and what `τ` should target and the partitioned endpoint should veto on.
-4. **[`docs/BUILD-TOLERANT-REFRAME.md`](docs/BUILD-TOLERANT-REFRAME.md)** — completeness as
-   cost-of-omission, not coverage; the 2×2 that says which edges to skip and which to chase.
-5. **[`docs/STAIRCASE-RESULTS.md`](docs/STAIRCASE-RESULTS.md)** — the settled empirical facts (Step 1 GO,
-   Step 2 the decisive edge-join negative) the grids must not re-litigate.
-6. **[`docs/PRIOR-ART-COMPLETENESS.md`](docs/PRIOR-ART-COMPLETENESS.md)** — the cross-discipline survey:
-   no completeness guarantee exists anywhere; convergence/saturation is the only numeric lens.
-7. **[`docs/FINDINGS.md`](docs/FINDINGS.md)** (state + handoff) and **[`docs/CHARTER.md`](docs/CHARTER.md)**
-   (the foundational goal + design rules).
+1. **[`STATE.md`](STATE.md)** — what we're accomplishing, where we are, what's next. The single source of
+   truth for the goal.
+2. **[`docs/PROPOSAL-HYBRID.md`](docs/PROPOSAL-HYBRID.md)** — the north-star question, the (both-must-hold)
+   win condition, the substrate staging, and how the imported OKF research sits relative to it.
+3. **[`docs/REPORT-2026-06-16.md`](docs/REPORT-2026-06-16.md)** — the full evidence synthesis (M0 → the
+   M-coh ladder → the skeleton double dissociation).
+4. **[`studies/build-gap/RESULTS.md`](studies/build-gap/RESULTS.md)** + **[`DESIGN.md`](studies/build-gap/DESIGN.md)**
+   — the live experiments and apparatus (the workspace epic, the scale ladder, the cohesion oracle).
+5. The **Era-1 docs** (CHARTER, OBLIGATIONS, BUILD-TOLERANT-REFRAME, RESEARCH-PROGRAM, RECONCILIATION,
+   STAIRCASE-RESULTS, PRIOR-ART-COMPLETENESS, KILL-TESTS, ARCHETYPE-PREMISE, FINDINGS) — historical
+   headline framing; load-bearing **findings** still feed the current program. Read as evidence, not goal.
 
 ## Layout
 
 ```
-docs/                  Charter, the research program + reconciliation, the obligations layer,
-                       the staircase results, prior-art survey, findings/handoff.
+STATE.md               CURRENT goal + status (read first). The source of truth for the direction.
+docs/                  PROPOSAL-HYBRID (north star) + REPORT synthesis; plus the Era-1 framing docs
+                       (charter, research program, obligations, staircase, prior-art) — banners on top.
+studies/               The CURRENT live experiments (the cheap-vs-frontier / hybrid work).
+  build-gap/           M0 + the M-coh cohesion ladder: the workspace epic, the scale-d{1..4} ladder,
+                       the cohesion oracle, the frozen-skeleton lever (DESIGN.md + RESULTS.md).
+  oneshot-capacity/    the naked per-model break-point sub-study (feeds the Phase-2 local story).
+okf/                   Imported knowledge bundle on automated agentic-workflow optimization (the M5
+                       horizon — sits AFTER the system clears the reliability gate; see STATE.md).
 schemas/               JSON Schema for every artifact that crosses a boundary (snapshot, cost,
                        outcome-manifest, planted-gaps, build-completeness, scorecard).
 strategies/            The methods under test, behind one adapter contract.
@@ -75,12 +82,15 @@ npm run battery:live   # live against the headless `claude` CLI (SPENDS MONEY)
 
 ## Status
 
-**Apparatus live; two forks unified.** `npm run selftest` is green (11 suites / 262 assertions);
-`battery:mock` runs the full matrix at zero spend. The merge of the v2 program and the archetype-premise
-evidence is on the `unified-direction` trunk. The edge-join mechanism is **parked** in `archive/`
-(dormant, not dead — Step 2 was a decisive negative; revival path in the tombstone). Next concrete step
-per the reconciliation: the two **$0 kill-tests** (cost-weighted hearth re-score + build-batch history)
-that confirm or refute the quadrant structure before the Tier-2 build campaign.
+**Existence proof in hand; re-pointed at the hybrid product question.** The Era-1 decomposition battery
+is intact (`npm run selftest` green; `battery:mock` runs the full matrix at zero spend; the edge-join
+mechanism is parked in `archive/`). The live work is the **cohesion ladder** under `studies/build-gap/`:
+M0 (obligation-blindness is tier-independent), M-coh-1.5 (frozen-skeleton + retry = bare opus at $0),
+M-coh-3 (monolithic frontier breaks at N≈9), M-coh-2 (the skeleton double dissociation).
+
+**Next concrete step** (per [`STATE.md`](STATE.md)): **M-coh-2.5 — skeleton provenance** (does the
+orchestration layer need frontier, and what does it cost?), then **cost instrumentation** + a
+**cost-optimized all-frontier baseline** — the headline cost-vs-reliability metric, currently missing.
 
 ## Design rules (non-negotiable — see CHARTER §6)
 

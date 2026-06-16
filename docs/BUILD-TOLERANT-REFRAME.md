@@ -1,5 +1,10 @@
 # The Build-Tolerant Reframe — completeness as cost-of-omission, not coverage
 
+> **⚠️ Headline superseded (2026-06-16), but this doc is LOAD-BEARING — read [`STATE.md`](../STATE.md)
+> first.** Written under the Era-1 decomposition headline (current north star:
+> [`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)), but its **cost-of-omission / lethal-quadrant framing still
+> defines what "reliable" means** in the current win condition. Still central, not just history.
+
 _Authored 2026-06-03. Builds on [`PRIOR-ART-COMPLETENESS.md`](PRIOR-ART-COMPLETENESS.md) (the
 cross-discipline survey) and the Step-2 result in [`STAIRCASE-RESULTS.md`](STAIRCASE-RESULTS.md). This
 note records a strategic reframe that **sits above the proof-staircase**: it changes what the staircase is

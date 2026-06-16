@@ -1,5 +1,11 @@
 # decomp — Findings & Handoff
 
+> **⚠️ Resume point moved (2026-06-16) — read [`STATE.md`](../STATE.md) and
+> [`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md) first.** This handoff was written under the *Era-1*
+> decomposition headline; its "RESUME HERE" reflects that era, not the current goal (the hybrid
+> cost-vs-reliability product). For current state + what's next, use `STATE.md`. The findings below remain
+> valid as evidence.
+
 _Last updated: 2026-06-11. This is the source-of-truth handoff for picking the work up on another
 machine. Read it with [`CHARTER.md`](CHARTER.md) and [`RESEARCH-PROGRAM.md`](RESEARCH-PROGRAM.md)
 (the pre-registered v2 design). The repo answers: **what is the best method for decomposing a thin

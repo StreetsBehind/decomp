@@ -1,5 +1,10 @@
 # Prior Art — Decomposition Completeness (cross-discipline survey)
 
+> **⚠️ Headline superseded (2026-06-16) — read [`STATE.md`](../STATE.md) first.** This *Era-1* survey
+> grounded the surface-discovery convergence work. The project's current goal is the hybrid
+> cost-vs-reliability product ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)). The survey remains valid as
+> reference; the completeness headline it served is historical.
+
 _Source: deep-research run `wf_1048072d-f1f` (2026-06-02). 6 search angles → 26 sources fetched →
 127 claims extracted → 25 adversarially verified (3-vote, need 2/3 to kill) → 22 confirmed, 3 killed.
 This is the persisted research record; forward-looking reframes built on it live in `FINDINGS.md` /

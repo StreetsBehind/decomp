@@ -1,5 +1,10 @@
 # The $0 Quadrant Kill-Tests — Results
 
+> **⚠️ Headline superseded (2026-06-16) — read [`STATE.md`](../STATE.md) first.** These *Era-1*
+> kill-tests confirmed the lethal-quadrant structure (still the reliability metric — see
+> [`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)). The findings remain valid as evidence; the v2-campaign
+> headline they gated is historical.
+
 _Authored 2026-06-11. Runs the two zero-model-spend kill-tests that gate the v2 campaign
 ([`RECONCILIATION.md`](RECONCILIATION.md) §6, [`BUILD-TOLERANT-REFRAME.md`](BUILD-TOLERANT-REFRAME.md)
 "Kill-tests"). The question both answer: **is the cost-of-omission 2×2 real and separable on real

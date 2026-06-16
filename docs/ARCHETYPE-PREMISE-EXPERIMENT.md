@@ -1,5 +1,10 @@
 # Archetype Premise Experiment — Design
 
+> **⚠️ Headline superseded (2026-06-16) — read [`STATE.md`](../STATE.md) first.** This *Era-1* experiment
+> validated the archetype premise for surface-discovery. The project's current goal is the hybrid
+> cost-vs-reliability product ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)). The findings remain valid as
+> evidence; the archetype-mining headline they served is historical.
+
 _Last updated: 2026-06-02. A controlled experiment to answer one question cheaply, **before** committing
 resources to mining archetypes: **does priming a decomposer with authored archetypes help a weaker model
 find more of the right surfaces and seam-questions — without anchoring it away from the seams a template

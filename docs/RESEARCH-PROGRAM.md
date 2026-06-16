@@ -1,5 +1,10 @@
 # Research Program v2 — Optimal Granularity & Deferred Decomposition
 
+> **⚠️ Headline superseded (2026-06-16) — read [`STATE.md`](../STATE.md) first.** The project's current
+> goal is the hybrid cost-vs-reliability product ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)). This doc's
+> Era-1 *framing* (best-decomposition-method / surface-discovery) is historical; its **findings and
+> machinery remain valid** and feed the current program. Read it as evidence, not as the goal.
+
 _Drafted 2026-06-11. This document extends [`CHARTER.md`](CHARTER.md) and builds on the state in
 [`FINDINGS.md`](FINDINGS.md). It is the pre-registered design for the next phase of the battery: the
 assumptions, the constructs, the hypotheses, the harness extensions, and the experiments that will
