@@ -122,3 +122,32 @@ restore-margin=2× worst-of-K SE. **Content pins:** apparatus `studies/build-gap
 swap it for `scale-d{2,4}` via a pre-P1 amendment.
 
 **Next: P0** (smoke + wiring + G1/G2/K8 gate validations + the §14 autonomy-harness round-trip).
+
+## 2026-06-17 — P0 BUILT + GREEN (smoke + wiring + instrument self-validation)
+
+P0 implemented under `studies/meta-search/` (additive; the frozen apparatus tree `studies/build-gap/` =
+pinned `1580944…`, **verified untouched**). All 5 blocking gates pass; full record:
+[`P0-RESULTS.md`](P0-RESULTS.md), machine summary `runs/p0-summary.json`. Modules: `src/` (genome,
+scorecard [§6 per-cell metric], archive [per-cell veto + flat Pareto], operators, evaluator [synthetic +
+live], worker, loop, ledger, rng, checkpoint, watchdog, config) + `gates/` (G0/G1/G2/K8/autonomy + live
+smoke) + `p0.mjs`.
+
+**Gate outcomes:** G0 freeze-consistency (code == FREEZE record); G1 per-cell metric wired through the
+real `evaluateEpic` (mut drops exactly `authz@addMember`, reliability matches hand-computed scalar to
+1e-9, digest carries no cell names, veto rejects at insertion); G2 oracle kill-rate **1.000 crosscut /
+1.000 integration** (≥ K6 0.90), reference not killed; K8 rediscovers the planted optimum **30/30 pinned
+seeds** within ≤8gen/≤300evals (base rate 99.4% over 500 seeds), veto fires in-loop; §14 checkpoint→resume
+bit-identical + watchdog halts-to-checkpoint on a planted hang. Live gateway smoke OK (non-blocking).
+
+**P0 operational parameters (measurement-layer — NOT frozen invariants; freely tunable pre-P1, recorded
+for reproducibility):** K8 search cpp=7 × μ=5 (35 evals/gen), pinned seeds 1..30, rediscovery threshold
+≥0.90 (actual 30/30); the planted-positive synthetic **calibration** landscape (clean two-gene assembly
+checker→crosscut / shaped-skeleton→integration; a cheap winner by construction — explicitly NOT the real
+MCOH25 economics); the model-priced price table (opus 15/75, sonnet 3/15, haiku 0.80/4, fusion 0 per-Mtok;
+calibrated to the MCOH25 anchors opus-author ≈$0.40, opus-whole ≈$0.27). Two design subtleties resolved:
+(a) breeding from a **μ-best population** (flat-archive analog of P2 MAP-Elites) to avoid Pareto-front
+degeneracy at uniform cost; (b) a **deliberately-weak K8 calibration baseline** so the per-cell veto
+leaves a climbable gradient (the real opus-whole baseline already erodes, MCOH25 X-CUT 100→80%).
+
+These touch **no frozen invariant** (genome §2, operators §3, battery/seed/split §5, per-cell fitness +
+weights + veto §6, parity δ/α §7, TEST-set policy). **Next: P1.** The void-rule begins at P1 start.

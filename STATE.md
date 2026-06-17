@@ -101,7 +101,7 @@ cost-vs-reliability comparison.**
    corpus of real build-tasks the system is claimed to hold on, so the win is "true," not "true on our
    fixtures."
 
-### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17 → next is P0)
+### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17; P0 GREEN → next is P1)
 
 The M5 adaptive-harness was **brought forward** as an *instrument → fixed product* discovery tool for crux
 item 1 (the checker lever × scale): an evolutionary/reflective search over builder-system configs that finds
@@ -120,11 +120,16 @@ per-cell non-inferiority veto, K5=250, K6≥0.90, K7 ρ≥0.80, K8 ≤8gen/≤30
 Full record: [`studies/meta-search/FREEZE.md`](studies/meta-search/FREEZE.md). rev.3 also adds **§14 operational
 autonomy** (checkpoint/resume + watchdog + mechanized off-path curation + the Phase-1-mechanism-only boundary)
 so a single run goes hands-off within the guardrails — freeze-compatible, "run-until-a-guardrail-then-halt."
-**Next action: P0** — smoke + wiring + the G1 per-cell-metric / G2 oracle-gate (kill-rate ≥0.90) / K8
-planted-positive instrument-validation gates + the §14 autonomy-harness round-trip. (Pre-P1 amendments still
-allowed; the void-rule starts at P1.) Review record:
-[`REVIEW-LOG.md`](studies/meta-search/REVIEW-LOG.md) ("rev.2 review"); ledger:
-[`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
+**P0 COMPLETE — GREEN (2026-06-17).** Built additively under `studies/meta-search/` (~1.6k LOC; frozen
+apparatus tree `studies/build-gap/` verified untouched). All 5 blocking gates pass: G0 freeze-consistency,
+G1 per-cell-metric wired through the real `evaluateEpic` (digest leaks no cell names; veto rejects a lethal
+drop), G2 oracle kill-rate 1.000/1.000 (≥0.90 lethal), K8 planted-positive rediscovery 30/30 pinned seeds
+(99.4%/500 base rate) within ≤8gen/≤300evals + in-loop veto, §14 checkpoint→resume bit-identical + watchdog
+halts-to-checkpoint on a planted hang. Live gateway smoke OK (non-blocking). Record:
+[`P0-RESULTS.md`](studies/meta-search/P0-RESULTS.md); driver `node studies/meta-search/p0.mjs`. **Next
+action: P1** — the cheaper-author × checker arm at fixed N=5 over the anchor pair (the mechanism question:
+does the checker lever move `crosscut`/`integration`), reflective proposer + live epic evaluator. The
+void-rule starts at P1. Ledger: [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
 
 ### Two live tensions in the plan (open, deliberate)
 

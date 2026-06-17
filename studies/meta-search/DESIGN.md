@@ -19,7 +19,9 @@ library ([`../../okf/agentic-workflow-optimization/`](../../okf/agentic-workflow
 > the TEST-hash was staged, the anchor pair named, and all `[PIN AT FREEZE]` values pinned). The full
 > pre-registration record + content hashes are in [`FREEZE.md`](FREEZE.md); the frozen-invariant list and the
 > void-on-change rule are in the closing freeze line. Pre-P1 amendments are still allowed (logged in
-> `AMENDMENTS.md`); changes to the weights/veto/parity/TEST-hash **after P1 start** void the run. **Next: P0.**
+> `AMENDMENTS.md`); changes to the weights/veto/parity/TEST-hash **after P1 start** void the run.
+> **P0 COMPLETE — GREEN (2026-06-17):** all 5 blocking gates pass (smoke + wiring + G1/G2/K8 + §14 autonomy
+> round-trip); frozen apparatus tree verified untouched. Record: [`P0-RESULTS.md`](P0-RESULTS.md). **Next: P1.**
 
 ---
 
@@ -624,5 +626,6 @@ mixed model); the **TEST-set content HASH is committed as a pre-registered amend
 authored, pre-P3** (the set cannot exist yet — `gen-epic.mjs` emits one template; round-2 R2-7), and is
 void-on-change from that point. Changes to the weights, the per-cell veto definition, the parity test, or
 (once committed) the TEST hash **after P1 start void the run** rather than amend it; all other changes are
-logged in [`AMENDMENTS.md`](AMENDMENTS.md). The five §13 decisions are **RESOLVED**. **Next: P0** (smoke +
-wiring + the G1/G2/K8 gate validations + the §14 autonomy-harness round-trip)._
+logged in [`AMENDMENTS.md`](AMENDMENTS.md). The five §13 decisions are **RESOLVED**. **P0 COMPLETE —
+GREEN (2026-06-17):** smoke + wiring + the G1/G2/K8 gate validations + the §14 autonomy-harness round-trip
+all pass; record [`P0-RESULTS.md`](P0-RESULTS.md). **Next: P1.**_

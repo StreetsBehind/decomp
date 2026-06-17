@@ -91,10 +91,14 @@ second anchor for a `scale-d{2,4}` variant via a pre-P1 amendment.
 
 ---
 
-## 7. Next: P0
+## 7. P0 — COMPLETE, GREEN (2026-06-17)
 
-P0 (no conclusions) proves genome → worker → scorecard → archive end-to-end and validates: the §6 per-cell
-metric is wired; the G2 oracle gate fires (per-bucket kill-rate ≥ 0.90); the K8 planted-positive
-instrument-validation passes (loop rediscovers a hand-built known-dominating genome within ≤ 8 gen / ≤ 300
-evals); and the §14 autonomy harness round-trips (checkpoint→kill→resume is deterministic; the watchdog
-halts-to-checkpoint on a planted hang).
+P0 (no conclusions) proved genome → worker → scorecard → archive end-to-end and validated: the §6 per-cell
+metric is wired (G1); the G2 oracle gate fires (kill-rate 1.000/1.000 ≥ 0.90 on the lethal buckets); the
+K8 planted-positive instrument-validation passes (loop rediscovers a hand-built known-dominating genome on
+30/30 pinned seeds within ≤ 8 gen / ≤ 300 evals; base rate 99.4% / 500 seeds); and the §14 autonomy harness
+round-trips (checkpoint→kill→resume bit-identical; the watchdog halts-to-checkpoint + notifies on a planted
+hang). The frozen apparatus tree (`studies/build-gap/` = pinned `1580944…`) was verified **untouched** — all
+P0 code is additive under `studies/meta-search/`. Record: [`P0-RESULTS.md`](P0-RESULTS.md); machine summary
+`runs/p0-summary.json`; operational params logged in [`AMENDMENTS.md`](AMENDMENTS.md) (no frozen invariant
+touched). **Next: P1** (the void-rule begins at P1 start).
