@@ -101,7 +101,7 @@ cost-vs-reliability comparison.**
    corpus of real build-tasks the system is claimed to hold on, so the win is "true," not "true on our
    fixtures."
 
-### Parallel track — the M5 meta-search instrument (rev.3, pre-registered)
+### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17 → next is P0)
 
 The M5 adaptive-harness was **brought forward** as an *instrument → fixed product* discovery tool for crux
 item 1 (the checker lever × scale): an evolutionary/reflective search over builder-system configs that finds
@@ -113,13 +113,16 @@ credit-attribution/niching/surrogate/knowledge-capture were staged out of the fr
 all-frontier baseline was scoped to a separate workstream with an interim opus-whole proxy, and a
 measurement-layer cluster was added — instrument self-validation, effective-sample-size, harness-error
 handling, concrete freeze values). Two new Tier-2 decisions resolved (§13.4 baseline scope = external
-prereq + proxy; §13.5 instrument self-validation = hard K8 gate). **Next action for a fresh session:** a
-**light re-check** that the three freeze-blocking edits read correctly (per-cell veto §6, trimmed frozen set
-§7, the `[PIN AT FREEZE]` values §7), then **pin the `[PIN AT FREEZE]` concrete values** (δ, α, K5/K6/K7/K8,
-max-M, restore-margin) → **take the freeze → P0**. rev.3 also adds **§14 operational autonomy**
-(checkpoint/resume + watchdog + mechanized off-path curation + the Phase-1-mechanism-only boundary) so a
-single run goes hands-off within the guardrails — freeze-compatible, "run-until-a-guardrail-then-halt." Review
-record:
+prereq + proxy; §13.5 instrument self-validation = hard K8 gate). **The pre-registration freeze was TAKEN
+2026-06-17** (after a GO-WITH-FIXES freeze-readiness re-check: TEST-hash staged, anchor pair
+`{workspace, scale-d1}` named + content-hashed, all values pinned — δ=0.05, α=0.05, weights (1.0/1.0/0.1/0.0),
+per-cell non-inferiority veto, K5=250, K6≥0.90, K7 ρ≥0.80, K8 ≤8gen/≤300evals, max-M=12, restore-margin=2×SE).
+Full record: [`studies/meta-search/FREEZE.md`](studies/meta-search/FREEZE.md). rev.3 also adds **§14 operational
+autonomy** (checkpoint/resume + watchdog + mechanized off-path curation + the Phase-1-mechanism-only boundary)
+so a single run goes hands-off within the guardrails — freeze-compatible, "run-until-a-guardrail-then-halt."
+**Next action: P0** — smoke + wiring + the G1 per-cell-metric / G2 oracle-gate (kill-rate ≥0.90) / K8
+planted-positive instrument-validation gates + the §14 autonomy-harness round-trip. (Pre-P1 amendments still
+allowed; the void-rule starts at P1.) Review record:
 [`REVIEW-LOG.md`](studies/meta-search/REVIEW-LOG.md) ("rev.2 review"); ledger:
 [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
 

@@ -15,10 +15,11 @@ wraps ([`../build-gap/DESIGN.md`](../build-gap/DESIGN.md) + [`epic-run.mjs`](../
 the latest crux data ([`../build-gap/MCOH25-RESULTS.md`](../build-gap/MCOH25-RESULTS.md)), and the method
 library ([`../../okf/agentic-workflow-optimization/`](../../okf/agentic-workflow-optimization/))._
 
-> **Freeze status: NOT YET TAKEN.** rev.3 is eligible for the freeze after (a) a light re-check that the
-> three freeze-blocking edits (per-cell veto §6, the trimmed frozen set §7/freeze line, the concrete freeze
-> values §7) read correctly, and (b) the research lead pins the concrete values flagged **`[PIN AT FREEZE]`**
-> below. Recommended defaults are given inline; they are recommendations, not commitments.
+> **Freeze status: FROZEN 2026-06-17** (after the rev.3 freeze-readiness re-check returned GO-WITH-FIXES;
+> the TEST-hash was staged, the anchor pair named, and all `[PIN AT FREEZE]` values pinned). The full
+> pre-registration record + content hashes are in [`FREEZE.md`](FREEZE.md); the frozen-invariant list and the
+> void-on-change rule are in the closing freeze line. Pre-P1 amendments are still allowed (logged in
+> `AMENDMENTS.md`); changes to the weights/veto/parity/TEST-hash **after P1 start** void the run. **Next: P0.**
 
 ---
 
@@ -164,8 +165,8 @@ exposes reward-hacking"; [`okf/…/methods/adas.md`](../../okf/agentic-workflow-
     **charge every reversion eval to the §7-K5 eval-count budget** so it cannot silently blow it.
   - **A mis-attribution kill (round-2 R2-5/L6-5).** The attributed reversion must restore the bucket by a
     margin **above K-run noise**; below that margin, log **"unattributable" → route to typed-random**, never
-    auto-force the skeleton (auto-skeleton-on-noise is the rev.1 behavior B1 was raised against). Pin the
-    margin `[PIN AT FREEZE]` (recommended: 2× the worst-of-K standard error on the bucket).
+    auto-force the skeleton (auto-skeleton-on-noise is the rev.1 behavior B1 was raised against).
+    **FROZEN margin = 2× the worst-of-K standard error on the bucket** (a rule, not a fixed scalar).
 - **Knowledge-conditioning** (§10) is a **P2+ enhancement, gated behind niching** (it accelerates collapse;
   finding B3 + the capture review's open-Q3), with its own leak-scan and collapse kill (§10).
 
@@ -225,10 +226,15 @@ freeze-and-retest.
   topology" claim) is an **epic-authoring task — building N new templates — not something the generator does
   today.** That authoring is **a P2/P3 prerequisite for external validity and must NOT ride inside the
   freeze as if `gen-epic.mjs` already produced it.**
-- **CORE battery (frozen, in-loop).** **P1 uses the 2 anchor epics only** (the loop-closure test needs no
-  more; round-2 R2-7). The full CORE — ~8–12 *independent* epics, **≥10 per N-bucket** for the scale-gate
-  model (finding C3) — is assembled at P2 from the authored templates above. Frozen for the whole run →
-  fitness is comparable across generations (finding B5).
+- **CORE battery (frozen, in-loop).** **P1 uses the 2 anchor epics only — the FROZEN anchor pair
+  `{workspace, scale-d1}`** (both N=5; identical EXPECTS surface set; they are **one seam-topology in two
+  skeleton-provenance variants — NOT epic diversity**, so the pair is never cited as external validity).
+  This is adequate for P1, whose job is loop-closure + the checker mechanism at fixed N=5 (round-2 R2-7).
+  _Pre-P1-amendable: a research lead who wants a second N-point at P1 could swap the second anchor for a
+  `scale-d{2,4}` variant, but that blurs the P1(fixed-N)/P2(scale) boundary — deliberately deferred to P2._
+  The full CORE — ~8–12 *independent* epics, **≥10 per N-bucket** for the scale-gate model (finding C3) — is
+  assembled at P2 from the authored templates above. Frozen for the whole run → fitness is comparable across
+  generations (finding B5).
 - **K-run aggregation = worst-of-K** (finding A5) for both cost and reliability, over logged seeds; elites
   are **re-evaluated** (or carry exact scores) each generation on the same CORE. No best-seed cherry-pick.
 - **TRAIN / VAL split inside CORE** — TRAIN drives mutation feedback, VAL drives archive selection + early
@@ -305,17 +311,19 @@ cost-WIN is gated on the routed baseline workstream** (STATE.md #3). On the Phas
 per-cell veto requires it to actually be reliable (which MCOH25 shows needs a non-cheap author → nonzero
 cost), and the model-priced ledger charges its real frontier terms.
 - **Amortization (round-2 R2-9).** Scored in the regime the candidate claims (skeleton reuse across M
-  epics) — the direct attack on "hybrid loses at N=5." **Bounded:** pin a **max M** `[PIN AT FREEZE]`
-  (recommended: M ≤ the CORE size), and **credit the amortized cost only if the claimed-M skeleton
+  epics) — the direct attack on "hybrid loses at N=5." **Bounded: FROZEN max M = 12** (the upper end of the
+  §5 CORE size ~8–12; a P2 quantity), and **credit the amortized cost only if the claimed-M skeleton
   demonstrates per-cell lethal-veto parity on M *distinct* CORE epics** — otherwise the amortization is
-  uncredited (a candidate cannot claim M=∞ to vanish its orchestration term).
+  uncredited (a candidate cannot claim M=∞ to vanish its orchestration term). **At P1 amortization is
+  uncredited by construction:** the P1 CORE is one distinct seam-topology (the workspace/scale-d1 anchor
+  pair, §5/§9), so M_distinct = 1 and no amortized cost claim is admissible until P2.
 
 **G2 — oracle validity (finding #2, blocking).** Every epic's ground truth instances one
 `scale-oracle.mjs` template, so scaling multiplies *correlated* error, concentrated on the highest-weight
 `crosscut`/`integration` cells. Before any battery number is trusted: (a) make the existing oracle self-test
 ([`tools/scale-oracle-selftest.mjs`](../build-gap/tools/scale-oracle-selftest.mjs), already a mutation test
 that kills interface-drift / fragmented-guards / spurious-credit) a **pre-registered gate with a numeric
-per-bucket kill-rate floor** `[PIN AT FREEZE]` (recommended: ≥0.90 on the lethal buckets) — a P0 gate
+per-bucket kill-rate floor** (**FROZEN floor = 0.90 on the lethal buckets**) — a P0 gate
 (round-2 R2-4/L4-3); and (b) **hand-author ≥2 independent oracles**. The 2nd oracle's independence is the
 *only* thing that makes a re-coded grader genuinely independent (round-2 R2-4/L2-4) and "confirmed"-knowledge
 promotion non-vacuous (§10) — it is **required before the first P2 "confirmed" promotion AND before P3 TEST
@@ -342,8 +350,8 @@ the cost-optimized routed baseline** (STATE.md #3) once that workstream delivers
   re-draws + per-route CI, §2.4), stable across seeds, **at a stated N and amortization regime.** A WIN
   whose cost comparison is only against the interim opus-whole proxy is reported as **provisional**.
 - **Parity is a test, not a glance (finding C5).** Pre-register parity as a **one-sided non-inferiority
-  test** on the cost-weighted reliability (margin **δ**, level **α**), fixed before P1. `[PIN AT FREEZE]`
-  (recommended: δ = 0.05, α = 0.05).
+  test** on the cost-weighted reliability (margin **δ**, level **α**), fixed before P1. **FROZEN: δ = 0.05,
+  α = 0.05** (one-sided).
 - **Scale-gate / mechanism (deliverables).** Report the smallest N (+ regime) where dominance appears
   (mixed model, §5, with the design-effect-adjusted CI, R2C-1). Ablate the load-bearing mutation: *does the
   per-surface checker lever flip a candidate from dominated → dominating, and at what N?*
@@ -365,16 +373,16 @@ the cost-optimized routed baseline** (STATE.md #3) once that workstream delivers
   prompt **or a retrieved knowledge record**, §2.3 / §10) → void.
 - **K4** — archive collapses to a single niche → diversity machinery failed; fix before trusting a winner.
 - **K5** — eval-count exceeds the pre-registered budget (§5; **includes** P2 credit-attribution reversion
-  evals, §3) → halt and re-scope. `[PIN AT FREEZE]` (recommended P1 cap: ~250 evals).
+  evals, §3) → halt and re-scope. **FROZEN P1 eval cap = 250.**
 - **K6 (G2)** — oracle self-test kill-rate below the per-bucket floor, or the two hand-authored oracles
   disagree with the generator on lethal buckets → battery untrustworthy; fix the oracle first.
 - **K7 (surrogate calibration — round-2 R2-8).** When the surrogate-scorer is on (P2+), periodically re-score
   a held sample with the true `evaluateEpic`; if surrogate rank-correlation (Spearman ρ) on the lethal
-  buckets drops below threshold → halt and recalibrate. `[PIN AT FREEZE]` (recommended ρ ≥ 0.8).
+  buckets drops below threshold → halt and recalibrate. **FROZEN: Spearman ρ ≥ 0.80 on the lethal buckets.**
 - **K8 (instrument self-validation — round-2 R2C-3 / §13.4 RESOLVED).** If the loop fails to rediscover the
   hand-built **known-dominating** genome from the handicapped pool within the pre-registered generation
   budget (§9 P0/P1), the instrument is **untrusted**: no K1 null may be reported until this gate passes.
-  `[PIN AT FREEZE]` (recommended budget: ≤ the P1 G cap).
+  **FROZEN budget (standalone, with headroom above the P1 search's G≤6): ≤ 8 generations AND ≤ 300 evals.**
 
 ---
 
@@ -563,7 +571,7 @@ All logged in `AMENDMENTS.md`.
 The instrument is meant to run long stretches without a babysitter, but the governing principle is
 **run-until-a-guardrail-then-halt-and-notify, never run-past-one** — that is exactly how "runs unsupervised"
 is reconciled with "won't deviate." Four operational mechanisms, all **freeze-COMPATIBLE** (they touch no
-frozen invariant — genome, operators, per-cell fitness+weights, TEST-hash, parity δ/α — and are tuned/logged
+frozen invariant — genome, operators, per-cell fitness+weights, TEST-set policy, parity δ/α — and are tuned/logged
 via `AMENDMENTS.md`, not pinned at the freeze):
 
 - **14.1 Checkpoint / resume (crash-safe).** The orchestrator already holds only the archive + generation
@@ -602,14 +610,19 @@ trusted.
 
 ---
 
-_Pre-registration freeze (NOT YET TAKEN): the genome (§2), operators (§3 — **credit-assignment is a P2
-mechanism, NOT in the frozen set**, round-2 R2-7), the battery/seed/split policy (§5), the **per-cell** bucket
-fitness + **weights vector** + the **per-cell veto definition** (§6), the **TEST-set hash**, and the
-decision rule incl. the **parity non-inferiority margin δ/α** (§7) are fixed before P1. **All `[PIN AT
-FREEZE]` quantities (δ, α, K5 eval cap, K6 kill-rate floor, K7 ρ floor, K8 budget, amortization max-M,
-credit-attribution restore-margin) must be set to concrete values at the freeze ceremony — a freeze of
-unspecified values is void (round-2 R2C-2).** Changes to weights, the per-cell veto definition, the TEST
-hash, or the parity test after P1 start **void** the run rather than amend it; all other changes are logged
-in an append-only `studies/meta-search/AMENDMENTS.md` ledger with rationale. The five §13 decisions are
-**RESOLVED**; the spec is **eligible for the pre-registration freeze** after a light re-check of the three
-freeze-blocking edits (per-cell veto §6, the trimmed frozen set §7, the concrete `[PIN AT FREEZE]` values)._
+_**Pre-registration freeze — TAKEN 2026-06-17.** Full record + content hashes:
+[`FREEZE.md`](FREEZE.md). Frozen-before-P1: the genome (§2), operators (§3 — **credit-assignment is a P2
+mechanism, NOT in the frozen set**, round-2 R2-7), the battery/seed/split policy (§5) incl. the **P1 anchor
+pair `{workspace, scale-d1}`** (one seam-topology, two skeleton-provenance variants — NOT epic diversity),
+the **per-cell** bucket fitness + **weights vector** `(crosscut 1.0, integration 1.0, happy 0.1, wire 0.0)`
++ the **per-cell veto definition** (§6), and the decision rule incl. the **parity non-inferiority margin
+δ = 0.05 / α = 0.05** (§7). **All formerly-`[PIN AT FREEZE]` quantities are now pinned:** δ=0.05, α=0.05,
+K5 P1 eval cap=250, K6 kill-rate floor=0.90 (lethal buckets), K7 ρ floor=0.80, K8 budget ≤8 gen & ≤300
+evals, amortization max-M=12, credit-attribution restore-margin=2× worst-of-K SE. The **TEST-set POLICY** is
+frozen now (≥80 epics, n_eff distinct-seam-topology floor, scored once, design-effect-adjusted bootstrap CI,
+mixed model); the **TEST-set content HASH is committed as a pre-registered amendment when the TEST set is
+authored, pre-P3** (the set cannot exist yet — `gen-epic.mjs` emits one template; round-2 R2-7), and is
+void-on-change from that point. Changes to the weights, the per-cell veto definition, the parity test, or
+(once committed) the TEST hash **after P1 start void the run** rather than amend it; all other changes are
+logged in [`AMENDMENTS.md`](AMENDMENTS.md). The five §13 decisions are **RESOLVED**. **Next: P0** (smoke +
+wiring + the G1/G2/K8 gate validations + the §14 autonomy-harness round-trip)._

@@ -1,13 +1,15 @@
 # Meta-search — pre-registration amendment ledger
 
 > Append-only. Records every change to [`DESIGN.md`](DESIGN.md). **Before** the pre-registration freeze,
-> edits are allowed and recorded here. **After** the freeze, changes to the **weights vector**, the
-> **TEST-set hash**, or the **parity δ/α** *void the run* rather than amend it; all other post-freeze changes
-> are amendments logged here with rationale (DESIGN.md freeze line).
+> edits are allowed and recorded here. The void-rule is keyed to **P1 start**, not the freeze date: changes
+> to the **weights vector**, the **per-cell veto definition**, the **parity δ/α**, or the **committed
+> TEST-set hash** *void the run* once P1 has started; pre-P1 amendments and all other changes are logged here
+> with rationale (DESIGN.md freeze line).
 
-**Freeze status: NOT YET FROZEN.** rev.3 written after the rev.2 adversarial review. Eligible for freeze
-after a light re-check of the three freeze-blocking edits **and** the research lead pinning the concrete
-`[PIN AT FREEZE]` values (DESIGN §7).
+**Freeze status: FROZEN 2026-06-17** (full record + content hashes: [`FREEZE.md`](FREEZE.md)). Taken after
+the rev.3 freeze-readiness re-check returned GO-WITH-FIXES (all fixes applied: TEST-hash staged, anchor pair
+named/hashed, K8 budget + amortization max-M pinned to explicit numbers). P1 has **not** started, so pre-P1
+amendments are still allowed. **Next: P0.**
 
 ---
 
@@ -89,3 +91,34 @@ out of scope by design: open-ended gene invention mid-run, self-modification of 
 autonomous `confirmed`-promotion. Cross-refs added in §8 (failure modes), §9 (P0 validates the harness), §12
 (reuse "New"). **Freeze-compatible** — touches no frozen invariant; these mechanisms are tuned/logged here,
 not pinned at the freeze.
+
+## 2026-06-17 — PRE-REGISTRATION FREEZE TAKEN (full record: `FREEZE.md`)
+
+Freeze-readiness re-check (independent read of the three freeze-blocking edits + a consistency scan + an
+apparatus read to identify the anchor epics) returned **GO-WITH-FIXES**. The three fixes were applied, then
+the freeze was taken:
+
+- **Fix 1 — TEST-hash staged.** The freeze line / §14 invariant list previously named the bare "TEST-set
+  hash" as fixed-before-P1, but the ≥80-epic TEST set cannot exist yet (`gen-epic.mjs` emits one template).
+  Resolved: **freeze the TEST POLICY now; commit the TEST content HASH as a pre-registered amendment when the
+  set is authored (pre-P3)**, void-on-change from that point. Wording fixed in the freeze line, the §14
+  parenthetical, and this ledger's header.
+- **Fix 2 — anchor pair named + hashed.** P1 frozen CORE = **`{workspace, scale-d1}`** (both N=5, identical
+  EXPECTS; one seam-topology, two skeleton-provenance variants — explicitly NOT epic diversity). Pinned by
+  git tree hash in `FREEZE.md`. Named in §5 and the freeze line.
+- **Fix 3 — explicit numbers for K8 + max-M.** K8 budget pinned standalone (**≤ 8 generations AND ≤ 300
+  evals**, headroom above the P1 search's G≤6) rather than "≤ the P1 G cap"; amortization **max-M = 12** (a
+  P2 quantity; uncredited at P1 by construction, since M_distinct = 1 over the single-seam-topology anchor
+  pair).
+
+**All formerly-`[PIN AT FREEZE]` values pinned:** δ=0.05, α=0.05 (one-sided); weights (crosscut 1.0,
+integration 1.0, happy 0.1, wire 0.0); per-cell non-inferiority veto; K5 P1 eval cap=250; K6 kill-rate
+floor=0.90 (lethal); K7 ρ floor=0.80 (lethal); K8 ≤8 gen & ≤300 evals; max-M=12; credit-attribution
+restore-margin=2× worst-of-K SE. **Content pins:** apparatus `studies/build-gap/` tree
+`1580944116743dce55e42c2ffb77341c258d9e65`; workspace `e568b06f…`; scale-d1 `4793d89d…`.
+
+**One pre-P1 choice deliberately defaulted (freely amendable until P1 starts):** the 2nd anchor = `scale-d1`
+(P1 is fixed-N by design; a second N-point is deferred to P2). A research lead wanting an N-point at P1 can
+swap it for `scale-d{2,4}` via a pre-P1 amendment.
+
+**Next: P0** (smoke + wiring + G1/G2/K8 gate validations + the §14 autonomy-harness round-trip).

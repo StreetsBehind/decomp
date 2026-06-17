@@ -1,16 +1,14 @@
 # Next adversarial review — kickoff brief
 
-> **✅ STATUS (2026-06-16): rev.2 has been reviewed; [`DESIGN.md`](DESIGN.md) is now rev.3.** The rev.2
-> review record (15 canonical findings R2-1..R2-10 + R2C-1..R2C-5, the kills/downgrades, the reconciliations)
-> is appended to [`REVIEW-LOG.md`](REVIEW-LOG.md) under "rev.2 review"; the spec changes are in
-> [`AMENDMENTS.md`](AMENDMENTS.md). **The next step is NOT a full new review.** It is a **light re-check**
-> that the three freeze-blocking edits read correctly — **(1)** the per-cell non-inferiority veto (§6 + the
-> split mechanical/digest channels §2.3/§4.4), **(2)** the trimmed frozen set (§7 freeze line — credit-
-> assignment dropped; diverse ≥80-epic population scoped out as P2/P3 authoring), **(3)** the concrete
-> `[PIN AT FREEZE]` values (§7) — after which the research lead **pins the `[PIN AT FREEZE]` numbers**
-> (δ, α, K5/K6/K7/K8, max-M, restore-margin) and **takes the pre-registration freeze → P0**. Only run a
-> full lens-based review again if rev.3 is materially rewritten. The protocol below is retained as reusable
-> scaffolding for that case (re-target it at rev.3).
+> **✅ STATUS (2026-06-17): rev.2 reviewed → rev.3 written → freeze-readiness re-checked (GO-WITH-FIXES) →
+> PRE-REGISTRATION FREEZE TAKEN.** [`DESIGN.md`](DESIGN.md) is rev.3 and FROZEN; the full freeze record +
+> content hashes are in [`FREEZE.md`](FREEZE.md); the rev.2 review record (15 canonical findings
+> R2-1..R2-10 + R2C-1..R2C-5) is in [`REVIEW-LOG.md`](REVIEW-LOG.md) under "rev.2 review"; the ledger is
+> [`AMENDMENTS.md`](AMENDMENTS.md). **The next step is P0** (smoke + wiring + the G1 per-cell-metric / G2
+> oracle-gate / K8 planted-positive instrument-validation gates + the §14 autonomy-harness round-trip) —
+> NOT another review. Pre-P1 amendments are still allowed (the void-rule starts at P1); a full lens-based
+> review is warranted again only if rev.3 is materially rewritten. The protocol below is retained as
+> reusable scaffolding for that case (re-target it at the then-current rev).
 
 > **For a FRESH session running a FULL review (only if rev.3 is materially rewritten).** Read this first,
 > then the pointers below. rev.1 and rev.2 were already reviewed — the prior findings, their verdicts, and

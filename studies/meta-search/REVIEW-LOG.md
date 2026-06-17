@@ -187,7 +187,8 @@ output reproducibility, and the failure-result→fitness mapping (R2C-1..5).
 ## Status
 
 rev.1 reviewed; **rev.2 reviewed (this round); rev.3 written**, folding all 15 canonical findings + the two
-new §13 decisions. Three freeze-blocking edits are in rev.3 (per-cell veto §6, trimmed frozen set §7,
-concrete `[PIN AT FREEZE]` values §7). **Next:** a light re-check that the three freeze-blocking edits read
-correctly, then the research lead pins the `[PIN AT FREEZE]` values → take the pre-registration freeze →
-P0.
+new §13 decisions. Three freeze-blocking edits landed in rev.3 (per-cell veto §6, trimmed frozen set §7,
+concrete freeze values §7). A **freeze-readiness re-check** (independent read + apparatus scan) returned
+**GO-WITH-FIXES**; the three fixes were applied (TEST-hash staged; anchor pair `{workspace, scale-d1}`
+named + content-hashed; K8 budget + amortization max-M pinned to explicit numbers) and the
+**pre-registration freeze was TAKEN 2026-06-17** (record: [`FREEZE.md`](FREEZE.md)). **Next: P0.**
