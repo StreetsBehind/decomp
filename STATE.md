@@ -101,6 +101,18 @@ cost-vs-reliability comparison.**
    corpus of real build-tasks the system is claimed to hold on, so the win is "true," not "true on our
    fixtures."
 
+### Parallel track — the M5 meta-search instrument (rev.2, pre-registered)
+
+The M5 adaptive-harness was **brought forward** as an *instrument → fixed product* discovery tool for crux
+item 1 (the checker lever × scale): an evolutionary/reflective search over builder-system configs that finds
+whether/where a hybrid dominates all-frontier, then **freezes the winner and re-tests it** as a fixed
+architecture (NOT "optimal mix" — the search is the instrument, the frozen config is the product). Spec:
+[`studies/meta-search/DESIGN.md`](studies/meta-search/DESIGN.md) (rev.2, after a 2-round adversarial review).
+**Next action for a fresh session:** run the next adversarial review of rev.2 — turnkey brief at
+[`studies/meta-search/NEXT-REVIEW.md`](studies/meta-search/NEXT-REVIEW.md) (prior findings + verified
+apparatus facts in [`REVIEW-LOG.md`](studies/meta-search/REVIEW-LOG.md); ledger in
+[`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md)). After a clean review → freeze → P0.
+
 ### Two live tensions in the plan (open, deliberate)
 
 - **The all-frontier baseline is not free to define.** "Optimally route across opus/sonnet/haiku" is
