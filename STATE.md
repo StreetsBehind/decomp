@@ -86,6 +86,11 @@ cost-vs-reliability comparison.**
 1. **The new crux — the per-surface obligation/seam checker + repair lever (M-coh-2's other half).** This is
    now blocking: it must stop the harness's EPIC✓ erosion at scale, which is exactly where the cost gap vs
    bare opus opens (N≥13). It is also the *verification-design* that lives in the orchestration layer.
+   **Kickoff seed:** spec in `studies/build-gap/DESIGN.md §4b` (per-surface checker + integration-gate+repair);
+   apparatus seam = `epic-run.mjs`'s retry gate (`isValidSurface` → extend to an *obligation* checker) +
+   `lib/validate-surface.mjs`. The checker is authored from the skeleton's typed obligation contract (it may
+   NOT read the held-out oracle `epics/*/tests.mjs`). Measure: does it lift the harness EPIC✓ off 0% at
+   scale-d3/d4 (N=13/17)? Then re-run the cost-join vs bare-opus to test the cost crossover with reliability held.
 2. **An honest scale + amortization story.** Author opus skeletons at N≥13 and/or reuse one skeleton across
    epics, to amortize the ~$0.40 orchestration term below the all-frontier line. (Defensible weaker claim
    already holds: hybrid dominates all-frontier on the lethal-quadrant X-CUT sub-metric at ≤cost above N≈13.)
