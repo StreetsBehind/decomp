@@ -23,6 +23,7 @@ import { makeLedger } from './ledger.mjs';
 import { buildScorecard } from './scorecard.mjs';
 import { resolveSkeleton, chargeSkeletonAuthor } from './skeleton-author.mjs';
 import { runChecker } from './checker.mjs';
+import { runIntegrationGate } from './integration-gate.mjs';
 
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const BUILD_GAP = path.resolve(HERE, '..', '..', 'build-gap');
@@ -194,6 +195,8 @@ export function makeEpicEvaluator({ core, invoke, epicK = 1, surfaceConcurrency 
     const maxAttempts = Math.max(1, genome.retry?.count || 1);
     const builderModel = genome.builder.model === 'fusion' ? null : genome.builder.model;
     const checkerMeta = { ranChecker: genome.checker?.kind !== 'off', kind: genome.checker?.kind || 'off', repairs: 0, violations: 0, surfacesChecked: 0, leak: false };
+    const gateKind = genome.integrationGate?.kind || 'off';
+    const gateMeta = { ranGate: gateKind !== 'off', kind: gateKind, pairs: 0, mismatches: 0, repairs: 0, leak: false };
 
     // one cheap builder draw of a surface from an arbitrary prompt (used for the initial build AND repairs)
     const drawSurface = async (prompt, surface, validate) => {
@@ -218,12 +221,14 @@ export function makeEpicEvaluator({ core, invoke, epicK = 1, surfaceConcurrency 
       const runs = [];
       for (let k = 0; k < epicK; k++) {
         const files = {};
+        const prompts = {};
         await pool(order, surfaceConcurrency, async (surface) => {
           const surfaceText = fs.readFileSync(path.join(fx.dir, 'surfaces', `${surface}.md`), 'utf8');
           const buildPrompt = chunkPrompt(fxs, surfaceText);
+          prompts[surface] = buildPrompt;
           let code = await drawSurface(buildPrompt, surface, maxAttempts > 1);
           if (!code) return;                              // no valid draw → surface missing → graded as fail
-          // the CHECKER lever: obligation/seam check + repair (oracle-blind; K3-scanned)
+          // the CHECKER lever: per-surface obligation/seam check + repair (oracle-blind; K3-scanned)
           const chk = await runChecker({
             surface, code, originalPrompt: buildPrompt, skeleton: skel.text, checker: genome.checker,
             rebuild: (rp) => invoke({ prompt: rp, system: SYS_ONE, model: builderModel }).then((g) => { if (g && g.route) routeDist[g.route] = (routeDist[g.route] || 0) + 1; ledger.charge('checker-repair', { model: genome.builder.model, outputTokens: g?.outputTokens || 0, usd: g?.usd }); return g; }),
@@ -232,10 +237,22 @@ export function makeEpicEvaluator({ core, invoke, epicK = 1, surfaceConcurrency 
           if (chk.ranChecker) { checkerMeta.surfacesChecked++; checkerMeta.repairs += chk.repairs; checkerMeta.violations += chk.violations; if (chk.leak) checkerMeta.leak = true; }
           files[surface] = chk.code;
         });
+        // the INTEGRATION-GATE lever (P2): CROSS-surface seam consistency check + route-back repair, run on
+        // the fully-assembled surface set (oracle-blind; K3-scanned). The repair re-builds one surface on the
+        // cheap pool, injecting the OTHER surface's actual write-statement — the cross-surface signal the
+        // per-surface checker never had.
+        if (gateKind !== 'off') {
+          const g = await runIntegrationGate({
+            surfaces: order, files, prompts, skeleton: skel.text, baseModel: fx.preamble, gate: genome.integrationGate,
+            rebuild: (surface, rp) => drawSurface(rp, surface, maxAttempts > 1),  // structural-retry like the initial draw; cheap pool ($0)
+            judgeInvoke: (a) => invoke(a),                // cheap-judge runs on the free pool ($0)
+          });
+          gateMeta.pairs += g.pairs; gateMeta.mismatches += g.mismatches; gateMeta.repairs += g.repairs; if (g.leak) gateMeta.leak = true;
+        }
         runs.push(await evaluateEpic({ mode: 'isolated', files, testsPath: fx.testsPath }));
       }
       epics.push({ name: epicName, cellNames, runs });
     }
-    return { epics, ledger, routeDist, checkerMeta };
+    return { epics, ledger, routeDist, checkerMeta, gateMeta };
   };
 }

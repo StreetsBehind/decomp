@@ -219,3 +219,63 @@ mechanism is expected to live. P1's §5 job — confirm the loop closes and meas
 
 The instrument is trusted (K8 passed in P0; loop closes live in P1). **No frozen invariant was touched, so
 nothing is voided.** P1 apparatus committed on `docs/meta-search-rev2-review-handoff`.
+
+## 2026-06-17 — P2a: cross-surface integration-gate node admitted (R2-10) + MECHANISM CONFIRMED
+
+The research lead **staged** P2 (vs. running the whole sweep): build the cross-surface integration-gate lever
+first and probe whether it moves INTEG before committing to the scale sweep + search machinery. Built additively
+under `studies/meta-search/` (frozen tree `studies/build-gap/` re-verified == pinned `1580944…`). New: 
+`src/integration-gate.mjs`, `p2.mjs` (paired-A/B probe), `gates/p2a-smoke.mjs` (41/41 zero-spend); 
+`src/{genome,evaluator,worker}.mjs` extended.
+
+**The new gene, admitted at the P2 phase boundary via the clean-restart rule (R2-10):**
+- **`integrationGate` node** (`{kind: off|deterministic|cheap-judge, repairDepth: 0..2}`) added to GENE_DOMAINS
+  + validateGenome (§11 node-supply). **Hash-safe by construction:** `canonical()` strips the node when
+  off/absent, so every P1/K8 genome hashes byte-identically. **P0 re-ran GREEN 5/5** — K8 30/30 bit-identical
+  (worst evals 269/300) and the §14 round-trip deterministic (U=175 R=175) — confirming the addition is
+  determinism-preserving. **No mutation operator is wired at P2a** (the probe constructs genomes directly), so
+  `OPERATOR_NAMES` is unchanged and the K8 trajectory is unperturbed; the operator is deferred to P2b, where K8
+  re-validates under the widened operator set.
+
+**These are operational/apparatus decisions, NOT frozen invariants** (genome §2 semantics, operators §3,
+battery/seed/split §5, per-cell fitness/weights/veto §6, parity δ/α §7, TEST policy all untouched → nothing
+voided). The void-rule remains keyed to P1; P2 is a new phase.
+
+**Probe outcome (record: [`P2a-RESULTS.md`](P2a-RESULTS.md)).** A live diagnostic found the dominant N=5 INTEG
+failure is **missing defensive-init of a non-base shared store** (an undefined-access crash — `ctx.db.memberships`
+is not in the base model and the cheap builders don't `??=`-init it), NOT representation drift; INTEG is therefore
+**bimodal** (≈0% or 100%). The gate's detection was strengthened to cover this cross-surface invariant (Mode A:
+shared-non-base store accessed without init) on top of name/style drift (Mode B), with an init-repair. The paired
+A/B on scale-d1 (12 rounds): the **deterministic** gate lifts **INTEG 0%→100% (Δ +92pp), recovered 11/11 drifted
+rounds, X-CUT flat** — the mechanism the per-surface checker structurally could not deliver. The **cheap-judge**
+variant is NULL (detected 6/11, recovered 0/11 — fail-open, as in P1). **P2a verdict: mechanism confirmed →
+proceed to P2b.** (This is a mechanism result at N=5, NOT a cost-win; the cost-win stays scale-gated to N≥13.)
+
+## 2026-06-17 — P2b: gate operator wired (R2-10) + K8 re-validated + SCALE SWEEP → cost×reliability crossover
+
+The research lead chose to proceed to P2b (the scale sweep) after P2a confirmed the mechanism. Built additively
+(`p2b-sweep.mjs`; `src/operators.mjs` gained the gate operators; frozen tree `studies/build-gap/` re-verified
+== pinned `1580944…`).
+
+**Instrument change at the P2b clean-restart (R2-10 gene admission at a phase boundary — sanctioned; the FREEZE
+§2 operator set is the P1 set, widened at the new phase):** wired the `integrationGate` mutation operator(s)
+(`toggleIntegrationGate`/`integrationGateKind`/`integrationGateRepair`) into `OPERATOR_NAMES` (15→19 ops; the
+node was admitted unwired at P2a so P0/K8 stayed bit-identical). **K8 re-validated under the widened operator
+set: 29/30 (97%) ≥ the frozen 0.90 floor, worst evals 199/300; P0 GREEN 5/5.** No longer bit-identical to the
+P1-era K8 trajectory (the operator set legitimately changed at the phase boundary) — but the **cross-phase
+frozen invariants are untouched** (fitness weights, per-cell veto, δ/α, TEST policy), so nothing is voided.
+
+**The scale sweep (record: [`P2b-RESULTS.md`](P2b-RESULTS.md)).** Paired OFF/ON measurement (deterministic
+gate; analytic cost — free-gateway builds $0, cached skeletons priced at the metered MCOH25 anchor) of the
+hybrid (cheap-build + skeleton + gate) across scale-d{1..4} (N=5→17) × {fusion, opus} skeleton, vs the MCOH25
+Result-4 bare-opus bar. **The predicted cost×reliability crossover is OBSERVED:** at N=5 bare-opus wins (perfect
++ $0.278 = the pre-registered K1-at-N=5); at **N≥13, where bare-opus erodes (X-CUT 78→80%, EPIC✓ 33→0%) and
+gets pricier ($0.387→$0.431), the $0 fusion+gate hybrid holds X-CUT ABOVE bare-opus (89–90%) and the gate
+recovers INTEG to 69–85%, at zero cost** (opus+gate even clears EPIC✓ 33% vs bare-opus 0% at N=17). The
+integration-gate is the load-bearing lever (gate-OFF INTEG 0–33% → gate-ON 69–85%); the cheapest skeleton is
+strongest at scale (cheap-skel failures are the clean init-crash the gate fixes outright, so fusion+gate INTEG
+≥ opus+gate INTEG at N≥13). **PROVISIONAL** — opus-whole cost proxy, X-CUT sub-metric (bare-opus per-bucket
+INTEG not measured), 3-round samples, not run through the per-cell veto/non-inferiority test. **Strongest
+evidence yet for the north-star thesis, NOT the P3 result.** Next (P2b-continued/P3): run the evolutionary SEARCH with the deferred machinery
+(MAP-Elites/credit-attribution/surrogate/knowledge) to discover+freeze the dominating config; the routed
+all-frontier baseline; diverse-template authoring + 2nd oracle; the sequestered-TEST P3 falsification.

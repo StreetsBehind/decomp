@@ -101,7 +101,7 @@ cost-vs-reliability comparison.**
    corpus of real build-tasks the system is claimed to hold on, so the win is "true," not "true on our
    fixtures."
 
-### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17; P0+P1 done → next is P2 scale sweep)
+### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17; P0+P1+P2a+P2b done → cost×reliability crossover OBSERVED; next is the evolutionary search / P3)
 
 The M5 adaptive-harness was **brought forward** as an *instrument → fixed product* discovery tool for crux
 item 1 (the checker lever × scale): an evolutionary/reflective search over builder-system configs that finds
@@ -139,14 +139,39 @@ gateway noise in cells where the checker was inert. **K1-at-N=5 confirmed**, mat
 (the checker pays off at N≥13, not N=5). Record: [`P1-RESULTS.md`](studies/meta-search/P1-RESULTS.md). The
 frozen tree `studies/build-gap/` is untouched and no frozen invariant changed → nothing voided.
 
-**Next action: P2 (the scale sweep).** (1) **Add the integration-gate + repair lever** to the genome
-(build-gap §4b — a *cross-surface* consistency check + route-back; the per-surface checker is the wrong lever
-for the seam; admit via the clean-restart rule R2-10). (2) **Scale the `scale-d{1..4}` ladder** with checker
-+ integration-gate on, where bare-opus erodes and gets pricier (N≥13) — the cost-win regime — and ask
-whether the hybrid holds the lethal-quadrant at ≤ cost. (3) Switch on the P2 machinery (celled MAP-Elites,
-gated credit-attribution, surrogate under K7, niching-gated knowledge-conditioning). External validity still
-needs the deferred **diverse-template authoring** + the **2nd hand-authored oracle** before any "confirmed"
-promotion (FREEZE §4/§6). Ledger: [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
+**P2a CONCLUDED — the cross-surface integration-gate MECHANISM is CONFIRMED.** The research lead **staged** P2:
+build the cross-surface lever and probe whether it moves INTEG *before* paying for the full scale sweep. Built
+`src/integration-gate.mjs` + the `integrationGate` genome node (hash-safe via R2-10 clean-restart — `canonical()`
+strips it when off, so **P0 re-ran GREEN 5/5 with K8 bit-identical**) + `p2.mjs` (a paired-A/B probe that fixes
+P1's K=1 noise) + `gates/p2a-smoke.mjs` (41/41 zero-spend). A live diagnostic found the dominant N=5 INTEG
+failure is **missing defensive-init of a non-base shared store** (an undefined-access crash, NOT representation
+drift → INTEG is *bimodal* ≈0%/100%); the gate was strengthened to detect that cross-surface invariant. **Result
+(scale-d1, 12 rounds, paired): the deterministic gate lifts INTEG 0%→100% (Δ +92pp), recovered 11/11 drifted
+rounds, X-CUT flat** — the mechanism P1's per-surface checker structurally could not deliver. The **cheap-judge**
+variant is NULL (fail-open, as in P1). This is a **mechanism** result at N=5, NOT a cost-win (still scale-gated
+to N≥13). Record: [`P2a-RESULTS.md`](studies/meta-search/P2a-RESULTS.md). Frozen tree untouched; nothing voided.
+
+**P2b CONCLUDED — the predicted COST×RELIABILITY CROSSOVER is OBSERVED.** Wired the `integrationGate` mutation
+operator (R2-10 clean-restart at the phase boundary) and **re-validated K8** under the widened 19-operator set
+(29/30 ≥ the 0.90 floor; P0 GREEN 5/5; cross-phase frozen invariants — weights/veto/δ/α/TEST — untouched, so
+nothing voided). Ran a paired scale sweep (`p2b-sweep.mjs`) of the hybrid (cheap-build + skeleton + deterministic
+gate) across scale-d{1..4} (N=5→17) × {fusion, opus} skeleton, vs the MCOH25 Result-4 bare-opus bar. **Result:
+at N=5 bare-opus wins (perfect + $0.278 = the pre-registered K1-at-N=5); at N≥13, where bare-opus erodes (X-CUT
+78→80%, EPIC✓ 33→0%) and gets pricier ($0.387→$0.431), the $0 fusion+gate hybrid holds X-CUT *above* bare-opus
+(89–90%) and the gate recovers INTEG to 69–85%, at zero cost** (opus+gate even clears EPIC✓ 33% vs bare-opus 0%
+at N=17). The integration-gate is the load-bearing lever (gate-OFF INTEG 0–33% → ON 69–85%); the cheapest
+skeleton is strongest at scale. **PROVISIONAL** (opus-whole cost proxy, X-CUT sub-metric, 3-round samples, not
+through the per-cell veto). Record: [`P2b-RESULTS.md`](studies/meta-search/P2b-RESULTS.md). This is the strongest
+evidence yet for the north-star thesis — NOT the final P3 result.
+
+**Next action: the evolutionary SEARCH + P3.** (1) **Run the search** (not just the controlled sweep): switch on
+the deferred machinery (celled MAP-Elites, gated credit-attribution, surrogate under K7, niching-gated
+knowledge-conditioning) and let the loop *discover* the dominating config at scale, then **freeze and re-test it**
+(the instrument→product step; the operator is now wired). (2) **The routed all-frontier baseline** (external
+workstream) — to convert the provisional X-CUT-sub-metric win into the full lethal-quadrant cost win. (3)
+**External validity:** diverse-template authoring + the 2nd hand-authored oracle, then the sequestered-TEST P3
+falsification (FREEZE §4/§6). (4) Tighten the gate (preserve obligation guards in the repair; push INTEG past
+~85%). Ledger: [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
 
 ### Two live tensions in the plan (open, deliberate)
 

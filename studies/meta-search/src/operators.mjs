@@ -61,6 +61,32 @@ export const OPERATORS = {
   },
   checkerRepair(g, rng) { const c = cloneGenome(g); if (c.checker.kind === 'off') { c.checker.kind = 'deterministic'; c.checker.obligationClasses = ['tenancy']; } c.checker.repairDepth = nudge(c.checker.repairDepth, GENE_DOMAINS.checker.repairDepth, rng); return c; },
 
+  // The P2 CROSS-surface integration-gate lever (wired at the P2b phase boundary; the node was admitted at
+  // P2a but left unwired so the frozen P0/K8 trajectory stayed bit-identical). Enabling defaults to the
+  // DETERMINISTIC variant + one repair pass — the variant P2a confirmed has teeth (cheap-judge was null).
+  toggleIntegrationGate(g, rng) {
+    const c = cloneGenome(g);
+    const cur = (c.integrationGate && c.integrationGate.kind) || 'off';
+    if (cur === 'off') c.integrationGate = { kind: 'deterministic', repairDepth: 1 };
+    else c.integrationGate = { kind: 'off', repairDepth: 0 };
+    return c;
+  },
+  integrationGateKind(g, rng) { // deterministic <-> cheap-judge (only when on)
+    const c = cloneGenome(g);
+    const cur = (c.integrationGate && c.integrationGate.kind) || 'off';
+    if (cur === 'off') c.integrationGate = { kind: 'deterministic', repairDepth: 1 };
+    else c.integrationGate = { kind: cur === 'deterministic' ? 'cheap-judge' : 'deterministic', repairDepth: c.integrationGate.repairDepth };
+    return c;
+  },
+  integrationGateRepair(g, rng) {
+    const c = cloneGenome(g);
+    const cur = (c.integrationGate && c.integrationGate.kind) || 'off';
+    if (cur === 'off') { c.integrationGate = { kind: 'deterministic', repairDepth: 1 }; return c; }
+    c.integrationGate = { kind: cur, repairDepth: nudge(c.integrationGate.repairDepth, GENE_DOMAINS.integrationGate.repairDepth, rng) };
+    if (c.integrationGate.repairDepth === 0) c.integrationGate.repairDepth = 1; // on-gate keeps ≥1 repair (off-form is repairDepth 0)
+    return c;
+  },
+
   builderK(g, rng) { const c = cloneGenome(g); c.builder.K = nudge(c.builder.K, GENE_DOMAINS.builder.K, rng); return c; },
   retryCount(g, rng) { const c = cloneGenome(g); c.retry.count = nudge(c.retry.count, GENE_DOMAINS.retry.count, rng); return c; },
   retryStrictness(g, rng) { const c = cloneGenome(g); c.retry.gateStrictness = other(c.retry.gateStrictness, GENE_DOMAINS.retry.gateStrictness, rng); return c; },

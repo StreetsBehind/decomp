@@ -37,9 +37,18 @@ export const GENE_DOMAINS = Object.freeze({
     count: [1, 2, 3, 4, 5],
     gateStrictness: ['structural', 'structural+obligation'],
   },
-  checker: {                    // THE LIVE LEVER
+  checker: {                    // THE LIVE LEVER (P1) — per-surface obligation/seam check + repair
     kind: ['off', 'deterministic', 'cheap-judge'],
     obligationClasses: ['tenancy', 'authz', 'mass-assign'], // subset, order-insensitive
+    repairDepth: [0, 1, 2],
+  },
+  integrationGate: {            // THE P2 LEVER — CROSS-surface seam consistency check + route-back repair.
+    // Admitted at the P2 phase boundary via the clean-restart rule (R2-10): a new node in the §11 supply,
+    // NOT a mid-P1 gene. Hash-safe by construction — canonical() strips it whenever it is off/absent, so
+    // every P1/K8 genome (gate off) hashes byte-identically and the frozen P0 trajectory is unperturbed.
+    // No mutation operator is wired for it at P2a (the probe constructs genomes directly); the operator is
+    // added at P2b when the search turns on and K8 re-validates under the widened operator set.
+    kind: ['off', 'deterministic', 'cheap-judge'],
     repairDepth: [0, 1, 2],
   },
   integrator: {
@@ -128,6 +137,13 @@ export function validateGenome(g) {
       must(g.checker.repairDepth === 0, 'checker.kind=off must have repairDepth 0');
     }
   } else errors.push('missing checker');
+  // integrationGate — the P2 cross-surface lever. ABSENT is valid (treated as off; keeps every P1/K8
+  // genome valid unchanged); PRESENT must be in-domain with the canonical off-form (off ⇒ repairDepth 0).
+  if (g.integrationGate !== undefined) {
+    inDom(g.integrationGate.kind, GENE_DOMAINS.integrationGate.kind, 'integrationGate.kind');
+    inDom(g.integrationGate.repairDepth, GENE_DOMAINS.integrationGate.repairDepth, 'integrationGate.repairDepth');
+    if (g.integrationGate.kind === 'off') must(g.integrationGate.repairDepth === 0, 'integrationGate.kind=off must have repairDepth 0');
+  }
   // integrator
   if (g.integrator) {
     inDom(g.integrator.model, GENE_DOMAINS.integrator.model, 'integrator.model');
@@ -155,6 +171,11 @@ export function assertValid(g) {
 function canonical(g) {
   const c = cloneGenome(g);
   if (c.checker && Array.isArray(c.checker.obligationClasses)) c.checker.obligationClasses = c.checker.obligationClasses.slice().sort();
+  // HASH-SAFETY (R2-10): the P2 integrationGate node is stripped from the canonical form whenever it is
+  // off or absent, so every P1/K8 genome (gate off) hashes EXACTLY as it did before the node existed — the
+  // frozen P0 bit-identical trajectory is provably unperturbed. Only a gate-ON genome (a genuinely distinct
+  // candidate) gets a distinct hash, which is correct.
+  if (!c.integrationGate || (c.integrationGate.kind === 'off' && (c.integrationGate.repairDepth || 0) === 0)) delete c.integrationGate;
   return sortKeys(c);
 }
 function sortKeys(v) {
