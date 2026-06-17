@@ -73,20 +73,26 @@ cost-vs-reliability comparison.**
 
 ## What's next (re-pointed at the win condition)
 
-1. **The crux — M-coh-2.5, skeleton provenance.** Decides (a) the orchestration layer's **cost** (one
-   amortizable frontier call? how many tokens?) and (b) whether frontier orchestration is **necessary at
-   all** — if a *cheap-authored* skeleton is equally reliable, the cheaper answer is all-local (a
-   *different* system that would still have to clear the reliability gate). **Run this next.** Apparatus
-   seed: `studies/build-gap/gen-skeleton.mjs`.
-2. **Cost instrumentation (headline metric, currently missing).** The battery must report **orchestration
-   tokens vs coding tokens** per epic and compute the **hybrid-vs-cost-optimized-all-frontier** total per
-   task.
+0. **✅ DONE — M-coh-2.5, skeleton provenance (the crux).** Ran 2026-06-16 (`studies/build-gap/MCOH25-RESULTS.md`).
+   **(a) Frontier orchestration IS necessary, and it's opus-class.** Cheap *and* sonnet authors produce the
+   obligation clause (X-CUT 100%) but fail the `addMember→postComment` shared-shape **seam** (INTEG 0–13%);
+   only opus-authored restores it (INTEG/EPIC 80%, matching the hand anchor). The all-local branch is dead
+   on this epic; the frontier premium is precisely the shared-shape clause (M-coh-2 dissociation reappearing
+   along the provenance axis). **(b) Orchestration cost measured:** opus ~$0.40/epic, sonnet $0.092, gateway $0.
+   **Headline tension:** at N=5 the only reliable author (opus, $0.395) costs **more than the entire reliable
+   all-frontier bar** (opus-whole, ~$0.27) → the workspace existence proof is **reliability parity, NOT cost
+   dominance**. Cost-dominance is scale-gated and **not demonstrated at any N yet** (the skeleton-harness's
+   strict EPIC✓ also erodes to 0% at N=17, though it holds X-CUT at 95% vs bare-opus 80%).
+1. **The new crux — the per-surface obligation/seam checker + repair lever (M-coh-2's other half).** This is
+   now blocking: it must stop the harness's EPIC✓ erosion at scale, which is exactly where the cost gap vs
+   bare opus opens (N≥13). It is also the *verification-design* that lives in the orchestration layer.
+2. **An honest scale + amortization story.** Author opus skeletons at N≥13 and/or reuse one skeleton across
+   epics, to amortize the ~$0.40 orchestration term below the all-frontier line. (Defensible weaker claim
+   already holds: hybrid dominates all-frontier on the lethal-quadrant X-CUT sub-metric at ≤cost above N≈13.)
 3. **A cost-optimized all-frontier baseline.** Implement the bar honestly (cloud routing across
-   opus/sonnet/haiku), not naive all-opus — it is load-bearing for the entire result.
-4. **The per-surface obligation checker + repair lever (the other half of M-coh-2).** Closes the
-   contender's statistical reliability residue at scale; it is also the *verification-design* that lives
-   in the orchestration layer.
-5. **A task-distribution decision (the kill-condition that actually threatens the thesis).** Pick the
+   opus/sonnet/haiku), not naive all-opus — it is load-bearing for the entire result. (M-coh-2.5 used the
+   admissible reliable bar = opus-whole, since sonnet-whole fails the reliability gate.)
+4. **A task-distribution decision (the kill-condition that actually threatens the thesis).** Pick the
    corpus of real build-tasks the system is claimed to hold on, so the win is "true," not "true on our
    fixtures."
 
