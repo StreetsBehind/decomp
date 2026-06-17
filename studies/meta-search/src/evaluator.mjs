@@ -21,6 +21,8 @@ import url from 'node:url';
 import { spawn } from 'node:child_process';
 import { makeLedger } from './ledger.mjs';
 import { buildScorecard } from './scorecard.mjs';
+import { resolveSkeleton, chargeSkeletonAuthor } from './skeleton-author.mjs';
+import { runChecker } from './checker.mjs';
 
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const BUILD_GAP = path.resolve(HERE, '..', '..', 'build-gap');
@@ -118,13 +120,11 @@ export { SYNTH_CELLS, synthPassCounts };
 
 // ============================== LIVE EPIC EVALUATOR =================================================
 
-function loadFixture(epicName, useSkeleton) {
+function loadFixture(epicName) {
   const dir = path.join(BUILD_GAP, 'epics', epicName);
   const testsPath = path.join(dir, 'tests.mjs');
   const preamble = fs.readFileSync(path.join(dir, 'preamble.md'), 'utf8');
-  const skFile = path.join(dir, 'skeleton.md');
-  const skeleton = useSkeleton && fs.existsSync(skFile) ? fs.readFileSync(skFile, 'utf8') : '';
-  return { dir, testsPath, preamble, skeleton };
+  return { dir, testsPath, preamble };
 }
 
 async function cellNamesFor(testsPath) {
@@ -159,10 +159,22 @@ function isValidSurface(code, surface, timeoutMs = 8000) {
 }
 
 /**
- * Live evaluator: builds each surface on the cheap gateway and grades with the frozen apparatus.
+ * Live evaluator: builds each surface on the cheap gateway with the genome's skeleton + per-surface checker
+ * lever, then grades with the frozen apparatus. This is the P1 cheaper-author × checker arm.
+ *
+ * The build path per surface:
+ *   1. cheap builder draws the surface (with the tier-sourced skeleton injected when shapesIncluded);
+ *      structural retry up to retry.count past an invalid draw (oracle-blind, mirrors epic-run.mjs).
+ *   2. the CHECKER lever (genome.checker) runs on the accepted draw — deterministic / cheap-judge obligation
+ *      checks against the PUBLIC contract (never the oracle), repairing up to repairDepth (checker.mjs).
+ *   3. the (possibly repaired) module is assembled and graded by evaluateEpic.
+ * Skeleton-authoring cost (the cheaper-author cost axis) is charged once per epic via the model-priced
+ * ledger; cheap builds/repairs/cheap-judge run on the free pool ($0). A K3 oracle-leak in any checker prompt
+ * voids the candidate (leak=true → the driver discards it).
+ *
  * @param {object} p
- * @param {string[]} p.core   epic names (the frozen CORE; P0 smoke uses 1)
- * @param {Function} p.invoke gateway/claude invoker (args: {prompt, system, model}) -> {text, route, ...}
+ * @param {string[]} p.core   epic names (the frozen CORE; pilot uses 1, full P1 uses the anchor pair)
+ * @param {Function} p.invoke gateway invoker (args: {prompt, system, model}) -> {text, route, outputTokens}
  * @param {number} [p.epicK]  whole-epic runs for worst-of-K
  */
 export function makeEpicEvaluator({ core, invoke, epicK = 1, surfaceConcurrency = 3 } = {}) {
@@ -179,33 +191,51 @@ export function makeEpicEvaluator({ core, invoke, epicK = 1, surfaceConcurrency 
     const ledger = makeLedger();
     const routeDist = {};
     const epics = [];
-    const useSkeleton = !!(genome.skeletonAuthor && genome.skeletonAuthor.shapesIncluded);
     const maxAttempts = Math.max(1, genome.retry?.count || 1);
+    const builderModel = genome.builder.model === 'fusion' ? null : genome.builder.model;
+    const checkerMeta = { ranChecker: genome.checker?.kind !== 'off', kind: genome.checker?.kind || 'off', repairs: 0, violations: 0, surfacesChecked: 0, leak: false };
+
+    // one cheap builder draw of a surface from an arbitrary prompt (used for the initial build AND repairs)
+    const drawSurface = async (prompt, surface, validate) => {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        let g;
+        try { g = await invoke({ prompt, system: SYS_ONE, model: builderModel }); } catch { continue; }
+        ledger.charge('builder', { model: genome.builder.model, outputTokens: g.outputTokens || 0, usd: g.usd });
+        if (g.route) routeDist[g.route] = (routeDist[g.route] || 0) + 1;
+        const ok = !validate ? !!(g.text && g.text.trim()) : await isValidSurface(g.text, surface);
+        if (ok) return g.text;
+      }
+      return '';
+    };
 
     for (const epicName of core) {
-      const fx = loadFixture(epicName, useSkeleton);
-      const order = (await cellNamesFor(fx.testsPath)).wire;
+      const fx = loadFixture(epicName);
       const cellNames = await cellNamesFor(fx.testsPath);
+      const order = cellNames.wire;
+      const skel = resolveSkeleton(genome, epicName);  // tier-sourced skeleton (cached) + its cost anchor
+      chargeSkeletonAuthor(ledger, skel);              // charge the cheaper-author cost ONCE per epic
+      const fxs = { ...fx, skeleton: skel.text };
       const runs = [];
       for (let k = 0; k < epicK; k++) {
         const files = {};
         await pool(order, surfaceConcurrency, async (surface) => {
           const surfaceText = fs.readFileSync(path.join(fx.dir, 'surfaces', `${surface}.md`), 'utf8');
-          for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-            let g;
-            try { g = await invoke({ prompt: chunkPrompt({ ...fx, skeleton: useSkeleton ? fx.skeleton : '' }, surfaceText), system: SYS_ONE, model: genome.builder.model === 'fusion' ? null : genome.builder.model }); }
-            catch { continue; }
-            // cheap builder runs on the free pool → $0 (charged for uniformity / future frontier builders)
-            ledger.charge('builder', { model: genome.builder.model, outputTokens: g.outputTokens || 0, usd: g.usd });
-            if (g.route) routeDist[g.route] = (routeDist[g.route] || 0) + 1;
-            const ok = maxAttempts === 1 ? !!(g.text && g.text.trim()) : await isValidSurface(g.text, surface);
-            if (ok) { files[surface] = g.text; return; }
-          }
+          const buildPrompt = chunkPrompt(fxs, surfaceText);
+          let code = await drawSurface(buildPrompt, surface, maxAttempts > 1);
+          if (!code) return;                              // no valid draw → surface missing → graded as fail
+          // the CHECKER lever: obligation/seam check + repair (oracle-blind; K3-scanned)
+          const chk = await runChecker({
+            surface, code, originalPrompt: buildPrompt, skeleton: skel.text, checker: genome.checker,
+            rebuild: (rp) => invoke({ prompt: rp, system: SYS_ONE, model: builderModel }).then((g) => { if (g && g.route) routeDist[g.route] = (routeDist[g.route] || 0) + 1; ledger.charge('checker-repair', { model: genome.builder.model, outputTokens: g?.outputTokens || 0, usd: g?.usd }); return g; }),
+            judgeInvoke: (a) => invoke(a),                // cheap-judge runs on the free pool ($0)
+          });
+          if (chk.ranChecker) { checkerMeta.surfacesChecked++; checkerMeta.repairs += chk.repairs; checkerMeta.violations += chk.violations; if (chk.leak) checkerMeta.leak = true; }
+          files[surface] = chk.code;
         });
         runs.push(await evaluateEpic({ mode: 'isolated', files, testsPath: fx.testsPath }));
       }
       epics.push({ name: epicName, cellNames, runs });
     }
-    return { epics, ledger, routeDist };
+    return { epics, ledger, routeDist, checkerMeta };
   };
 }

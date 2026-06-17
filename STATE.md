@@ -101,7 +101,7 @@ cost-vs-reliability comparison.**
    corpus of real build-tasks the system is claimed to hold on, so the win is "true," not "true on our
    fixtures."
 
-### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17; P0 GREEN → next is P1)
+### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17; P0+P1 done → next is P2 scale sweep)
 
 The M5 adaptive-harness was **brought forward** as an *instrument → fixed product* discovery tool for crux
 item 1 (the checker lever × scale): an evolutionary/reflective search over builder-system configs that finds
@@ -126,10 +126,27 @@ G1 per-cell-metric wired through the real `evaluateEpic` (digest leaks no cell n
 drop), G2 oracle kill-rate 1.000/1.000 (≥0.90 lethal), K8 planted-positive rediscovery 30/30 pinned seeds
 (99.4%/500 base rate) within ≤8gen/≤300evals + in-loop veto, §14 checkpoint→resume bit-identical + watchdog
 halts-to-checkpoint on a planted hang. Live gateway smoke OK (non-blocking). Record:
-[`P0-RESULTS.md`](studies/meta-search/P0-RESULTS.md); driver `node studies/meta-search/p0.mjs`. **Next
-action: P1** — the cheaper-author × checker arm at fixed N=5 over the anchor pair (the mechanism question:
-does the checker lever move `crosscut`/`integration`), reflective proposer + live epic evaluator. The
-void-rule starts at P1. Ledger: [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
+[`P0-RESULTS.md`](studies/meta-search/P0-RESULTS.md); driver `node studies/meta-search/p0.mjs`.
+
+**P1 CONCLUDED — loop-closure ✓; checker lever NULL at N=5 (the pre-registered K1-at-N=5).** Built the live
+cheaper-author × checker arm additively (`src/{skeleton-author,checker,proposer,baseline}.mjs` + live
+`evaluator.mjs` + `p1.mjs` + `gates/p1-smoke.mjs`; deterministic smoke 14/14 zero-spend; P0 re-ran GREEN 5/5
+after an async `mutate` change — K8 + §14 stay bit-identical). The pilot + a 4-cell probe on scale-d1 show:
+the live loop closes end-to-end, but the per-surface checker **does not move the lethal buckets at N=5** —
+**INTEG is 0% in every cell** (a per-surface checker structurally cannot fix the *cross-surface* membership
+seam; reproduces MCOH25's "only opus-authored skeletons restore the seam"), and the X-CUT deltas are K=1
+gateway noise in cells where the checker was inert. **K1-at-N=5 confirmed**, matching MCOH25's scale-gating
+(the checker pays off at N≥13, not N=5). Record: [`P1-RESULTS.md`](studies/meta-search/P1-RESULTS.md). The
+frozen tree `studies/build-gap/` is untouched and no frozen invariant changed → nothing voided.
+
+**Next action: P2 (the scale sweep).** (1) **Add the integration-gate + repair lever** to the genome
+(build-gap §4b — a *cross-surface* consistency check + route-back; the per-surface checker is the wrong lever
+for the seam; admit via the clean-restart rule R2-10). (2) **Scale the `scale-d{1..4}` ladder** with checker
++ integration-gate on, where bare-opus erodes and gets pricier (N≥13) — the cost-win regime — and ask
+whether the hybrid holds the lethal-quadrant at ≤ cost. (3) Switch on the P2 machinery (celled MAP-Elites,
+gated credit-attribution, surrogate under K7, niching-gated knowledge-conditioning). External validity still
+needs the deferred **diverse-template authoring** + the **2nd hand-authored oracle** before any "confirmed"
+promotion (FREEZE §4/§6). Ledger: [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
 
 ### Two live tensions in the plan (open, deliberate)
 

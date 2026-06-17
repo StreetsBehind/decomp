@@ -62,8 +62,10 @@ function worstOfK(runCellMaps, cellNames) {
  * @param {object} p.ledger    cost ledger (ledger.mjs) for this candidate's build
  * @param {object} [p.routeDist]  aggregated gateway route counts {route:count}
  * @param {string} [p.baselineHash]  hash of the co-measured baseline (provenance)
+ * @param {object} [p.extra]  extra non-metric fields merged into the scorecard (e.g. checker stats) —
+ *                            never consumed by the §6 metric, only carried for reporting/ablation.
  */
-export function buildScorecard({ genome, genomeHash, epics, ledger, routeDist = {}, baselineHash = null }) {
+export function buildScorecard({ genome, genomeHash, epics, ledger, routeDist = {}, baselineHash = null, extra = {} }) {
   // mechanical channel: epic::bucket::name -> bool (worst-of-K)
   const cells = {};
   const perEpic = {};
@@ -124,6 +126,7 @@ export function buildScorecard({ genome, genomeHash, epics, ledger, routeDist = 
     routeDist,
     harnessFailRate: totalRuns ? harnessFailRuns / totalRuns : 0,
     baselineHash,
+    ...extra,              // reporting-only fields (e.g. { checker: {...} }) — never used by the metric
   };
 }
 

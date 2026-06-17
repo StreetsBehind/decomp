@@ -151,3 +151,71 @@ leaves a climbable gradient (the real opus-whole baseline already erodes, MCOH25
 
 These touch **no frozen invariant** (genome §2, operators §3, battery/seed/split §5, per-cell fitness +
 weights + veto §6, parity δ/α §7, TEST-set policy). **Next: P1.** The void-rule begins at P1 start.
+
+## 2026-06-17 — P1 APPARATUS BUILT (cheaper-author × checker arm; pre-P1 operational decisions)
+
+The P1 live arm is built (additive under `studies/meta-search/`; the frozen apparatus tree `studies/build-gap/`
+re-verified == pinned `1580944…`). New modules: `src/skeleton-author.mjs`, `src/checker.mjs`,
+`src/proposer.mjs`, `src/baseline.mjs`; `src/evaluator.mjs` extended; `p1.mjs` driver; `gates/p1-smoke.mjs`.
+`src/operators.mjs` + `src/loop.mjs` gained an **async** `mutate`/`onEval` (P0 re-run **GREEN 5/5** — K8 and the
+§14 round-trip stay bit-identical, confirming the change is determinism-preserving). The deterministic P1 smoke
+(14/14, **zero spend**) validates: the reflective proposer drives the mutation path; the checker static logic
++ repair loop + the K3 oracle-leak scan; skeleton sourcing; the cheaper-author cost ladder.
+
+These are **operational/apparatus decisions, NOT frozen invariants** (freely chosen pre-P1, recorded here):
+
+- **Skeleton sourcing.** P1 is the cheaper-author × checker arm, where the **attributed gene is the checker
+  by construction** (§3) and the skeleton-author tier is a fixed *cost axis*. So each (epic, tier) maps to ONE
+  skeleton, authored ONCE and reused — the **cached MCOH25 skeletons** (`build-gap/runs/skel-{cheap-1,sonnet,
+  opus}.md`, read-only). The anchor pair is one seam-topology (`domainsFor(1)` === workspace), so a
+  workspace-authored skeleton applies to scale-d1 unchanged. The authoring **cost is the real metered MCOH25
+  usd** (fusion $0 / sonnet $0.092 / opus $0.395 — §2.5 "trust a metered usd over token×rate"), charged to the
+  candidate's product ledger; the expensive frontier authoring *call* is amortized R&D, not re-run per eval.
+- **The checker lever** (`src/checker.mjs`). Per-surface, AFTER the cheap build: `deterministic` (static,
+  oracle-blind obligation/seam heuristics) or `cheap-judge` (free-gateway judge of code-vs-contract-clause),
+  with a re-prompt **repair** up to `repairDepth`. **Oracle-blind** (sees only the PUBLIC skeleton/spec + the
+  code) and **K3-scanned**: every checker/judge/repair prompt runs through `scanOracleLeak` (the oracle's
+  distinctive `…@<surface>`/`SEAM±`/`ISO@` forms + fixture literals); a hit voids the candidate.
+- **Co-measured baseline** (`src/baseline.mjs`). The opus-whole proxy as ONE combined scorecard spanning the
+  core epics' cells (for the per-cell veto). `cached` = the MCOH25 anchor (X-CUT/INTEG 100%, $0.247/epic, the
+  honest N=5 reference); `live` re-runs opus-whole per loop-run (co-measured, finding #5).
+- **Reflective proposer** (`src/proposer.mjs`). A frontier model (sonnet) reads the **quadrant-and-count digest
+  only** (§2.3 — never cell/seam names) and names one operator; its spend is tracked as **R&D, never charged to
+  product cost** (§6). A model-free heuristic stand-in drives the gates / dry-run reproducibly.
+- **Run shape.** Pilot = 1 epic, cached baseline, heuristic proposer (zero frontier spend) → loop-closure + a
+  controlled checker A/B. Full = anchor pair, **≥2 loop runs** (distinct mutator seeds; R2C-4 reproducibility —
+  the load-bearing mutation must agree), reflective proposer, K5=250 cap, the §14 watchdog + checkpoint.
+
+**Expected outcome pre-registered (FREEZE A1):** the cost arm fails K1 at N=5; the veto-passing archive is
+expected EMPTY at N=5 (per-cell non-inferiority to a perfect opus-whole baseline = a 100%-on-lethal bar), and
+that empty front IS the K1-at-N=5 result. P1's reportable question is the **mechanism** — read off the
+candidates' lethal-bucket pass-fractions (checker-ON vs OFF), not the archive. No frozen invariant touched.
+
+## 2026-06-17 — P1 CONCLUDED: loop-closure ✓; checker NULL at N=5 (K1-at-N=5, pre-registered) → go to P2
+
+Ran the pilot + a 4-cell checker probe on scale-d1 (`p1.mjs --pilot` / `--probe`; record:
+[`P1-RESULTS.md`](P1-RESULTS.md)). **The live loop closes end-to-end** (genome → cheap build → checker lever
++ repair → grade → per-cell veto → archive; empty veto-archive at N=5 as pre-registered). **The per-surface
+checker lever is NULL at N=5:** INTEG 0% in every cell, OFF and ON — a per-surface checker structurally
+cannot fix the *cross-surface* seam; the X-CUT deltas (+0/+29/−29pp) are K=1 gateway noise in cells where
+the checker was **inert** (0 violations/0 repairs), and the one cell where it fired moved 0pp. This
+**confirms the pre-registered K1-at-N=5** and matches MCOH25's scale-gating (the checker pays off at N≥13,
+not N=5).
+
+**Research-lead decision (option C):** accept the finding; do **not** run the full multi-seed worst-of-K
+rigor pass (low value to re-confirm a pre-registered null); **proceed to P2 (the scale sweep)**, where the
+mechanism is expected to live. P1's §5 job — confirm the loop closes and measure the lever's effect — is
+**satisfied** (loop closes; lever effect at N=5 = null).
+
+**P1 → P2 implications (the kickoff seed; full version in `P1-RESULTS.md` + STATE.md follow-up 8):**
+- **Add the integration-gate + repair lever** to the genome (build-gap §4b — a *cross-surface* consistency
+  check + route-back). The per-surface checker is the wrong lever for the seam; admit the new node via the
+  clean-restart rule (R2-10), clean because P2 is a new phase.
+- **Scale the existing `scale-d{1..4}` ladder** with checker + integration-gate on, where bare-opus erodes
+  + gets pricier (N≥13) — the cost-win regime. External validity still needs the deferred diverse-template
+  authoring + the 2nd hand-authored oracle before any "confirmed" promotion.
+- Switch on the P2 machinery (celled MAP-Elites, gated credit-attribution, surrogate under K7,
+  niching-gated knowledge-conditioning).
+
+The instrument is trusted (K8 passed in P0; loop closes live in P1). **No frozen invariant was touched, so
+nothing is voided.** P1 apparatus committed on `docs/meta-search-rev2-review-handoff`.

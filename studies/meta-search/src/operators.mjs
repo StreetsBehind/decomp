@@ -96,13 +96,15 @@ export function typedRandomMutate(g, rng) {
 /**
  * Mutate one genome. The proposer (reflective engine) may name an operator from the quadrant-only digest;
  * if it declines / is absent, fall back to typed-random. The proposer is NEVER given `cells` (§2.3).
+ * The proposer may be sync (heuristic stand-in) or async (live frontier model) — both are awaited, so the
+ * sync gates (proposer=null → typed-random) remain bit-for-bit deterministic.
  * @param {object} g
  * @param {object} rng
- * @param {{proposer?: (digest:object, opNames:string[], rng:object)=>(string|null)}} [opts]
+ * @param {{proposer?: (digest:object, opNames:string[], rng:object)=>(string|null|Promise<string|null>)}} [opts]
  */
-export function mutate(g, rng, { proposer = null, digest = null } = {}) {
+export async function mutate(g, rng, { proposer = null, digest = null } = {}) {
   if (proposer) {
-    const name = proposer(digest, OPERATOR_NAMES, rng);
+    const name = await proposer(digest, OPERATOR_NAMES, rng);
     if (name && OPERATORS[name]) {
       const child = OPERATORS[name](g, rng);
       if (validateGenome(child).ok) return { child, op: name, source: 'reflective' };

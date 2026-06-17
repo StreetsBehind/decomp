@@ -35,10 +35,13 @@ export async function runSearch(p) {
   const {
     seedGenomes, evaluate, baseline, rng, archive, budget,
     childrenPerParent = 3, populationSize = 8, proposer = null, stopWhen = null, convergeGens = Infinity,
-    checkpoint = null, watchdog = null, onGeneration = null, resumeState = null,
+    checkpoint = null, watchdog = null, onGeneration = null, onEval = null, resumeState = null,
   } = p;
   const baselineHash = baseline ? baseline.genomeHash : null;
-  const worker = (genome) => evalGenome(genome, { evaluate, baselineHash });
+  // onEval fires for EVERY evaluated candidate (reporting/ablation sink; the μ-best population + veto-passing
+  // archive both discard candidates the mechanism analysis still needs). Side-effect only → does not touch
+  // rng/archive, so it cannot perturb deterministic replay.
+  const worker = async (genome) => { const sc = await evalGenome(genome, { evaluate, baselineHash }); if (onEval) { try { onEval(sc, genome, gen); } catch {} } return sc; };
   const guard = watchdog ? (fn) => watchdog.guardEval(fn) : (fn) => fn();
 
   let gen, evalCount, population, staleGens, lastFront, haltReason = null, found = false;
@@ -93,7 +96,7 @@ export async function runSearch(p) {
         const pdigest = parent.sc.digest || null; // mutator channel ONLY (never parent.sc.cells)
         for (let c = 0; c < childrenPerParent; c++) {
           if (evalCount >= budget.maxEvals) { haltReason = 'eval-budget'; break; }
-          const { child } = mutate(parent.genome, rng, { proposer, digest: pdigest });
+          const { child } = await mutate(parent.genome, rng, { proposer, digest: pdigest });
           const sc = await guard(() => worker(child)); evalCount++;
           archive.insert(sc, child, baseline);
           children.push({ genome: cloneGenome(child), sc });

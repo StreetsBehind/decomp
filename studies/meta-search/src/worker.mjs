@@ -12,6 +12,7 @@ import { buildScorecard } from './scorecard.mjs';
  * @returns {Promise<object>} scorecard
  */
 export async function evalGenome(genome, { evaluate, baselineHash = null }) {
-  const { epics, ledger, routeDist } = await evaluate(genome);
-  return buildScorecard({ genome, genomeHash: genomeHash(genome), epics, ledger, routeDist, baselineHash });
+  const { epics, ledger, routeDist, checkerMeta } = await evaluate(genome);
+  const extra = checkerMeta ? { checker: checkerMeta } : {};
+  return buildScorecard({ genome, genomeHash: genomeHash(genome), epics, ledger, routeDist, baselineHash, extra });
 }
