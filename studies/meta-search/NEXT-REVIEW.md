@@ -1,9 +1,23 @@
-# Next adversarial review — kickoff brief (target: DESIGN.md rev.2)
+# Next adversarial review — kickoff brief
 
-> **For a FRESH session.** Read this first, then the pointers below. Your job: run the **next adversarial
-> review**, this time of [`DESIGN.md`](DESIGN.md) **rev.2**. rev.1 was already reviewed — the prior findings,
-> their verdicts, and the verified apparatus facts are in [`REVIEW-LOG.md`](REVIEW-LOG.md). **Do not
-> re-derive context, re-verify the apparatus from scratch, or re-raise settled/downgraded findings.**
+> **✅ STATUS (2026-06-16): rev.2 has been reviewed; [`DESIGN.md`](DESIGN.md) is now rev.3.** The rev.2
+> review record (15 canonical findings R2-1..R2-10 + R2C-1..R2C-5, the kills/downgrades, the reconciliations)
+> is appended to [`REVIEW-LOG.md`](REVIEW-LOG.md) under "rev.2 review"; the spec changes are in
+> [`AMENDMENTS.md`](AMENDMENTS.md). **The next step is NOT a full new review.** It is a **light re-check**
+> that the three freeze-blocking edits read correctly — **(1)** the per-cell non-inferiority veto (§6 + the
+> split mechanical/digest channels §2.3/§4.4), **(2)** the trimmed frozen set (§7 freeze line — credit-
+> assignment dropped; diverse ≥80-epic population scoped out as P2/P3 authoring), **(3)** the concrete
+> `[PIN AT FREEZE]` values (§7) — after which the research lead **pins the `[PIN AT FREEZE]` numbers**
+> (δ, α, K5/K6/K7/K8, max-M, restore-margin) and **takes the pre-registration freeze → P0**. Only run a
+> full lens-based review again if rev.3 is materially rewritten. The protocol below is retained as reusable
+> scaffolding for that case (re-target it at rev.3).
+
+> **For a FRESH session running a FULL review (only if rev.3 is materially rewritten).** Read this first,
+> then the pointers below. rev.1 and rev.2 were already reviewed — the prior findings, their verdicts, and
+> the verified apparatus facts are in [`REVIEW-LOG.md`](REVIEW-LOG.md). **Do not re-derive context,
+> re-verify the apparatus from scratch, or re-raise settled/downgraded findings** (notably: the absolute-bar
+> veto was KILLED in favor of per-cell non-inferiority; L1-2 digest-injectivity, L2-5 "not-a-mutation-test",
+> L5-4 ceiling non-sequitur were downgraded — see the rev.2 review log).
 
 ## 0. How to start (context hygiene — this matters here)
 

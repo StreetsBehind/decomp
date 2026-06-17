@@ -101,17 +101,27 @@ cost-vs-reliability comparison.**
    corpus of real build-tasks the system is claimed to hold on, so the win is "true," not "true on our
    fixtures."
 
-### Parallel track — the M5 meta-search instrument (rev.2, pre-registered)
+### Parallel track — the M5 meta-search instrument (rev.3, pre-registered)
 
 The M5 adaptive-harness was **brought forward** as an *instrument → fixed product* discovery tool for crux
 item 1 (the checker lever × scale): an evolutionary/reflective search over builder-system configs that finds
 whether/where a hybrid dominates all-frontier, then **freezes the winner and re-tests it** as a fixed
 architecture (NOT "optimal mix" — the search is the instrument, the frozen config is the product). Spec:
-[`studies/meta-search/DESIGN.md`](studies/meta-search/DESIGN.md) (rev.2, after a 2-round adversarial review).
-**Next action for a fresh session:** run the next adversarial review of rev.2 — turnkey brief at
-[`studies/meta-search/NEXT-REVIEW.md`](studies/meta-search/NEXT-REVIEW.md) (prior findings + verified
-apparatus facts in [`REVIEW-LOG.md`](studies/meta-search/REVIEW-LOG.md); ledger in
-[`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md)). After a clean review → freeze → P0.
+[`studies/meta-search/DESIGN.md`](studies/meta-search/DESIGN.md) (**rev.3, after a 2nd 2-round adversarial
+review** — 15 canonical findings folded; the **bucket-average veto became a per-cell non-inferiority veto**,
+credit-attribution/niching/surrogate/knowledge-capture were staged out of the frozen P1 set, the routed
+all-frontier baseline was scoped to a separate workstream with an interim opus-whole proxy, and a
+measurement-layer cluster was added — instrument self-validation, effective-sample-size, harness-error
+handling, concrete freeze values). Two new Tier-2 decisions resolved (§13.4 baseline scope = external
+prereq + proxy; §13.5 instrument self-validation = hard K8 gate). **Next action for a fresh session:** a
+**light re-check** that the three freeze-blocking edits read correctly (per-cell veto §6, trimmed frozen set
+§7, the `[PIN AT FREEZE]` values §7), then **pin the `[PIN AT FREEZE]` concrete values** (δ, α, K5/K6/K7/K8,
+max-M, restore-margin) → **take the freeze → P0**. rev.3 also adds **§14 operational autonomy**
+(checkpoint/resume + watchdog + mechanized off-path curation + the Phase-1-mechanism-only boundary) so a
+single run goes hands-off within the guardrails — freeze-compatible, "run-until-a-guardrail-then-halt." Review
+record:
+[`REVIEW-LOG.md`](studies/meta-search/REVIEW-LOG.md) ("rev.2 review"); ledger:
+[`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
 
 ### Two live tensions in the plan (open, deliberate)
 
