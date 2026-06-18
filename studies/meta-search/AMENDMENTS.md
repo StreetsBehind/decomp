@@ -339,3 +339,40 @@ the surgical no-model-call behavior + added 5c guard-preservation + a single-lin
 5/5**; live scale-d1 paired check — **INTEG 50%→100% (+50pp), X-CUT held 100%** (no guard-drop), $0. Mechanism
 improvement only — no frozen invariant touched (the gate is a P2 lever, FREEZE §5); the genome/operators/fitness
 are unchanged → nothing voided. Apparatus UNCOMMITTED. Record: `P2c-RESULTS.md` ("Tighten the lever — DONE").
+
+## 2026-06-17 — P3 PREREQUISITES: 2nd oracle + diverse templates + TEST-SET CONTENT HASH committed
+
+Research lead green-lit all P3 prerequisites and delegated 2nd-oracle authorship. Built additively under
+`studies/meta-search/` (frozen apparatus tree `studies/build-gap/` re-verified == pinned `1580944…`; P0
+re-GREEN 5/5 throughout). These satisfy the §6 G2 / §10 / FREEZE §4 prerequisites for P3:
+
+- **2nd hand-authored oracle (§6 G2 / §10).** `src/oracle2.mjs` + `gates/g-oracle2.mjs` (record `ORACLE2.md`).
+  An independent provenance class — property-based + metamorphic + differential vs oracle #1's example-based,
+  sharing only the surface schema (spec), not detection logic; representation-agnostic. K6 = 1.000 on both
+  lethal buckets; agrees with oracle #1 on all 16 frozen mutants; adds lethal-bucket coverage oracle #1 lacks
+  (evasion evidence). **Unblocks "confirmed" promotion + knowledge-conditioning + the P3 grader.**
+- **Diverse epic templates (FREEZE §5 / R2-7 / R2C-1 — the `n_eff` floor).** `epics-src/{approval,lifecycle,
+  quota}.mjs` + `gen-diverse-epics.mjs` + `gates/g-diverse-templates.mjs` (record `DIVERSE-TEMPLATES.md`).
+  Three structurally-distinct seam topologies beyond membership — approval (execute ⟹ approved-by-distinct-
+  admin; SoD/idempotency/audit), lifecycle (legal state-transition ordering + gated read), quota (counter
+  conservation + no-overspend + idempotent keys). Pairwise-disjoint surface sets; independent property-based
+  representation-agnostic graders; K6 = 1.000 on both lethal buckets at D = 1,2,3.
+- **Sequestered TEST set + CONTENT HASH (FREEZE §4 — the pre-registration lock).** `gen-test-set.mjs` +
+  `epics/_dyn-tests.mjs` + manifest `runs/test-set-manifest.json` (record `TEST-SET.md`). **86 epics across
+  the 4 distinct seam topologies** (membership 5 graded by the 2nd oracle; approval/lifecycle/quota 27 each as
+  lexically-distinct windows over 8-domain catalogs × sizes). **Validated before locking:** 86/86 references
+  full marks (0 false positives); new-domain mutant batteries kill at K6 = 1.000.
+
+  **COMMITTED TEST-SET CONTENT HASH:**
+  `74f10cbc4d7f40d40474e10efbcb86aeab5ba9e3bb4c85f605b10fbbf1ab149a`
+  (sha256 over the per-epic grader structure for all 86 epics + the grader source hashes + the frozen
+  apparatus pin). **Void-on-change from this point** (the void-rule began at P1): editing any grader, the
+  generator, or the epic enumeration changes the hash and voids the run. Re-derive: `node
+  studies/meta-search/gen-test-set.mjs`. *NB: the apparatus is UNCOMMITTED to git; this hash becomes binding
+  on commit.*
+
+**These touch NO frozen invariant** (genome §2, operators §3, battery/seed/split §5, per-cell fitness/weights/
+veto §6, parity δ/α §7). The diverse templates + 2nd oracle are FREEZE §5 NOT-frozen P2+/P3 machinery; the
+TEST-set hash is the pre-registered §4 staged commitment, now made. **Remaining P3 prerequisites:** the routed
+all-frontier baseline (external workstream); then the winner-freeze + the once-only sequestered-TEST
+falsification via the independent graders.
