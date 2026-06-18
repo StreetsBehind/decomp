@@ -83,7 +83,7 @@ async function loadEpic(spec) {
   const preamble = fs.readFileSync(path.join(spec.dir, 'preamble.md'), 'utf8');
   const skeleton = fs.existsSync(path.join(spec.dir, 'skeleton.md')) ? fs.readFileSync(path.join(spec.dir, 'skeleton.md'), 'utf8') : '';
   const surfaces = Object.fromEntries(order.map((s) => [s, fs.readFileSync(path.join(spec.dir, 'surfaces', `${s}.md`), 'utf8')]));
-  return { order, preamble, skeleton, surfaces };
+  return { order, preamble, skeleton, surfaces, testsPath: spec.testsPath };
 }
 
 const rate = (b) => (b && b.total ? b.pass / b.total : 1);

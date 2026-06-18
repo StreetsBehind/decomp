@@ -5,9 +5,11 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
-> _Last updated: 2026-06-18 (A×B co-evolution **RUNG-1 COMPLETE** — all 4 topologies route-robust through d3
-> at gate-OFF base rate 0% (92/92 draws); head-to-head losses debunked as route variance; awaiting a strategy
-> call (go deeper to find the erosion frontier vs. freeze). Pick up at `studies/meta-search/COEVO-RUNG1-PROGRESS.md`)._
+> _Last updated: 2026-06-18 (🛑 **CORRECTION: the "RUNG-1 COMPLETE / 92/92" result is VOID** — a validation
+> pass found `coevo-rung1.mjs` never graded against the oracles (`testsPath` undefined → fake 100/100 on
+> everything). Bug FIXED; real re-grade shows quota-d1 + approval-d1 **FAIL** worst-of-K (the head-to-head
+> losses were REAL, not route variance → the A/B gene program is back on). Pick up at
+> `studies/meta-search/COEVO-RUNG1-PROGRESS.md` (CRITICAL CORRECTION banner))._
 
 ---
 
@@ -230,8 +232,14 @@ Mode-A init + Mode-B drift, **membership delegates bit-identically** to the prov
 into the live evaluator+genome (tasks #3/#4). NEXT after the base rate: paired `--seamgate` probe → then the
 (A) contract-precision + (B) extraction genes (`src/genome.mjs`, new unfrozen genome).
 
+> 🛑 **VOID — the entire paragraph below is INVALID (grader bug; see correction at the top of this file and
+> the CRITICAL CORRECTION banner in `COEVO-RUNG1-PROGRESS.md`).** `coevo-rung1.mjs` graded with
+> `testsPath:undefined` → every draw faked 100/100. Bug FIXED (`loadEpic` returns `testsPath`); the real
+> re-grade shows quota-d1 + approval-d1 **FAIL** worst-of-K (integration 2/8 and 1/8; the head-to-head
+> losses REPRODUCED and are real). Kept below for the audit trail only.
+
 **RUNG-1 COMPLETE (2026-06-18; apparatus UNCOMMITTED) — all 4 topologies route-robust THROUGH d3, gate-OFF
-base rate 0%.** The paired `--seamgate` d2/d3 climb ran on all four seam topologies (quota + approval first,
+base rate 0%.** [VOID — grader bug, see above] The paired `--seamgate` d2/d3 climb ran on all four seam topologies (quota + approval first,
 then lifecycle d2/d3, then membership d1/d2/d3 after unpinning its depth-matched oracle). **Grand total: 0
 gate-OFF failures in 92 draws** (quota/approval d1 K=10, all cells d2/d3 K=8) across ~25 distinct cheap
 routes, at ~½ routed-baseline cost ($0.395 vs $0.74–0.81). **Three reads:** (1) the head-to-head's

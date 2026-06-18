@@ -6,6 +6,38 @@
 
 ---
 
+## 🛑 CRITICAL CORRECTION (2026-06-18, later) — the "RUNG-1 COMPLETE / 92/92" RESULT IS INVALID (grader bug)
+
+**A model-deliberation-prompted validation pass found that `coevo-rung1.mjs` never graded against the
+oracles.** `loadEpic` did not return `testsPath`, so `fx.testsPath` was `undefined`; `JSON.stringify` drops
+undefined, the child harness threw on `pathToFileURL(undefined)` and returned `{harnessError}`, and
+`rate(undefined)` evaluates to **1.0** → **every draw read 100/100 regardless of the code.** Proven
+empirically: deliberately broken quota code (withdraw lets balance go negative, no authz) read **crosscut
+100% / integration 100%** with `testsPath:undefined`, vs **0% / 0%** through the real oracle.
+
+**→ EVERYTHING below from `coevo-rung1.mjs` is VOID:** the 92/92, the K=10 d1 base rate, the K=3 4-topo
+run, the d2/d3 climb, lifecycle, membership, "all 4 topologies route-robust through d3," and the
+"head-to-head losses were route variance" debunk. The bug pre-existed this session (in the harness as
+first written) and was committed in `6a644b0`. **The head-to-head results are UNAFFECTED** (it grades with
+the real `spec.testsPath`).
+
+**FIXED:** `loadEpic` now returns `testsPath: spec.testsPath` (verified — a `__noop` mock now grades 0%/FAIL
+instead of fake 100%). **REAL re-grade of the two known-loss d1 cells (`coevo-REGRADE-d1.json`, K=8):**
+
+| cell | worst-of-K | crosscut passes | integration passes | both-pass | verdict |
+|---|---|---|---|---|---|
+| quota-d1 | c60 / **i0** | 7/8 | **2/8** | 2/8 | **FAIL** |
+| approval-d1 | c14 / **i0** | 3/8 | **1/8** | **0/8** | **FAIL** |
+
+The head-to-head's exact numbers REPRODUCED (quota integ 25, approval crosscut 71). **So the losses are REAL
+and structural, not route variance; worst-of-K does NOT debunk them; the A/B gene program IS justified** —
+against genuine, now-measurable failures (quota conservation seam, approval crosscut + SoD seam). The gate
+no-ops on these topologies (membership-specific) so it doesn't help. **Everything in the (now-struck-through)
+sections below describes the artifact, not reality — kept only for the audit trail.** Next: re-grade the
+full ladder with the fix, then resume gene work against the real failures.
+
+---
+
 ## ⏩ First action on pickup (UPDATED 2026-06-18 — RUNG-1 COMPLETE; head-to-head losses DEBUNKED; awaiting a STRATEGY call)
 
 **RUNG-1 IS COMPLETE. All 4 topologies (quota, approval, lifecycle, membership) are route-robust THROUGH d3
