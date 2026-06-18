@@ -166,17 +166,40 @@ function membershipClause(skeleton) {
 }
 
 // ---- repair (cross-surface route-back) ------------------------------------------------------------
-function repairPrompt(originalPrompt, issue, writerWriteStmts, clause) {
+function repairPrompt(originalPrompt, issue, writerWriteStmts, clause, currentCode = '') {
   const inject = (issue.mode === 'drift' && issue.surface === 'reader' && writerWriteStmts)
     ? `\nThe membership is written like this (by the addMember surface):\n\`\`\`js\n${writerWriteStmts}\n\`\`\`\nRead membership from the SAME store and SAME shape it is written with above.` : '';
   return [
     originalPrompt, '',
+    // Show the model its CURRENT implementation and tell it to keep the guards. A repair that regenerates
+    // from the spec alone is what dropped an obligation guard at scale (the X-CUT −3pp, P2a/P2b); anchoring
+    // on the existing code + an explicit preserve-guards instruction is the model-side half of that fix.
+    currentCode ? `## Your current implementation of this surface (keep it intact except for the one fix below):\n\`\`\`js\n${currentCode}\n\`\`\`` : '',
     '## Integration reviewer feedback — this surface does not compose with the rest of the system:',
     `- ${issue.msg}`,
     inject,
     clause ? `\n${clause}` : '',
-    '\nFix ONLY this issue and resubmit the full module. Output ONLY the corrected JavaScript module.',
+    '\nReturn your current implementation with ONLY this issue fixed. Preserve every existing authorization, tenancy, ownership, and input-validation check EXACTLY as written — do not drop or weaken any guard. Output ONLY the corrected JavaScript module.',
   ].join('\n');
+}
+
+// DETERMINISTIC surgical init-repair (Mode A — the dominant N=5 failure). Inject `ctx.db.<store> ??= <init>;`
+// immediately before the FIRST line that accesses the store, leaving the rest of the surface byte-for-byte
+// intact. Because it does NOT regenerate the surface, it (a) can never drop an obligation guard the way a full
+// model rebuild can (the X-CUT −3pp side-effect, P2a/P2b §"Tighten the lever"), and (b) always succeeds — so
+// it lifts the INTEG floor at scale without spending the model `repairDepth` budget. The store STYLE (Map vs
+// Array) is read from how the surface already uses it, so the initializer matches the existing access.
+function initializerFor(style) { return style === 'array' ? '[]' : 'new Map()'; }
+function surgicalInitRepair(code, store, style) {
+  const src = code || '';
+  if (!new RegExp(`ctx\\.db\\.${store.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(src)) return null;
+  // Inject the init at the TOP OF THE FUNCTION BODY = the first "{" after the parameter list's first ")".
+  // (Robust for single-line and multi-line surfaces; param destructuring/defaults use braces, not parens, so
+  // the first ")" is the param-list close.) Falls back to null → a model rebuild — if no body brace is found.
+  const paren = src.indexOf(')');
+  const brace = paren === -1 ? -1 : src.indexOf('{', paren);
+  if (brace === -1) return null;
+  return `${src.slice(0, brace + 1)} ctx.db.${store} ??= ${initializerFor(style)};${src.slice(brace + 1)}`;
 }
 
 /**
@@ -207,8 +230,27 @@ export async function runIntegrationGate({ surfaces, files, prompts, skeleton, b
   for (const { writer, reader } of pairs) {
     if (!(writer in files) || !(reader in files)) continue;
     let counted = false;
+    const markMismatch = () => { if (!counted) { mismatches++; counted = true; } };
+
+    // PASS 0 — deterministic surgical INIT sweep (Mode A). $0, guard-preserving, guaranteed; fixes EVERY init
+    // issue on this pair (writer and reader, every store) and is NOT charged to the model `repairDepth` budget,
+    // since it can't regress a guard. Only when the gate is allowed to repair (repairDepth ≥ 1). A store the
+    // surgical patch can't place (no access line found) is left for the model fallback below.
+    if (gate.kind === 'deterministic' && maxRepairs >= 1) {
+      for (let guard = 0; guard < surfaces.length * 2 + 4; guard++) {
+        const init = seamIssues(files[writer], files[reader], baseSet).find((i) => i.mode === 'init');
+        if (!init) break;
+        markMismatch();
+        const tgt = init.surface === 'writer' ? writer : reader;
+        const patched = surgicalInitRepair(files[tgt], init.store, storeStyle(files[tgt], init.store));
+        if (!patched || patched === files[tgt]) break;   // couldn't place → leave to the model pass
+        files[tgt] = patched; repairs++;
+      }
+    }
+
+    // PASS 1..maxRepairs — model route-back for residual seam issues (Mode B drift / cheap-judge, and any init
+    // the surgical sweep couldn't place). Recompute each pass (a repair may resolve one and reveal the next).
     for (let pass = 0; pass <= maxRepairs; pass++) {
-      // recompute the issue set each pass (a repair may resolve one and reveal the next).
       let issue = null;
       if (gate.kind === 'cheap-judge') {
         const prompt = judgePrompt(baseModel, clause, files[writer], files[reader]);
@@ -221,12 +263,12 @@ export async function runIntegrationGate({ surfaces, files, prompts, skeleton, b
         issue = seamIssues(files[writer], files[reader], baseSet)[0] || null;
       }
       if (!issue) break;                       // seam composes → done
-      if (!counted) { mismatches++; counted = true; }
+      markMismatch();
       if (pass === maxRepairs) break;          // out of budget → ship; the oracle still grades it
 
       const target = issue.surface === 'writer' ? writer : reader;
       const writeStmts = writeStatements(files[writer], memberStores(writtenStores(files[writer])));
-      const rp = repairPrompt(prompts[target] || '', issue, writeStmts, clause);
+      const rp = repairPrompt(prompts[target] || '', issue, writeStmts, clause, files[target]);
       if (scanOracleLeak(rp)) return { files, ranGate: true, kind: gate.kind, pairs: pairs.length, mismatches, repairs, leak: true };
       let code; try { code = await rebuild(target, rp); } catch { code = ''; }
       if (!code || !code.trim()) break;        // repair build failed → keep current code
@@ -237,4 +279,4 @@ export async function runIntegrationGate({ surfaces, files, prompts, skeleton, b
   return { files, ranGate: true, kind: gate.kind, pairs: pairs.length, mismatches, repairs, leak: false };
 }
 
-export { seamPairs, seamIssues, deterministicSeamCheck, writtenStores, readStores, baseStores, memberStores, storeStyle, hasInit, writeStatements, membershipClause };
+export { seamPairs, seamIssues, deterministicSeamCheck, writtenStores, readStores, baseStores, memberStores, storeStyle, hasInit, writeStatements, membershipClause, surgicalInitRepair };

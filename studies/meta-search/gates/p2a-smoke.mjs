@@ -7,7 +7,7 @@
 import url from 'node:url';
 import {
   runIntegrationGate, seamPairs, seamIssues, deterministicSeamCheck, writtenStores, readStores, baseStores,
-  memberStores, storeStyle, hasInit, writeStatements, membershipClause,
+  memberStores, storeStyle, hasInit, writeStatements, membershipClause, surgicalInitRepair,
 } from '../src/integration-gate.mjs';
 import { scanOracleLeak } from '../src/checker.mjs';
 import { defaultGenome, validateGenome, genomeHash, cloneGenome } from '../src/genome.mjs';
@@ -25,6 +25,10 @@ const readerArr = `export function postComment(ctx, projectId, body){ ctx.db.mem
 // MODE A: a writer/reader that ACCESS the store WITHOUT initializing it (undefined-crash at runtime)
 const writerNoInit = `export function addMember(ctx, projectId, userId, role){ ctx.db.memberships.set(projectId+':'+userId, { projectId, userId, role }); return { projectId, userId, role }; }`;
 const readerNoInit = `export function postComment(ctx, projectId, body){ if(!ctx.db.memberships.has(projectId+':'+ctx.session.userId)) throw new Error('forbidden'); ctx.db.comments.push({ projectId, body }); }`;
+// MODE A, ARRAY-style (no init) — surgically repairable to AGREE with readerArr (both Array) with no model call.
+const writerNoInitArr = `export function addMember(ctx, projectId, userId, role){ ctx.db.memberships.push({ projectId, userId, role, orgId: ctx.session.orgId }); return { projectId, userId, role }; }`;
+// MODE A + an OBLIGATION GUARD (authz) — the surgical init repair must add init AND preserve the guard (the −3pp fix).
+const writerNoInitGuarded = `export function addMember(ctx, projectId, userId, role){ if (ctx.session.orgId !== ctx.db.projects.get(projectId)?.orgId) throw new Error('forbidden'); ctx.db.memberships.push({ projectId, userId, role }); return { projectId, userId, role }; }`;
 // MODE B: drift on store NAME (reads ctx.db.members, not memberships) — init-safe so Mode A doesn't mask it
 const readerNameDrift = `export function postComment(ctx, projectId, body){ ctx.db.members ??= []; const m = ctx.db.members.some(x => x.projectId===projectId && x.userId===ctx.session.userId); if(!m) throw new Error('forbidden'); ctx.db.comments.push({ projectId, body }); }`;
 // MODE B: drift on access STYLE (Map .has on a store the writer .push-es as an Array) — init-safe
@@ -84,16 +88,27 @@ ok('single-domain pairs the one writer with the one reader', JSON.stringify(seam
   ok('repair replaced the reader code and the seam now composes', r.repairs === 1 && deterministicSeamCheck(files.addMember, files.postComment).mismatch === null);
 }
 
-// ---- 5b. MODE A gate REPAIR: detect missing init, route an init-repair to the offending surface -----
+// ---- 5b. MODE A gate REPAIR is now DETERMINISTIC + SURGICAL — no model rebuild, guard-preserving ----
 {
-  const files = { addMember: writerNoInit, postComment: readerArr };
-  let target = null, sawInitInstruction = false;
-  const rebuild = async (surface, prompt) => { target = surface; sawInitInstruction = /\?\?=|not part of the base data model|initialize it defensively/i.test(prompt); return writerArr; /* repaired writer now inits */ };
+  const files = { addMember: writerNoInitArr, postComment: readerArr };
+  let rebuildCalled = false;
+  const rebuild = async () => { rebuildCalled = true; return ''; };  // must NOT be called for a Mode-A init
   const r = await runIntegrationGate({ surfaces: ['addMember', 'postComment'], files, prompts: { addMember: 'BUILD addMember' }, skeleton: SKEL, baseModel: BASE, gate: { kind: 'deterministic', repairDepth: 1 }, rebuild, judgeInvoke: async () => ({ text: '' }) });
   ok('Mode A: gate detected the uninitialized-store crash', r.mismatches === 1);
-  ok('Mode A: repair routed to the WRITER (the surface missing init)', target === 'addMember');
-  ok('Mode A: repair prompt instructs defensive init', sawInitInstruction === true);
-  ok('Mode A: after the init repair the seam composes', r.repairs === 1 && deterministicSeamCheck(files.addMember, files.postComment, baseStores(BASE)).mismatch === null);
+  ok('Mode A: the init repair is SURGICAL — no model rebuild was called', rebuildCalled === false);
+  ok('Mode A: the writer now defensively inits the store (??= injected)', hasInit(files.addMember, 'memberships') === true);
+  ok('Mode A: after the surgical init repair the seam composes', r.repairs === 1 && deterministicSeamCheck(files.addMember, files.postComment, baseStores(BASE)).mismatch === null);
+}
+
+// ---- 5c. surgical init repair PRESERVES obligation guards (the X-CUT −3pp fix) ----------------------
+{
+  const files = { addMember: writerNoInitGuarded, postComment: readerArr };
+  let rebuildCalled = false;
+  const rebuild = async () => { rebuildCalled = true; return ''; };
+  const r = await runIntegrationGate({ surfaces: ['addMember', 'postComment'], files, prompts: { addMember: 'BUILD addMember' }, skeleton: SKEL, baseModel: BASE, gate: { kind: 'deterministic', repairDepth: 1 }, rebuild, judgeInvoke: async () => ({ text: '' }) });
+  ok('5c: the authz guard survives the surgical repair (no regeneration → no −3pp)', /ctx\.session\.orgId !== ctx\.db\.projects\.get\(projectId\)\?\.orgId/.test(files.addMember) && /throw new Error\('forbidden'\)/.test(files.addMember));
+  ok('5c: init was still added AND no model rebuild was called', hasInit(files.addMember, 'memberships') === true && rebuildCalled === false && r.repairs === 1);
+  ok('5c: unit — surgicalInitRepair injects an array init before first access, preserving the rest', (() => { const p = surgicalInitRepair(writerNoInitGuarded, 'memberships', 'array'); return /memberships \?\?= \[\];/.test(p) && p.includes("throw new Error('forbidden')"); })());
 }
 
 // ---- 6. repair budget respected (repairDepth 0 → detect but no repair) ------------------------------

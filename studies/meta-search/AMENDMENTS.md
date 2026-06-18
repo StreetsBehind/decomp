@@ -279,3 +279,63 @@ INTEG not measured), 3-round samples, not run through the per-cell veto/non-infe
 evidence yet for the north-star thesis, NOT the P3 result.** Next (P2b-continued/P3): run the evolutionary SEARCH with the deferred machinery
 (MAP-Elites/credit-attribution/surrogate/knowledge) to discover+freeze the dominating config; the routed
 all-frontier baseline; diverse-template authoring + 2nd oracle; the sequestered-TEST P3 falsification.
+
+## 2026-06-17 — P2c: the deferred SEARCH machinery switched on + the search rediscovers the P2b config
+
+The research lead chose to run the evolutionary SEARCH (the instrument→product discovery step). Built additively
+(`src/{map-elites,credit,surrogate,scale-landscape}.mjs`, `p2c-search.mjs`, three new gates; frozen tree
+`studies/build-gap/` re-verified == pinned `1580944…`). Three of the four deferred P2 mechanisms (FREEZE §5 —
+NOT frozen) were admitted + **instrument-re-validated under each** (the P2b discipline):
+
+- **Celled MAP-Elites** (§4.1) — `src/map-elites.mjs` + an injected `selectParents` hook in `loop.mjs`
+  (DEFAULT = μ-best topMu, so the frozen K8/P0 path + rng sequence stay **bit-identical**). Behavioral
+  descriptor `(genotype-Hamming, per-bucket recall signature, cost bucket)`; per-cell lethal veto kept at
+  insertion; occupied cell displaced only on Pareto-dominance. Gate `gates/p2c-map-elites.mjs`: **K8 rediscovery
+  28/30 (93%) ≥0.90** under celled selection; **K4 no-collapse median 17 cells**; veto fires in-loop.
+- **Credit-attribution (skeleton-first, gated)** (§3) — `src/credit.mjs` + a flag-gated loop hook (OFF →
+  frozen path; `creditAttribution` + the `preferOp` mutation bias). Counterfactual reversion on the worst
+  lethal candidate/gen, **skeleton-first**, evals **charged to K5**, **mis-attribution kill** (2×SE →
+  unattributable → typed-random). Gate `gates/p2c-credit.mjs`: skeleton-first / leaf-culprit / the sub-noise
+  kill / bounded+charged all pass.
+- **Surrogate-scorer under K7** (§5/§11/§7) — `src/surrogate.mjs`, a k-NN screen, search-cost-only, never
+  feeds the veto; **K7 kill** (FROZEN ρ≥0.80). Gate `gates/p2c-surrogate.mjs`: fidelity ρ=0.963; the kill
+  fires on decorrelation (ρ=0.53→killed); cold/killed→null. Standalone module — not imported by the loop.
+- **Knowledge-conditioning (§10) DEFERRED with reason** — its `confirmed`-record retrieval is BLOCKED until the
+  2nd hand-authored oracle exists (§6 G2/§10 anti-rot, tied to K6); highest K3 leak surface; "optional, reverting
+  free." Switched on after the 2nd oracle lands, not now.
+
+**These are operational/apparatus decisions, NOT frozen invariants** (genome §2 semantics, operators §3,
+battery/seed/split §5, per-cell fitness/weights/veto §6, parity δ/α §7, TEST policy all untouched → nothing
+voided; MAP-Elites + credit-attribution are explicitly P2 mechanisms, FREEZE §5). **P0 re-ran GREEN 5/5; K8
+29/30 bit-identical** (worst evals 199/300; §14 round-trip U=175 R=175) — the flag-gated/injected admissions are
+determinism-preserving.
+
+**The search (record: [`P2c-RESULTS.md`](P2c-RESULTS.md)).** One **live** N=13 eval exceeds 150s (measured), so
+the multi-seed search ran on a **deterministic scale-economics landscape** (`src/scale-landscape.mjs`) — real
+epic cell-counts, pass-rates **set to the LIVE P2a/P2b numbers** (anti-circularity stated: the economics CLAIM
+is P2b's; this run's claim is only that the SEARCH converges, cf. K8 on real-shaped economics). From the NAIVE
+pool, with all three mechanisms on, **both mutator seeds at N=13 and N=17 rediscover the same config — cheap
+(fusion) skeleton + shapes + the deterministic integration-gate, at $0** — which dominates the bare-opus bar
+(cost< ∧ per-cell lethal non-inferiority ∧ reliability≥parity; the naive seed itself fails the veto, so the
+search had to climb). Reproducible (R2C-4); checker mostly off (the gate is the load-bearing lever, cheapest
+skeleton strongest at scale — the P2b finding). K7 held (ρ 0.83–0.88) except N=17 seed 2 (ρ 0.788 <0.80) where
+the kill **correctly fired**. **PROVISIONAL** (opus-whole + unmeasured-INTEG proxies; one seam-topology;
+deterministic landscape; the winner is **PROPOSED, not frozen**). **Next = P3 prerequisites:** the routed
+all-frontier baseline; diverse-template authoring + 2nd oracle; then freeze the winner + the sequestered-TEST
+falsification. Apparatus UNCOMMITTED (user has not asked to commit).
+
+## 2026-06-17 — P2c follow-up: integration-gate repair HARDENED (the X-CUT −3pp + INTEG-floor fix)
+
+Autonomous follow-up on the P2a/P2b "tighten the lever" flags. The gate's repair regenerated the whole surface
+from the build prompt, which is what occasionally **dropped an obligation guard** (the X-CUT −3pp at d3) and
+sometimes **failed to fix the seam** (the INTEG plateau). The dominant failure (Mode A — uninitialized shared
+store) needs no model: made it **deterministic + surgical** (`surgicalInitRepair` in `src/integration-gate.mjs`
+injects `ctx.db.<store> ??= <init>` at the top of the function body, preserving the rest byte-for-byte; store
+style read from existing usage; robust for single-line + multi-line surfaces with a null→model-rebuild
+fallback). The surgical sweep fixes EVERY init issue on a pair and is **not** charged to the model `repairDepth`
+budget (raises the INTEG floor); the Mode-B drift route-back now also anchors on the current code + an explicit
+preserve-guards instruction. **Validated:** `gates/p2a-smoke.mjs` **44/44** (was 41/41 — modified 5b to assert
+the surgical no-model-call behavior + added 5c guard-preservation + a single-line-robustness unit); **P0 GREEN
+5/5**; live scale-d1 paired check — **INTEG 50%→100% (+50pp), X-CUT held 100%** (no guard-drop), $0. Mechanism
+improvement only — no frozen invariant touched (the gate is a P2 lever, FREEZE §5); the genome/operators/fitness
+are unchanged → nothing voided. Apparatus UNCOMMITTED. Record: `P2c-RESULTS.md` ("Tighten the lever — DONE").

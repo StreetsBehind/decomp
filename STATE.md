@@ -101,7 +101,7 @@ cost-vs-reliability comparison.**
    corpus of real build-tasks the system is claimed to hold on, so the win is "true," not "true on our
    fixtures."
 
-### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17; P0+P1+P2a+P2b done → cost×reliability crossover OBSERVED; next is the evolutionary search / P3)
+### Parallel track — the M5 meta-search instrument (rev.3, FROZEN 2026-06-17; P0+P1+P2a+P2b+P2c done → the search REDISCOVERS the cost-dominating config; next is the P3 prerequisites)
 
 The M5 adaptive-harness was **brought forward** as an *instrument → fixed product* discovery tool for crux
 item 1 (the checker lever × scale): an evolutionary/reflective search over builder-system configs that finds
@@ -164,14 +164,36 @@ skeleton is strongest at scale. **PROVISIONAL** (opus-whole cost proxy, X-CUT su
 through the per-cell veto). Record: [`P2b-RESULTS.md`](studies/meta-search/P2b-RESULTS.md). This is the strongest
 evidence yet for the north-star thesis — NOT the final P3 result.
 
-**Next action: the evolutionary SEARCH + P3.** (1) **Run the search** (not just the controlled sweep): switch on
-the deferred machinery (celled MAP-Elites, gated credit-attribution, surrogate under K7, niching-gated
-knowledge-conditioning) and let the loop *discover* the dominating config at scale, then **freeze and re-test it**
-(the instrument→product step; the operator is now wired). (2) **The routed all-frontier baseline** (external
-workstream) — to convert the provisional X-CUT-sub-metric win into the full lethal-quadrant cost win. (3)
-**External validity:** diverse-template authoring + the 2nd hand-authored oracle, then the sequestered-TEST P3
-falsification (FREEZE §4/§6). (4) Tighten the gate (preserve obligation guards in the repair; push INTEG past
-~85%). Ledger: [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
+**P2c CONCLUDED — the deferred SEARCH machinery is ON and the search REDISCOVERS the P2b config.** Switched on
+three of the four deferred P2 mechanisms (FREEZE §5 — NOT frozen), each **instrument-re-validated under the new
+mechanism** (the P2b discipline): **celled MAP-Elites** (`src/map-elites.mjs` + an injected `selectParents`
+hook; K8 rediscovery 28/30, K4 no-collapse median 17 cells), **counterfactual credit-attribution**
+(skeleton-first + the 2×SE mis-attribution kill, `src/credit.mjs`; evals charged to K5), and the
+**surrogate-scorer under K7** (`src/surrogate.mjs`; fidelity ρ=0.96, the kill fires on decorrelation). The 4th —
+**knowledge-conditioning — is deferred with reason** (its `confirmed`-record store is blocked until the 2nd
+hand-authored oracle exists; highest K3 leak surface; optional). All flag-gated/injected → **P0 re-GREEN 5/5, K8
+29/30 bit-identical**, frozen invariants untouched → nothing voided. **The search** (one live N=13 eval >150s, so
+it ran on a deterministic landscape **calibrated to the live P2a/P2b numbers** — the economics claim is P2b's,
+this run's claim is only that the SEARCH converges, cf. K8): from the **naive** pool, with all three mechanisms
+on, **both mutator seeds at N=13 and N=17 rediscover the same config — cheap (fusion) skeleton + shapes + the
+deterministic integration-gate, at $0** — dominating the bare-opus bar (cost< ∧ per-cell lethal non-inf ∧
+reliability≥parity; the naive seed itself fails the veto, so the search had to climb). Reproducible (R2C-4); the
+gate is the load-bearing lever (checker mostly off). **PROVISIONAL** (opus-whole + unmeasured-INTEG proxies; one
+seam-topology; deterministic landscape) — the winner is **PROPOSED, not frozen**. Record:
+[`P2c-RESULTS.md`](studies/meta-search/P2c-RESULTS.md); driver `node studies/meta-search/p2c-search.mjs`.
+
+**Next action: the P3 prerequisites, then freeze + falsify.** (1) **The routed all-frontier baseline** (external
+workstream) — converts the opus-whole/INTEG-proxy comparison into the full lethal-quadrant cost win and gives the
+per-cell veto a *measured* baseline INTEG. (2) **External validity:** author the diverse epic templates + the
+**2nd hand-authored oracle** (unblocks "confirmed" promotion AND knowledge-conditioning). (3) **P3 — freeze &
+falsify:** freeze the PROPOSED winner (genome JSON + SHA + route roster + price table), run the live multi-seed
+search + score **once** on the sequestered ≥80-epic TEST via the independent 2nd-oracle grader (FREEZE §4/§6);
+promote the integration-gate into [`PROPOSAL-HYBRID.md`](docs/PROPOSAL-HYBRID.md). (4) **Tighten the gate —
+DONE (deterministic half):** the dominant Mode-A repair is now surgical + deterministic (`surgicalInitRepair`,
+preserves obligation guards by construction → the X-CUT −3pp is gone; lifts the INTEG floor; $0); validated
+p2a-smoke 44/44 + P0 GREEN + a live scale-d1 check (INTEG 50%→100%, X-CUT held 100%). Remaining: push INTEG past
+~85% at the largest N (residual multi-seam drift). Ledger: [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
+P2c apparatus UNCOMMITTED (user has not asked to commit).
 
 ### Two live tensions in the plan (open, deliberate)
 

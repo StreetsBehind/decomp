@@ -126,9 +126,17 @@ export function typedRandomMutate(g, rng) {
  * sync gates (proposer=null → typed-random) remain bit-for-bit deterministic.
  * @param {object} g
  * @param {object} rng
- * @param {{proposer?: (digest:object, opNames:string[], rng:object)=>(string|null|Promise<string|null>)}} [opts]
+ * @param {{proposer?: (digest:object, opNames:string[], rng:object)=>(string|null|Promise<string|null>), digest?:object, preferOp?:string|null}} [opts]
  */
-export async function mutate(g, rng, { proposer = null, digest = null } = {}) {
+export async function mutate(g, rng, { proposer = null, digest = null, preferOp = null } = {}) {
+  // Credit-attribution bias (P2, OFF by default): the loop may pin the constructive operator for the gene the
+  // previous generation's counterfactual reversion attributed the lethal failure to ("reflective mutation
+  // restricted to the attributed gene", §3). Applied to a SUBSET of children so the typed-random exploration
+  // budget still runs alongside. A no-op (already-good) bias falls through to the proposer/typed-random.
+  if (preferOp && OPERATORS[preferOp]) {
+    const child = OPERATORS[preferOp](g, rng);
+    if (validateGenome(child).ok && JSON.stringify(child) !== JSON.stringify(g)) return { child, op: preferOp, source: 'credit' };
+  }
   if (proposer) {
     const name = await proposer(digest, OPERATOR_NAMES, rng);
     if (name && OPERATORS[name]) {

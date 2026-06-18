@@ -36,7 +36,13 @@ export async function runSearch(p) {
     seedGenomes, evaluate, baseline, rng, archive, budget,
     childrenPerParent = 3, populationSize = 8, proposer = null, stopWhen = null, convergeGens = Infinity,
     checkpoint = null, watchdog = null, onGeneration = null, onEval = null, resumeState = null,
+    selectParents = null, creditAttribution = null,
   } = p;
+  // Parent-selection hook (DESIGN §4.1). DEFAULT = μ-best topMu (the P1 flat-archive breeding pool) — when
+  // selectParents is absent the code path and the rng sequence are bit-identical to the frozen P0/K8 run.
+  // MAP-Elites mode (P2c) injects a celled sampler (map-elites.mjs makeCelledSelect) that breeds from the
+  // archive's filled cells instead, so exploration is preserved over the near-uniform cost axis.
+  const select = selectParents || ((_archive, pool, _rng, mu) => topMu(pool, mu));
   const baselineHash = baseline ? baseline.genomeHash : null;
   // onEval fires for EVERY evaluated candidate (reporting/ablation sink; the μ-best population + veto-passing
   // archive both discard candidates the mechanism analysis still needs). Side-effect only → does not touch
@@ -45,10 +51,13 @@ export async function runSearch(p) {
   const guard = watchdog ? (fn) => watchdog.guardEval(fn) : (fn) => fn();
 
   let gen, evalCount, population, staleGens, lastFront, haltReason = null, found = false;
+  // credit-attribution carry (P2; null when creditAttribution is off → frozen path unaffected): the
+  // constructive operator the previous generation's reversion attributed the lethal failure to.
+  let preferOp = null;
 
   function snapshot() {
     return {
-      gen, evalCount, rngState: rng.state(), staleGens, lastFront,
+      gen, evalCount, rngState: rng.state(), staleGens, lastFront, preferOp,
       archive: archive.snapshot(),
       population: population.map((e) => ({ genome: e.genome, sc: e.sc })),
       budget, baselineHash,
@@ -62,6 +71,7 @@ export async function runSearch(p) {
     gen = resumeState.gen; evalCount = resumeState.evalCount;
     population = resumeState.population.map((e) => ({ genome: cloneGenome(e.genome), sc: e.sc }));
     staleGens = resumeState.staleGens; lastFront = resumeState.lastFront;
+    preferOp = resumeState.preferOp || null;
   } else {
     gen = 0; evalCount = 0; staleGens = 0; lastFront = '';
     // Generation 0: evaluate the seed population; seed the archive (veto applies); seed the breeding pool.
@@ -74,7 +84,7 @@ export async function runSearch(p) {
         population.push({ genome: cloneGenome(g), sc });
       }
     } catch (e) { if (e && e.__watchdogTrip) g0trip = e; else throw e; }
-    population = topMu(population, populationSize);
+    population = select(archive, population, rng, populationSize);
     lastFront = frontKey(archive);
     if (checkpoint) checkpoint.save(snapshot());
     if (onGeneration) onGeneration({ gen, evalCount, archiveSize: archive.size(), front: lastFront, diversity: archive.diversity(), bestReliability: bestRel(), trip: !!g0trip });
@@ -96,7 +106,9 @@ export async function runSearch(p) {
         const pdigest = parent.sc.digest || null; // mutator channel ONLY (never parent.sc.cells)
         for (let c = 0; c < childrenPerParent; c++) {
           if (evalCount >= budget.maxEvals) { haltReason = 'eval-budget'; break; }
-          const { child } = await mutate(parent.genome, rng, { proposer, digest: pdigest });
+          // credit bias on the first child per parent only (the rest keep the typed-random/reflective budget).
+          const bias = creditAttribution && c === 0 ? preferOp : null;
+          const { child } = await mutate(parent.genome, rng, { proposer, digest: pdigest, preferOp: bias });
           const sc = await guard(() => worker(child)); evalCount++;
           archive.insert(sc, child, baseline);
           children.push({ genome: cloneGenome(child), sc });
@@ -105,12 +117,25 @@ export async function runSearch(p) {
       }
     } catch (e) { if (e && e.__watchdogTrip) trip = e; else throw e; }
 
-    // update the breeding pool: μ-best of (population ∪ children)
-    population = topMu(population.concat(children), populationSize);
+    // update the breeding pool: default μ-best of (population ∪ children); MAP-Elites mode reselects from cells.
+    population = select(archive, population.concat(children), rng, populationSize);
+
+    // credit-attribution (P2, gated; null = frozen path): attribute THIS generation's worst lethal failure to
+    // one gene by counterfactual reversion (skeleton-first + restore-margin kill, credit.mjs). The injected
+    // step picks the worst lethal child + runs the reversions; its evalsUsed is charged to the budget (K5) and
+    // its preferOp biases NEXT generation's mutation. The injected fn is generic — loop.mjs imports no credit
+    // internals. Counterfactual evals do NOT touch rng/archive, so the search trajectory stays deterministic.
+    let creditDetail = null;
+    if (creditAttribution && !trip && children.length) {
+      const cr = await creditAttribution({ children, evaluate, baselineHash, gen });
+      evalCount += (cr && cr.evalsUsed) || 0;
+      preferOp = (cr && cr.preferOp) || null;
+      creditDetail = cr || null;
+    }
 
     if (watchdog && !trip) { try { watchdog.endGeneration(gen); } catch (e) { if (e && e.__watchdogTrip) trip = e; else throw e; } }
     if (checkpoint) checkpoint.save(snapshot());
-    if (onGeneration) onGeneration({ gen, evalCount, archiveSize: archive.size(), front: frontKey(archive), diversity: archive.diversity(), bestReliability: bestRel(), trip: !!trip });
+    if (onGeneration) onGeneration({ gen, evalCount, archiveSize: archive.size(), front: frontKey(archive), diversity: archive.diversity(), bestReliability: bestRel(), trip: !!trip, preferOp, credit: creditDetail });
 
     if (trip) { haltReason = `watchdog:${trip.kind}`; break; }
     if (stopWhen && stopWhen(archive, { gen, evalCount })) { found = true; break; }
