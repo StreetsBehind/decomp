@@ -5,7 +5,9 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
-> _Last updated: 2026-06-18 (head-to-head done → A×B co-evolution is next; see `studies/meta-search/COEVOLUTION-SPEC.md`)._
+> _Last updated: 2026-06-18 (A×B co-evolution **RUNG-1 COMPLETE** — all 4 topologies route-robust through d3
+> at gate-OFF base rate 0% (92/92 draws); head-to-head losses debunked as route variance; awaiting a strategy
+> call (go deeper to find the erosion frontier vs. freeze). Pick up at `studies/meta-search/COEVO-RUNG1-PROGRESS.md`)._
 
 ---
 
@@ -205,9 +207,47 @@ same oracles, ~$0) gave a **topology-gated** verdict: **WIN** (parity at ⅓–�
 mostly **cheap-tier coding-quality, not an unhandled seam** — the integration-gate is membership-specific and
 no-ops elsewhere. (c) **The P2c "proposed winner" is NOT ready to freeze.** NEW DIRECTION = the **A×B
 co-evolution program** (co-evolve orchestration **and** output-QA, scale-laddered, worst-of-K across routes,
-freeze the champion at the end). Full handoff spec: [`COEVOLUTION-SPEC.md`](studies/meta-search/COEVOLUTION-SPEC.md)
-— **this is the spec to pick up next.** Binding principle: the system must be **model-agnostic** (route/model
-selection is NOT an admissible fix); classify every failure (A) orchestration / (B) output-QA / (C) boundary.
+freeze the champion at the end). Full handoff spec: [`COEVOLUTION-SPEC.md`](studies/meta-search/COEVOLUTION-SPEC.md).
+Binding principle: the system must be **model-agnostic** (route/model selection is NOT an admissible fix);
+classify every failure (A) orchestration / (B) output-QA / (C) boundary.
+
+**A×B CO-EVOLUTION STARTED (2026-06-18; apparatus UNCOMMITTED) — rung-1 starting line measured + generalized
+seam-gate built. Pick up: [`COEVO-RUNG1-PROGRESS.md`](studies/meta-search/COEVO-RUNG1-PROGRESS.md).** The 5
+open design questions (§8) are resolved. **Key finding:** under **worst-of-K=3 across routes** (the
+model-agnostic fitness), all 4 topologies pass d1 at **100/100 — INCLUDING quota + approval**, contradicting
+the head-to-head's single-draw losses → those were **route variance / gateway drift, NOT structural** (the
+exact thing worst-of-K exists to expose). CAVEAT: K=3 can't *certify* route-robustness (P(3/3 pass)≈0.42 at a
+25% per-route fail rate) → ran a **K=10 base rate**: quota-d1 + approval-d1 are **10/10 draws 100/100** across
+15/17 distinct routes (13/13 clean with the K=3 run) — the head-to-head d1 losses **DO NOT reproduce**, so they
+were route-unlucky tails / same-day gateway drift, NOT structural. **→ d1 is SOLID; the real work is the d2/d3
+climb** (where the head-to-head's deep losses were graded partials: quota integ 63/75, approval crosscut→71).
+⚠️ **Newly-confirmed methodological flag: the free gateway is a NON-STATIONARY pool** — single-draw verdicts are
+unreliable (validates worst-of-K); freeze/TEST must mind pool drift; Phase-2 fixed local hardware is the mitigation. **Built (additive, frozen tree untouched):** `coevo-rung1.mjs` (worst-of-K harness + A/B/C attribution +
+`--seamgate`); `src/seam-gate.mjs` (generalized gate — per-topology seam profile from the public skeleton,
+Mode-A init + Mode-B drift, **membership delegates bit-identically** to the proven gate, oracle-blind;
+**Mode-C semantic invariants STAGED OFF** until the base rate shows they're load-bearing); `gates/seam-gate-smoke.mjs`
+(22/22 green). P0/K8 unperturbed (synthetic path calls no gate); re-validate K6/K7/K8 when the gate/genes wire
+into the live evaluator+genome (tasks #3/#4). NEXT after the base rate: paired `--seamgate` probe → then the
+(A) contract-precision + (B) extraction genes (`src/genome.mjs`, new unfrozen genome).
+
+**RUNG-1 COMPLETE (2026-06-18; apparatus UNCOMMITTED) — all 4 topologies route-robust THROUGH d3, gate-OFF
+base rate 0%.** The paired `--seamgate` d2/d3 climb ran on all four seam topologies (quota + approval first,
+then lifecycle d2/d3, then membership d1/d2/d3 after unpinning its depth-matched oracle). **Grand total: 0
+gate-OFF failures in 92 draws** (quota/approval d1 K=10, all cells d2/d3 K=8) across ~25 distinct cheap
+routes, at ~½ routed-baseline cost ($0.395 vs $0.74–0.81). **Three reads:** (1) the head-to-head's
+topology-gated losses (quota integ 25, approval integ 17/75) were **route variance** — approval-d3 passed
+8/8 across 23 routes — so the P3 "topology-gated, not freezable" verdict is **overturned** under worst-of-K;
+(2) the seam-gate fired on every draw + applied 100+ repairs but **recovered nothing** (base rate already 0%)
+→ **not demonstrated load-bearing at d1-d3**; (3) the task-#3 gene program (premised on *structural* losses)
+is **not justified at this scale**. **The erosion frontier was NOT reached at d3.** Records:
+`coevo-rung1-k10-d1-baserate.json`, `coevo-rung1-d2d3-seamgate.json`, `coevo-lifecycle-d23.json`,
+`coevo-membership-d123.json`. **Apparatus (additive, dev — frozen tree untouched):** `coevo-rung1.mjs` gained
+`--out`; `epicSpec` membership now uses depth-matched `oracle2-tests-d${D}.mjs` (d1 bit-identical) + new
+`gates/lib/oracle2-tests-d{2,3}.mjs`. ⚠️ These touch the live oracle wiring → the §3.3 K6/K7/K8 + P0
+re-validation is **DUE before any freeze**. **NEXT = a STRATEGY CALL (user's):** (1) **go deeper to find the
+erosion frontier** — membership-d4/d5 is runnable NOW (oracle generalizes; quota/approval/lifecycle would need
+new d4 templates); or (2) **move toward freeze** + the once-only sequestered-TEST. The gene program is parked
+unless erosion appears.
 
 P2c apparatus UNCOMMITTED (user has not asked to commit); P3-prereq + head-to-head apparatus COMMITTED.
 
