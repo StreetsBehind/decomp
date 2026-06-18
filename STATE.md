@@ -5,7 +5,7 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
-> _Last updated: 2026-06-16._
+> _Last updated: 2026-06-18 (head-to-head done → A×B co-evolution is next; see `studies/meta-search/COEVOLUTION-SPEC.md`)._
 
 ---
 
@@ -193,7 +193,23 @@ DONE (deterministic half):** the dominant Mode-A repair is now surgical + determ
 preserves obligation guards by construction → the X-CUT −3pp is gone; lifts the INTEG floor; $0); validated
 p2a-smoke 44/44 + P0 GREEN + a live scale-d1 check (INTEG 50%→100%, X-CUT held 100%). Remaining: push INTEG past
 ~85% at the largest N (residual multi-seam drift). Ledger: [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md).
-P2c apparatus UNCOMMITTED (user has not asked to commit).
+
+**P3 PREREQUISITES BUILT + COMMITTED, and the HEAD-TO-HEAD reframed the program (2026-06-18; committed
+`5f9b452`, `5e65291`).** (a) 2nd oracle, diverse templates (4 seam topologies), sequestered TEST + content hash
+(`74f10cbc…`), and the **routed all-frontier baseline** all built (`ORACLE2.md`, `DIVERSE-TEMPLATES.md`,
+`TEST-SET.md`, `ROUTED-BASELINE.md`). The routed baseline builds at **100% through D=3** — so the P2b/P2c
+"crossover" win was vs the weak **opus-WHOLE proxy**; against the real baseline it was a cost/reliability TRADE,
+not dominance. (b) The **live head-to-head** (`HEAD-TO-HEAD.md`; hybrid vs routed baseline, identical epics,
+same oracles, ~$0) gave a **topology-gated** verdict: **WIN** (parity at ⅓–½ cost) on state-ordering
+(lifecycle) + set-membership; **LOSS** on conservation (quota) + separation-of-duties (approval). The gap is
+mostly **cheap-tier coding-quality, not an unhandled seam** — the integration-gate is membership-specific and
+no-ops elsewhere. (c) **The P2c "proposed winner" is NOT ready to freeze.** NEW DIRECTION = the **A×B
+co-evolution program** (co-evolve orchestration **and** output-QA, scale-laddered, worst-of-K across routes,
+freeze the champion at the end). Full handoff spec: [`COEVOLUTION-SPEC.md`](studies/meta-search/COEVOLUTION-SPEC.md)
+— **this is the spec to pick up next.** Binding principle: the system must be **model-agnostic** (route/model
+selection is NOT an admissible fix); classify every failure (A) orchestration / (B) output-QA / (C) boundary.
+
+P2c apparatus UNCOMMITTED (user has not asked to commit); P3-prereq + head-to-head apparatus COMMITTED.
 
 ### Two live tensions in the plan (open, deliberate)
 
