@@ -186,7 +186,7 @@ async function codexInvoke({ prompt, model, codexBin }) {
     '--ephemeral',
     '-C', ROOT,
     '-s', 'read-only',
-    '-a', 'never',
+    // NOTE: codex-cli >=0.130 dropped `-a/--ask-for-approval`; `exec` is non-interactive (no approval prompts) by design.
     '-m', model,
     '--output-last-message', outFile,
     '-',
