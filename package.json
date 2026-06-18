@@ -12,6 +12,8 @@
     "battery": "node runner/battery.mjs",
     "battery:mock": "node runner/battery.mjs --mode mock",
     "battery:live": "node runner/battery.mjs --mode live",
-    "leaderboard": "node runner/leaderboard.mjs"
+    "leaderboard": "node runner/leaderboard.mjs",
+    "deliberate:dry": "node tools/model-deliberation.mjs --dry-run",
+    "deliberate:live": "node tools/model-deliberation.mjs --live"
   }
 }
