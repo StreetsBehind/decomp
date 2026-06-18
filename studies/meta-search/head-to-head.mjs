@@ -1,0 +1,219 @@
+#!/usr/bin/env node
+// HEAD-TO-HEAD (P3): the hybrid vs the routed all-frontier baseline, co-measured on IDENTICAL epics by the
+// SAME independent oracles. The pre-registered win is parity-at-lower-cost; this harness measures it live.
+//
+//   ARM A — routed all-frontier baseline: per-surface frontier coding (haiku→CRUD, sonnet→writers, opus→seam).
+//   ARM B — hybrid:                       per-surface CHEAP coding (free fusion gateway) + integration-gate.
+//
+// Both arms inject the SAME on-disk skeleton.md (the opus orchestration artifact) and pay the SAME $0.395 opus
+// skeleton anchor, so the ONLY difference is the per-surface CODING TIER. Apples-to-apples (routed-baseline.mjs).
+//
+// LAYER-2 INSTRUMENTATION (the reason this harness exists, not just a pass/fail): the hybrid is graded at TWO
+// stages and every surface is metered, so a shortfall DECOMPOSES:
+//   * raw  (the bare cheap draw, after structural retry, BEFORE the gate) — the cheap tier's own reliability.
+//   * final (after the integration-gate repair) — the shipped hybrid.
+//   * baseline — the frontier comparator.
+// Then:  raw.crosscut << baseline  => CODING-QUALITY gap on obligations (the gate never touches crosscut)  → LAYER-2 (gateway/prompt).
+//        raw.integ low, final.integ recovers => a SEAM gap the gate HANDLES (no layer-2 needed there).
+//        final.integ still << baseline       => RESIDUAL gap → gate-generalization and/or LAYER-2.
+//        gate.pairs == 0 (non-membership topo) => the gate is a NO-OP here; raw==final by construction → the
+//                                                 whole gap is unhandled-seam = the cheap tier on a novel invariant.
+// Per surface we also record: structural-retry attempts, whether a valid draw was produced at all (a missing
+// draw = a gateway JSON/format hazard, pure layer-2 signal), output tokens, resolved upstream route, and the
+// verbatim oracle fail records ({name, why}) at raw and final (the `why` localises the failure mode).
+//
+// Run:  node studies/meta-search/head-to-head.mjs --mock                       # zero-spend wiring dry-run
+//       node studies/meta-search/head-to-head.mjs --arms hybrid                # hybrid only, LIVE, ~$0 (free gateway)
+//       node studies/meta-search/head-to-head.mjs --arms both                  # also re-run the baseline LIVE (spends $)
+//       node studies/meta-search/head-to-head.mjs --epics approval-d1,membership-d1 --arms hybrid
+
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
+import url from 'node:url';
+import { spawn } from 'node:child_process';
+import { claudeInvoke, makeMockInvoke, makeGatewayInvoke } from '../../runner/model-client.mjs';
+import { evaluateEpic } from '../build-gap/lib/epic-sandbox.mjs';
+import { runIntegrationGate } from './src/integration-gate.mjs';
+
+const HERE = path.dirname(url.fileURLToPath(import.meta.url));
+const ROOT = path.resolve(HERE, '..', '..');
+const BUILD_GAP = path.resolve(HERE, '..', 'build-gap');
+const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i !== -1 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
+const has = (n) => process.argv.includes(`--${n}`);
+const MOCK = has('mock');
+const RETRY = Math.max(1, parseInt(arg('retry', '2'), 10) || 2);          // structural-retry attempts per cheap draw
+const REPAIR = Math.max(0, parseInt(arg('repair', '2'), 10));            // integration-gate model repairDepth
+const CONC = Math.max(1, parseInt(arg('conc', '6'), 10) || 6);
+const CALL_TIMEOUT_MS = Math.max(10000, parseInt(arg('callTimeout', '120000'), 10) || 120000); // bound a slow gateway call
+
+// ---- routing (baseline arm) — the cost-optimized roster (verbatim from routed-baseline.mjs) ----------
+const TIER = { haiku: 'claude-haiku-4-5', sonnet: 'claude-sonnet-4-6', opus: 'claude-opus-4-8' };
+const TIER_PRICE_KEY = { 'claude-haiku-4-5': 'haiku', 'claude-sonnet-4-6': 'sonnet', 'claude-opus-4-8': 'opus' };
+const SKELETON_OPUS_ANCHOR_USD = 0.395; // identical orchestration cost for BOTH arms (the on-disk skeleton.md)
+const SEAM_VERBS = ['post', 'execute', 'ship', 'settle', 'pay', 'run', 'disburse', 'land', 'issue', 'get', 'withdraw', 'redeem', 'spend', 'debit', 'draw', 'drain', 'consume'];
+const CRUD_VERBS = ['create', 'list'];
+function routeFor(surface) {
+  const s = surface.toLowerCase();
+  if (CRUD_VERBS.some((v) => s.startsWith(v))) return TIER.haiku;
+  if (SEAM_VERBS.some((v) => s.startsWith(v))) return TIER.opus;
+  return TIER.sonnet;
+}
+
+const SYS_ONE = 'You are an expert software engineer. Output ONLY a single JavaScript ES module that implements the one requested function. No prose, no explanation, no markdown code fences.';
+const chunkPrompt = (preamble, skeleton, surfaceText) => ['## Shared context (every surface uses this)', preamble, skeleton ? `\n${skeleton}` : '', '\n## Your task', surfaceText].join('\n');
+
+// ---- epic spec / loader (verbatim shape from routed-baseline.mjs: diverse on-disk + membership→oracle2) --
+function epicSpec(id) {
+  if (id.startsWith('membership-d')) {
+    const D = id.split('-d')[1];
+    return { id, dir: path.join(BUILD_GAP, 'epics', `scale-d${D}`), testsPath: path.join(HERE, 'gates', 'lib', 'oracle2-tests-d1.mjs') };
+  }
+  return { id, dir: path.join(HERE, 'epics', id), testsPath: path.join(HERE, 'epics', id, 'tests.mjs') };
+}
+async function loadEpic(spec) {
+  const tests = await import(url.pathToFileURL(spec.testsPath).href);
+  const order = Array.isArray(tests.EXPECTS) ? tests.EXPECTS.slice() : [];
+  const preamble = fs.readFileSync(path.join(spec.dir, 'preamble.md'), 'utf8');
+  const skeleton = fs.existsSync(path.join(spec.dir, 'skeleton.md')) ? fs.readFileSync(path.join(spec.dir, 'skeleton.md'), 'utf8') : '';
+  const surfaces = Object.fromEntries(order.map((s) => [s, fs.readFileSync(path.join(spec.dir, 'surfaces', `${s}.md`), 'utf8')]));
+  return { order, preamble, skeleton, surfaces };
+}
+
+const rate = (b) => (b && b.total ? b.pass / b.total : 1);
+const frac = (b) => (b ? `${b.pass}/${b.total}` : '0/0');
+const epicOK = (g) => rate(g.crosscut) === 1 && rate(g.integration) === 1;
+const relOf = (g) => ({ happy: rate(g.happy), crosscut: rate(g.crosscut), integration: rate(g.integration) });
+const failsOf = (g) => ({ crosscut: (g.crosscut?.fails || []).map((f) => ({ name: f.name, why: f.why })), integration: (g.integration?.fails || []).map((f) => ({ name: f.name, why: f.why })) });
+
+async function pool(items, n, fn) {
+  const out = new Array(items.length); let i = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) { const idx = i++; out[idx] = await fn(items[idx], idx); } }));
+  return out;
+}
+
+// structural validity gate (mirrors evaluator.mjs / epic-run.mjs isValidSurface).
+function isValidSurface(code, surface, timeoutMs = 8000) {
+  const VALIDATE = path.join(BUILD_GAP, 'lib', 'validate-surface.mjs');
+  if (!code || code.length < 10) return Promise.resolve(false);
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'h2h-'));
+  const f = path.join(dir, `${surface}.mjs`);
+  fs.writeFileSync(f, code);
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [VALIDATE, f, surface], { stdio: 'ignore', env: { ...process.env, NODE_OPTIONS: '' } });
+    let done = false;
+    const finish = (ok) => { if (done) return; done = true; clearTimeout(t); try { fs.rmSync(dir, { recursive: true, force: true }); } catch {} resolve(ok); };
+    const t = setTimeout(() => { try { child.kill('SIGKILL'); } catch {} finish(false); }, timeoutMs);
+    child.on('close', (c) => finish(c === 0));
+    child.on('error', () => finish(false));
+  });
+}
+
+// ============================== ARM A — routed all-frontier baseline ===============================
+async function runBaseline(spec, invoke) {
+  const fx = await loadEpic(spec);
+  const files = {}; const routeDist = {}; let surfUsd = 0;
+  await pool(fx.order, CONC, async (s) => {
+    const model = routeFor(s);
+    let g; try { g = await invoke({ prompt: chunkPrompt(fx.preamble, fx.skeleton, fx.surfaces[s]), system: SYS_ONE, model }); } catch { g = { text: '', usd: 0 }; }
+    files[s] = g.text || '';
+    const k = TIER_PRICE_KEY[model] || model; routeDist[k] = (routeDist[k] || 0) + 1;
+    if (Number.isFinite(g.usd)) surfUsd += g.usd;
+  });
+  const grade = await evaluateEpic({ mode: 'isolated', files, testsPath: spec.testsPath });
+  return {
+    arm: 'baseline', id: spec.id, surfaces: fx.order.length, routeDist,
+    reliability: relOf(grade), buckets: { crosscut: frac(grade.crosscut), integration: frac(grade.integration) }, epicOK: epicOK(grade),
+    surfaceUsd: +surfUsd.toFixed(4), totalUsd: +(surfUsd + SKELETON_OPUS_ANCHOR_USD).toFixed(4),
+  };
+}
+
+// ============================== ARM B — hybrid (cheap + integration-gate) ==========================
+async function runHybrid(spec, invoke) {
+  const fx = await loadEpic(spec);
+  const files = {}; const prompts = {}; const perSurface = {}; const routeDist = {};
+  const gateCfg = { kind: 'deterministic', repairDepth: REPAIR };
+
+  const drawSurface = async (prompt, surface) => {
+    let attempts = 0, lastTokens = 0, route = null, valid = false, text = '';
+    for (let a = 1; a <= RETRY; a++) {
+      attempts = a;
+      let g; try { g = await invoke({ prompt, system: SYS_ONE, model: null }); } catch { continue; }
+      lastTokens = g.outputTokens || 0; if (g.route) route = g.route;
+      const ok = await isValidSurface(g.text, surface);
+      if (ok) { valid = true; text = g.text; break; }
+      text = g.text || text; // keep last draw even if invalid (graded as fail, but recorded)
+    }
+    return { text, attempts, valid, tokens: lastTokens, route };
+  };
+
+  // 1. build every surface on the cheap tier (with the skeleton injected) + structural retry
+  await pool(fx.order, CONC, async (surface) => {
+    const buildPrompt = chunkPrompt(fx.preamble, fx.skeleton, fx.surfaces[surface]);
+    prompts[surface] = buildPrompt;
+    const r = await drawSurface(buildPrompt, surface);
+    files[surface] = r.valid ? r.text : (r.text || '');
+    perSurface[surface] = { attempts: r.attempts, valid: r.valid, route: r.route, tokens: r.tokens, route_tier: routeFor(surface) };
+    if (r.route) routeDist[r.route] = (routeDist[r.route] || 0) + 1;
+  });
+
+  // 2. grade RAW (pre-gate snapshot) — the bare cheap-tier reliability (layer-2 baseline)
+  const rawFiles = { ...files };
+  const rawGrade = await evaluateEpic({ mode: 'isolated', files: rawFiles, testsPath: spec.testsPath });
+
+  // 3. the integration-gate (deterministic): cross-surface seam check + surgical/route-back repair. Mutates `files`.
+  const gateRes = await runIntegrationGate({
+    surfaces: fx.order, files, prompts, skeleton: fx.skeleton, baseModel: fx.preamble, gate: gateCfg,
+    rebuild: async (surface, rp) => (await drawSurface(rp, surface)).text,
+    judgeInvoke: (a) => invoke(a),
+  });
+
+  // 4. grade FINAL (post-gate) — the shipped hybrid
+  const finalGrade = await evaluateEpic({ mode: 'isolated', files: { ...files }, testsPath: spec.testsPath });
+
+  return {
+    arm: 'hybrid', id: spec.id, surfaces: fx.order.length, routeDist,
+    raw: { reliability: relOf(rawGrade), buckets: { crosscut: frac(rawGrade.crosscut), integration: frac(rawGrade.integration) }, epicOK: epicOK(rawGrade), fails: failsOf(rawGrade) },
+    final: { reliability: relOf(finalGrade), buckets: { crosscut: frac(finalGrade.crosscut), integration: frac(finalGrade.integration) }, epicOK: epicOK(finalGrade), fails: failsOf(finalGrade) },
+    gate: { kind: gateCfg.kind, fired: gateRes.pairs > 0, pairs: gateRes.pairs, mismatches: gateRes.mismatches, repairs: gateRes.repairs, leak: gateRes.leak },
+    perSurface,
+    surfaceUsd: 0, totalUsd: SKELETON_OPUS_ANCHOR_USD, // free gateway coding + repairs; only the shared skeleton anchor
+    missingDraws: Object.entries(perSurface).filter(([, v]) => !v.valid).map(([s]) => s),
+  };
+}
+
+// ============================== driver ==============================================================
+async function main() {
+  const armsArg = (arg('arms', 'hybrid')).toLowerCase();
+  const runHy = armsArg === 'hybrid' || armsArg === 'both';
+  const runBa = armsArg === 'baseline' || armsArg === 'both';
+  const ids = (arg('epics', 'membership-d1,approval-d1,approval-d2,approval-d3,lifecycle-d1,lifecycle-d2,lifecycle-d3,quota-d1,quota-d2,quota-d3')).split(',').map((s) => s.trim()).filter(Boolean);
+
+  const baselineInvoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : claudeInvoke;
+  const hybridInvoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : makeGatewayInvoke({ timeoutMs: CALL_TIMEOUT_MS });
+
+  console.log(`HEAD-TO-HEAD — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — arms=${armsArg} retry=${RETRY} gate.repair=${REPAIR} conc=${CONC} callTimeout=${CALL_TIMEOUT_MS}ms — ${ids.length} epics\n`);
+  const results = { mock: MOCK, arms: armsArg, retry: RETRY, repair: REPAIR, conc: CONC, epics: ids, baseline: [], hybrid: [] };
+  const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
+  const outFile = path.join(outDir, MOCK ? 'head-to-head-mock.json' : `head-to-head-${armsArg}.json`);
+  const flush = () => fs.writeFileSync(outFile, JSON.stringify(results, null, 2) + '\n'); // incremental — long runs survive a kill
+
+  for (const id of ids) {
+    const spec = epicSpec(id);
+    if (runBa) {
+      const t = Date.now();
+      const b = await runBaseline(spec, baselineInvoke); results.baseline.push(b); flush();
+      console.log(`[baseline] ${id}: c ${(b.reliability.crosscut * 100).toFixed(0)}% i ${(b.reliability.integration * 100).toFixed(0)}% epic✓ ${b.epicOK ? 'Y' : 'N'}  $${b.totalUsd}  routes ${JSON.stringify(b.routeDist)}  (${((Date.now() - t) / 1000).toFixed(0)}s)`);
+    }
+    if (runHy) {
+      const t = Date.now();
+      const h = await runHybrid(spec, hybridInvoke); results.hybrid.push(h); flush();
+      const gtag = h.gate.fired ? `gate[${h.gate.pairs}p ${h.gate.repairs}r]` : 'gate[no-op]';
+      console.log(`[hybrid]   ${id}: raw{c ${(h.raw.reliability.crosscut * 100).toFixed(0)}% i ${(h.raw.reliability.integration * 100).toFixed(0)}%} → final{c ${(h.final.reliability.crosscut * 100).toFixed(0)}% i ${(h.final.reliability.integration * 100).toFixed(0)}%} epic✓ ${h.final.epicOK ? 'Y' : 'N'}  ${gtag}  ${h.missingDraws.length ? `MISSING:${h.missingDraws.join(',')}` : ''}  (${((Date.now() - t) / 1000).toFixed(0)}s)`);
+    }
+  }
+  flush();
+  console.log(`\nwrote ${path.relative(ROOT, outFile)}`);
+}
+
+main().catch((e) => { console.error('head-to-head FAILED:', e); process.exit(1); });
