@@ -1,5 +1,6 @@
 ---
 type: Synthesis
+status: confirmed
 title: Automated workflow search is this program's M5, not a new direction
 description: The evolutionary-search frame is the vocabulary and machinery for the adaptive-harness milestone already pre-registered in PROPOSAL.md.
 resource: docs/PROPOSAL.md

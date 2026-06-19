@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: Build-as-discovery — the compiler/test is an edge-discovery engine
 description: You do not need to enumerate every edge before building; the build process recovers most dependencies for free, so upfront discovery should target only the lethal quadrant.
 resource: docs/BUILD-TOLERANT-REFRAME.md

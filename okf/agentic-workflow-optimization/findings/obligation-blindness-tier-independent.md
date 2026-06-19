@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: Obligation-blindness is a spec/harness gap, not a model-tier gap
 description: Cheap and frontier models both pass the happy path ~100% and both skip the dangerous non-idiomatic obligations at 0% — so paying for frontier barely helps; harness does.
 resource: studies/build-gap/RESULTS.md

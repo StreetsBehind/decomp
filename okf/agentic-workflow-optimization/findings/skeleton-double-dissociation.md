@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: The skeleton double dissociation — shape buys integration, obligations buy uniformity
 description: An ablation showing the skeleton solves two independent problems; the shape clause fixes interface drift and the obligations clause fixes cross-cutting uniformity, and only both yield a cohesive epic.
 resource: studies/build-gap/RESULTS.md

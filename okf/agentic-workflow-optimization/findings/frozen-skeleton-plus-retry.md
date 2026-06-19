@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: Frozen-skeleton + retry over cheap isolated builds = bare opus at $0
 description: A hand-authored frozen skeleton plus structural retry over isolated cheap builds matches a bare frontier model on epic cohesion, at zero method-side cost.
 resource: studies/build-gap/RESULTS.md

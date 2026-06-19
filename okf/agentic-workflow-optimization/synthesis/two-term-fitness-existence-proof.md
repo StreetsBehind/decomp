@@ -1,5 +1,6 @@
 ---
 type: Synthesis
+status: provisional
 title: This program's data is an existence proof for the two-term-fitness hypothesis
 description: The hypothesis that performance-plus-conformance beats a single scalar is not something to test cold here — the quadrant-censoring finding and the double dissociation already demonstrate it.
 resource: docs/REPORT-2026-06-16.md

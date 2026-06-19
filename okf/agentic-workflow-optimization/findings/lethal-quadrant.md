@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: The lethal quadrant — completeness is cost-of-omission, not coverage
 description: The edges that matter are the silent + expensive-to-recover obligations; uniform recall is censored because most of it is cheap edges the build recovers for free.
 resource: docs/KILL-TESTS.md

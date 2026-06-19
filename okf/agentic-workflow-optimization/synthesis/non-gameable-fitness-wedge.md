@@ -1,5 +1,6 @@
 ---
 type: Synthesis
+status: provisional
 title: The non-gameable fitness is this program's contribution to the field
 description: Almost every method optimizes a contaminatable, gameable benchmark scalar; this program's contribution is the fitness function, not the optimizer.
 resource: docs/REPORT-2026-06-16.md

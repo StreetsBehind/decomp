@@ -1,5 +1,6 @@
 ---
 type: Synthesis
+status: superseded
 title: M5 experiment plan — GEPA-first on the cheapest lever
 description: A concrete v0 for the program's adaptive-harness milestone — evolve the skeleton/obligation prompt text with GEPA against the hidden-oracle + lethal-recall two-term fitness.
 resource: docs/PROPOSAL.md

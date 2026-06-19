@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: The archetype premise — accumulated patterns smuggle edges without a curation gate
 description: All six hand-authored archetypes were caught hardcoding assumptions that violate the no-edge-at-intake rule; archetypes are a floor-raiser, not a solver, and need a curation gate.
 resource: docs/ARCHETYPE-PREMISE-EXPERIMENT.md

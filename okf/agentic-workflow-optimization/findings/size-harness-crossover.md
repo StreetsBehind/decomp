@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: provisional
 title: The size × harness crossover — the bar degrades, the contender is flat
 description: A bare frontier model silently erodes cross-cutting uniformity as the epic grows; the skeleton-driven cheap harness holds flat and crosses above it at ~9 surfaces.
 resource: studies/build-gap/RESULTS.md

@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: The edge-join negative — model-extracted interfaces lose to a trivial baseline
 description: A staircase test killed the edge-join mechanism; model-extracted produces/consumes joined into edges lost to a depends_on baseline, and a stronger model did not fix it.
 resource: docs/STAIRCASE-RESULTS.md

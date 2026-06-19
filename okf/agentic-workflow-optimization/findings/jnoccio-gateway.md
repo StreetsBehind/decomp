@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: The jnoccio gateway — the free-model supply and the retry lever
 description: An OpenAI-compatible gateway that adaptively routes across many free upstreams, making the cheap tier $0; structural retry recovers its flaky draws and is orthogonal to cohesion.
 resource: docs/FINDINGS.md

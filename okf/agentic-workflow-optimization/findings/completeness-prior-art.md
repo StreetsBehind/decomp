@@ -1,5 +1,6 @@
 ---
 type: Finding
+status: confirmed
 title: No completeness guarantee exists — the cross-discipline survey
 description: A six-angle survey concluded no discipline has a completeness guarantee for decomposition; the best prior art gives a lower bound or a typed floor, never a proof.
 resource: docs/PRIOR-ART-COMPLETENESS.md
