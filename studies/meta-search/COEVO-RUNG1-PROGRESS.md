@@ -22,19 +22,48 @@ first written) and was committed in `6a644b0`. **The head-to-head results are UN
 the real `spec.testsPath`).
 
 **FIXED:** `loadEpic` now returns `testsPath: spec.testsPath` (verified — a `__noop` mock now grades 0%/FAIL
-instead of fake 100%). **REAL re-grade of the two known-loss d1 cells (`coevo-REGRADE-d1.json`, K=8):**
+instead of fake 100%; committed `8be721f`).
 
-| cell | worst-of-K | crosscut passes | integration passes | both-pass | verdict |
-|---|---|---|---|---|---|
-| quota-d1 | c60 / **i0** | 7/8 | **2/8** | 2/8 | **FAIL** |
-| approval-d1 | c14 / **i0** | 3/8 | **1/8** | **0/8** | **FAIL** |
+**FULL CORRECTED BASELINE** (`coevo-REGRADE-full.json`, K=8, real grading, `--seamgate`). worst-of-K = the
+*minimum* draw; both-pass = draws passing crosscut AND integration at 100%:
 
-The head-to-head's exact numbers REPRODUCED (quota integ 25, approval crosscut 71). **So the losses are REAL
-and structural, not route variance; worst-of-K does NOT debunk them; the A/B gene program IS justified** —
-against genuine, now-measurable failures (quota conservation seam, approval crosscut + SoD seam). The gate
-no-ops on these topologies (membership-specific) so it doesn't help. **Everything in the (now-struck-through)
-sections below describes the artifact, not reality — kept only for the audit trail.** Next: re-grade the
-full ladder with the fix, then resume gene work against the real failures.
+| cell | surf | raw worst c/i | final worst c/i | gate Δ (draws) | both-pass raw→fin | verdict |
+|---|---|---|---|---|---|---|
+| quota-d1 | 4 | 20/0 | 20/0 | +0 | 2/8 → 2/8 | **FAIL** |
+| approval-d1 | 4 | 57/0 | 86/50 | +2 | 1/8 → 2/8 | **FAIL** |
+| lifecycle-d1 | 4 | 60/25 | 60/25 | +0 | 3/8 → 3/8 | **FAIL** |
+| membership-d1 | 5 | 86/100 | 86/67 | +0 | 6/8 → **5/8** | **FAIL** |
+| quota-d2 | 8 | 50/0 | 50/0 | +0 | 1/8 → 1/8 | **FAIL** |
+| approval-d2 | 8 | 71/25 | 71/50 | +1 | 1/8 → 1/8 | **FAIL** |
+| lifecycle-d2 | 8 | 60/38 | 60/38 | +0 | 1/8 → 1/8 | **FAIL** |
+| membership-d2 | 9 | 92/83 | 92/83 | +0 | 3/8 → **2/8** | **FAIL** |
+| quota-d3 | 12 | 47/0 | 47/0 | +2 | 0/8 → 0/8 | **FAIL** |
+| approval-d3 | 12 | 76/42 | 76/42 | +0 | 0/8 → 0/8 | **FAIL** |
+| lifecycle-d3 | 12 | 73/42 | 73/42 | +0 | 1/8 → 1/8 | **FAIL** |
+| membership-d3 | 13 | 12/0 | 12/0 | +2 | 1/8 → 1/8 | **FAIL** |
+
+**ALL 12 cells FAIL worst-of-K=8 under real grading.** Three load-bearing reads:
+1. **The cheap-coded hybrid does NOT clear the model-agnostic worst-of-K reliability bar on ANY topology at
+   ANY depth.** Per-draw success is moderate on easy cells (membership-d1 6/8) but the worst-of-8-routes bar
+   is never met. quota integration is pinned at **0%** worst-of-K at every depth (conservation seam is
+   systematically broken). The head-to-head's exact numbers reproduced (quota integ 25, approval crosscut 71)
+   → those losses were REAL and structural; worst-of-K does NOT debunk them.
+2. **The integration-gate is NOT load-bearing and is sometimes NET-NEGATIVE.** It raised integration on only
+   0–2 draws/cell, and on membership-d1/d2 its repair *broke* a passing draw (both-pass 6/8→5/8, 3/8→2/8).
+   On honest grading it does not earn its place.
+3. **The A/B gene program is justified** against genuine, measurable failures — but it is a HARD problem
+   (even the best existing lever doesn't move the worst-of-K needle).
+
+**AUDIT (contamination scope):** all 19 `evaluateEpic` call sites checked — **`coevo-rung1.mjs` was the ONLY
+harness with the bug.** P1/P2a/P2b/P2c (`src/evaluator.mjs`, `src/baseline.mjs`), the head-to-head, the
+routed baseline, and the instrument gates (K6/K8/P0/G2) all source `testsPath` safely → NOT contaminated.
+**Latent footgun flagged:** `rate(b)=b&&b.total?b.pass/b.total:1` returns 1.0 for any absent/empty bucket, so
+any future grading error (harnessError / 15s timeout / empty) silently reads as 100% in head-to-head + coevo.
+Recommend hardening to treat those as FAIL. (This run's verdicts are all FAIL regardless, so the conclusion
+is robust; a few inflated draws can't fake a worst-of-K pass.)
+
+**Everything in the (struck-through) sections below describes the artifact, not reality — kept for the audit
+trail.** Real next step: resume gene work against these now-measurable failures (and harden `rate()`).
 
 ---
 

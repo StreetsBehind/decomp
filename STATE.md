@@ -7,9 +7,11 @@
 >
 > _Last updated: 2026-06-18 (🛑 **CORRECTION: the "RUNG-1 COMPLETE / 92/92" result is VOID** — a validation
 > pass found `coevo-rung1.mjs` never graded against the oracles (`testsPath` undefined → fake 100/100 on
-> everything). Bug FIXED; real re-grade shows quota-d1 + approval-d1 **FAIL** worst-of-K (the head-to-head
-> losses were REAL, not route variance → the A/B gene program is back on). Pick up at
-> `studies/meta-search/COEVO-RUNG1-PROGRESS.md` (CRITICAL CORRECTION banner))._
+> everything). Bug FIXED; **full real re-grade: ALL 12 cells (4 topologies × d1–d3) FAIL worst-of-K=8** — the
+> cheap-coded hybrid does not clear the model-agnostic reliability bar on any cell; the integration-gate is
+> not load-bearing (sometimes net-negative); head-to-head losses were REAL. Audit: bug contained to
+> `coevo-rung1.mjs`; P1/P2/head-to-head/gates UNaffected. The A/B gene program is back on, against
+> now-measurable failures. Pick up at `studies/meta-search/COEVO-RUNG1-PROGRESS.md` (CRITICAL CORRECTION banner))._
 
 ---
 
