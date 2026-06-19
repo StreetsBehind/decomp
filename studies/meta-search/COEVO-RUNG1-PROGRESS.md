@@ -67,41 +67,52 @@ trail.** Real next step: resume gene work against these now-measurable failures 
 
 ---
 
-## ⏩ First action on pickup (UPDATED 2026-06-18 — RUNG-1 COMPLETE; head-to-head losses DEBUNKED; awaiting a STRATEGY call)
+## ⏩ First action on pickup (UPDATED 2026-06-18, FINAL — grader bug fixed; real baseline = all cells FAIL; gene work is the next step)
 
-**RUNG-1 IS COMPLETE. All 4 topologies (quota, approval, lifecycle, membership) are route-robust THROUGH d3
-at gate-OFF base rate 0% — 92/92 draws passed, ~25 distinct cheap routes, ~½ routed-baseline cost.** The
-head-to-head's topology-gated losses were ROUTE VARIANCE, not structure (worst-of-K launders them out). The
-coverage gap is closed (lifecycle d2/d3 + membership d1/d2/d3 ran this session; the membership oracle was
-unpinned — see "apparatus" below). See "Session-2 result" for the table.
+**Read the 🛑 CRITICAL CORRECTION banner at the very top first.** Short version: the "RUNG-1 COMPLETE /
+92/92 route-robust" story was a grader bug (`testsPath` undefined → fake 100/100). Bug is **FIXED + committed**
+(`8be721f`). The **real baseline** (`coevo-REGRADE-full.json`, K=8, real grading): **all 12 cells FAIL
+worst-of-K=8** — the cheap-coded hybrid does not clear the model-agnostic reliability bar on any topology at
+any depth, and the integration-gate is not load-bearing (sometimes net-negative). Audit: bug contained to
+`coevo-rung1.mjs`; P1/P2/head-to-head/baseline/gates unaffected. Everything in the struck-through "Session-2"
+section below is the ARTIFACT, not reality.
 
-**Next action is a STRATEGY DECISION (user's call), not a script.** The seam-gate fired on every draw but
-recovered nothing (base rate already 0%), so it is **not demonstrated load-bearing at d1-d3**, and the
-task-#3 genes — premised on the head-to-head losses being *structural* — are **not justified at this scale.**
-The two coherent directions:
-1. **Find the erosion frontier (go deeper than d3).** Nothing has broken yet, so the system's limit + the
-   gate's value are unknown. NOT free on any topology: quota/approval/lifecycle templates **stop at d3** (need
-   new d4 authoring); membership has `scale-d4/d5` dirs and the oracle now generalizes (`domainsFor(D)`), so
-   **membership-d4/d5 is runnable immediately** — that's the cheapest way to hunt for erosion:
-   `node studies/meta-search/coevo-rung1.mjs --seamgate --k 8 --epics membership-d4,membership-d5 --out coevo-membership-d45`.
-2. **Move toward freeze.** The complete-rung-1 parity-at-½-cost result is strong; proceed to freeze the
-   champion + the once-only sequestered-TEST falsification (FREEZE §4/§6). Risk: freezing a system never
-   stressed to failure, and shipping a gate not shown to be load-bearing (a reviewer would cut it).
-   (Optional cheap hardening first: bump K to 20-30 on the existing cells to tighten the 0% bound.)
+**Do these in order:**
 
-> **Apparatus change this session (additive, dev — not frozen):** `coevo-rung1.mjs` gained `--out <name>`;
-> `epicSpec` membership branch now uses a **depth-matched oracle** `oracle2-tests-d${D}.mjs` (d1 path
-> bit-identical — verified). New: `gates/lib/oracle2-tests-d{2,3}.mjs` (3-line `domainsFor(D)` siblings of d1).
-> **NOTE:** these touch the live evaluator/oracle wiring → the §3.3 instrument re-validation (K6/K7/K8, P0)
-> is now DUE before any freeze (it was deferred while the gate was a standalone module).
+1. **Harden `rate()` (recommended FIRST — ~5 min, $0).** In `coevo-rung1.mjs` (and `head-to-head.mjs`) make a
+   `harnessError` / `timeout` / empty-bucket grade count as **FAIL (0)**, not pass. Today `rate(b)=b&&b.total?…:1`
+   returns 1.0 for an absent bucket — that is what turned the `testsPath` crash into a fake green, and a
+   gateway-induced grading timeout would do the same. Removes the footgun so every future number is trustworthy.
 
-> ⚠️ **Output-file note (FIXED):** `coevo-rung1.mjs` now takes `--out <name>` (additive flag, this session).
-> Preserved: K=10 d1 base rate = `runs/coevo-rung1-k10-d1-baserate.json`; d2/d3 climb =
-> `runs/coevo-rung1-d2d3-seamgate.{json,log}`. (Original K=3 4-topo numbers remain only in `runs/coevo-rung1.log`.)
+2. **Start co-evolution rung-1 FOR REAL — the (A)+(B) gene work (task #3 below).** Build the genes in a NEW
+   unfrozen `src/genome.mjs` (voids the current FREEZE; run as dev) against the now-measurable failures, and
+   either fix the integration-gate so it helps on real failures or cut it. Target the actual failure modes
+   (from `coevo-REGRADE-full.json`):
+   - **quota** — conservation/no-overspend seam is systematically broken: **integration 0%** worst-of-K at d1/d2/d3.
+   - **approval** — crosscut (authz / separation-of-duties) AND integration seam both fail (c57–86 / i42–50).
+   - **lifecycle** — state-ordering + gated-read seam (i25–42).
+   - **membership** — best at d1/d2 (gate-native: c86–92 / i67–83) but **collapses at d3** (c12/i0).
+   Per-draw success is moderate on easy cells (membership-d1 6/8), so the lever is (B) output-QA that lifts the
+   *worst* route, not the median.
+
+3. **Re-validate the instrument (K6/K7/K8, P0)** AFTER the genes wire into the live evaluator + genome (per §3.3).
+
+> **Apparatus (additive, dev — not frozen; all committed):** `coevo-rung1.mjs` has `--out <name>` and a fixed
+> `loadEpic` (returns `testsPath`); `epicSpec` membership uses depth-matched `oracle2-tests-d${D}.mjs`
+> (d1 bit-identical); new `gates/lib/oracle2-tests-d{2,3}.mjs`. **Re-run command (now grades for real):**
+> `node studies/meta-search/coevo-rung1.mjs --seamgate --k 8 --epics <cells> --out <name>`.
+
+> **Run artifacts (all gitignored, local only):** real baseline = `runs/coevo-REGRADE-full.json`; the
+> dedicated d1 re-run = `runs/coevo-REGRADE-d1.json`. The deliberation that caught the bug is in
+> `runs/deliberations/20260618T211915Z/`. The VOID artifact runs (`coevo-rung1*.json`, `coevo-lifecycle-d23`,
+> `coevo-membership-d123`) are kept only for the audit trail.
 
 ---
 
-## 🟢 Session-2 result (2026-06-18) — model-agnostic worst-of-K verdict: parity on ALL 4 topologies through d3
+## ~~🟢 Session-2 result (2026-06-18) — parity on ALL 4 topologies through d3~~ 🛑 VOID (grader bug — see correction banner)
+
+> **VOID — every number in this section is the no-op-grader artifact (fake 100/100), NOT real.** See the
+> CRITICAL CORRECTION banner at the top for the real baseline (all 12 cells FAIL). Kept for the audit trail only.
 
 Both runs grade `raw` (gate-OFF) and `final` (gate-ON) with the **frozen `evaluateEpic`** against the real
 oracle tests; `worst-of-K` = the *minimum* draw (so "100/100" ⇒ EVERY draw cleared the bar).
@@ -171,7 +182,11 @@ The 5 open design questions (`COEVOLUTION-SPEC §8`) were RESOLVED this session:
 - **Stop rule:** K5 eval-cap scaled by K; stop a rung when solid at worst-of-K or a cell hits a (C) boundary.
 - **Pre-registration:** freeze after rung-1 stabilizes the gene set (mirrors P1), TEST falsification at the very end.
 
-## Key finding this session — the head-to-head d1 losses were ROUTE VARIANCE, not structural
+## ~~Key finding this session — the head-to-head d1 losses were ROUTE VARIANCE~~ 🛑 VOID (grader bug)
+
+> **VOID — this "route variance" finding came from the no-op grader (fake 100/100).** The real re-grade
+> REPRODUCED the head-to-head losses (quota integ 25, approval crosscut 71): they are REAL, not route
+> variance. Kept for the audit trail. See the correction banner at the top.
 
 `runs/coevo-rung1.log` (worst-of-K=3, hybrid-only, $0, the current membership-only gate):
 
@@ -214,9 +229,15 @@ base-rate run to get the real per-route rate. This is the §8.1 K-decision being
 
 ## The 6-task plan (TaskList may not survive the session — captured here)
 
-1. **[mostly done]** Measure route-robust rung-1 baseline — K=3 done; K=10 base rate in flight.
-2. **[done/structural, in_progress]** Generalize the integration-gate — seam-gate.mjs built + smoke 22/22.
-   Remaining: live paired validation; Mode-C semantic layer (staged off).
+> 🛑 **Status corrected (grader bug):** tasks 1–2 below ran under the no-op grader; their "pass" numbers are
+> VOID. Real baseline (fixed grader) = **all 12 cells FAIL worst-of-K** and the gate is **not** load-bearing.
+> So task 1 is REDONE (`coevo-REGRADE-full.json`), task 2's gate needs fixing-or-cutting, and **task 3 (genes)
+> is the active next step** — see "First action on pickup" at the top.
+
+1. **[REDONE — real baseline]** Measure route-robust rung-1 baseline — done for real (`coevo-REGRADE-full.json`):
+   all 12 cells FAIL worst-of-K. (Earlier K=3 / K=10 numbers were the grader-bug artifact.)
+2. **[gate built but NOT load-bearing]** Generalize the integration-gate — seam-gate.mjs built + smoke 22/22,
+   BUT real grading shows it recovers ~nothing and is sometimes net-negative → fix it or cut it.
 3. **[next]** Add (A) contract-precision + per-surface-decomposition genes + (B) extraction/format-forcing gene
    to `src/genome.mjs` (NEW unfrozen genome — voids the current FREEZE, run as dev). Update validateGenome +
    canonical hashing. Prioritize by the base-rate attribution.
