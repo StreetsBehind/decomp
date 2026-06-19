@@ -5,13 +5,81 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
-> _Last updated: 2026-06-18 (🛑 **CORRECTION: the "RUNG-1 COMPLETE / 92/92" result is VOID** — a validation
-> pass found `coevo-rung1.mjs` never graded against the oracles (`testsPath` undefined → fake 100/100 on
-> everything). Bug FIXED; **full real re-grade: ALL 12 cells (4 topologies × d1–d3) FAIL worst-of-K=8** — the
-> cheap-coded hybrid does not clear the model-agnostic reliability bar on any cell; the integration-gate is
-> not load-bearing (sometimes net-negative); head-to-head losses were REAL. Audit: bug contained to
-> `coevo-rung1.mjs`; P1/P2/head-to-head/gates UNaffected. The A/B gene program is back on, against
-> now-measurable failures. Pick up at `studies/meta-search/COEVO-RUNG1-PROGRESS.md` (CRITICAL CORRECTION banner))._
+> _Last updated: 2026-06-18, **Session-3** (the "RUNG-1 / 92/92" was VOID — a grader bug, FIXED; real re-grade
+> = ALL 12 cells FAIL worst-of-K=8). **Session-3 progress:** (1) the `rate()` footgun is HARDENED in both
+> `coevo-rung1.mjs` + `head-to-head.mjs` (absent/empty/harnessError grades → FAIL, not the fake 1.0 that caused
+> the bug). (2) The FIRST co-evolution lever is built + LIVE-validated: the **shape-conformance gate**
+> (`src/shape-gate.mjs`, smoke 32/32) enforces each surface against the skeleton's DECLARED store shape
+> (array/Map), robust to destructuring — **CONFIRMED load-bearing where shape-drift dominates** (lifecycle-d2
+> worst-of-K crosscut 40%→70%). (3) After a **codex×opus deliberation** (`runs/deliberations/20260619T051701Z`),
+> built the **CONTRACT-PRECISION gate** (`src/contract-gate.mjs`, smoke 20/20) — oracle-blind admin-applicability
+> lint that strips an over-applied `role!=='admin'` gate; **CONFIRMED load-bearing** (paired lift i25→i100 on the
+> over-applied-authz draws). **Key reads:** worst-of-K=8 still FAILS with a DRIFT-UNSTABLE gating mode →
+> optimize per-mode within-run lift, worst-of-K = reporting bar only. **(3) THIRD lever (store-persistence,
+> `src/persistence-gate.mjs`, smoke 33/33, wired `--persistgate`) BUILT + VALIDATED but CONCLUDED NOT
+> load-bearing on quota — the prior "store-persistence is the dominant quota killer" diagnosis was a
+> code-inspection MISATTRIBUTION.** A deterministic dump-replay (`replay-persist.mjs`, $0) shows the gate fires
+> correctly on the flagged `?? []` draws with ZERO regressions but RECOVERS 0/11 integration failures, because
+> the quota oracle **pre-seeds the seam store** (`epics-src/quota.mjs:freshDb` → `db.ledger=[]`), so the `?? []`
+> fallback never fires and the local alias persists even unrepaired (pattern present but causally INERT). The
+> ACTUAL quota residual, classified by CODE, is a MIX of FORM modes — shape (d3), admin-over (d5/d8),
+> **falsy-return-shape (NEW: `withdraw` returns a bare number → `0` at zero balance fails the oracle's
+> `assert.ok`, d4/d7)**, wallet-seam (d1) — NOT persistence and NOT a clean (C) semantics wall. **Methodological
+> lesson: validate CAUSALITY (dump-replay: does the repair change the GRADE?) BEFORE building a lever — code
+> inspection over-counts FORM the same way the test-name classifier over-counts semantics.** **(4) CONFIRMED
+> levers made DETERMINISTIC (the chosen strategy): CONTRACT now does $0 route-luck-free surgical removal of the
+> over-applied `if(role!=='admin')throw` (smoke 26/26; model route-back kept only as fallback for message-form/
+> compound) → the dump-replay now recovers cgA d5+d8 (admin-over i25→i100) DETERMINISTICALLY, 2/6, ZERO
+> regressions (was 0/6 when it needed a model rebuild). SHAPE kept model-routed by design (the d3 map↔array drift
+> is irreducibly semantic — per-key regroup + key-field — so a deterministic rewrite would risk a net-negative;
+> documented in `src/shape-gate.mjs`).** Quota worst-of-K still gated by a per-draw-varying mode (return-shape
+> d4/d7 / shape d3 / wallet-seam d1); no single lever clears it; the stack recovers the admin-over slice
+> route-luck-free. **(5) DELIBERATION + $0 TRIAGE (codex×opus, `runs/deliberations/20260619T144826Z/`): the
+> falsy-return lever (A) is INADMISSIBLE** — the public withdraw/deposit specs say only "return a result" (no
+> declared return shape), so "return truthy" is oracle-shaped (a PROVENANCE leak: oracle-blindness is about the
+> decision rule's provenance, not just not-reading-tests.mjs). Floor-classify (parseable∧exports): 15/16
+> above-floor, but the strict floor can't exclude runtime-incompetence (cgB d4 `Assignment to constant variable`).
+> Quota's residual is mixed-form but **NOT cleanly oracle-blind-fixable** this rung. **THE GENUINE FORK = a
+> PRE-REGISTRATION decision the USER must make: define the route-pool FLOOR** (rung-1 has no stopping rule without
+> it; minimal content-independent predicate, pre-committed before any climb), then move to freeze prereqs / another
+> topology. Adopt per-mode within-run lift as the HEADLINE, worst-of-K=8 = reporting bar; do NOT build A or B, do
+> NOT wire MAP-Elites (live fitness uncharacterized). Apparatus additive+dev, frozen tree untouched, no new genome
+> yet (FREEZE intact). Pick up at `studies/meta-search/COEVO-RUNG1-PROGRESS.md` (Session-3 → "Deliberation … FLOOR"
+> section) + `runs/deliberations/20260619T144826Z/DECISION-BRIEF.md`._
+>
+> _**Deliberation #2 (the autonomy question, codex×opus → CONVERGED, `runs/deliberations/20260619T145118Z/`).**
+> Asked: are we close to AUTONOMOUSLY running the orchestrator (MAP-Elites + §14) and having it IDENTIFY the
+> genes best-fit for the north-star win? Verdict: (a) autonomy PLUMBING is **CLOSE** but synthetic-path-only; (b)
+> the search FINDING best-fit genes on the **live** fitness is **NOT close** (zero test-retest characterization;
+> worst-of-K=8 is an extreme order statistic over a non-stationary pool → it would rank route-luck as gene
+> quality); (c) a winning gene set is **likely UNREACHABLE** for quota+approval (the worst-of-K tail mixes drift,
+> an inadmissible return-shape mode, and irreducible route-incompetence whose only fix is re-draw = inadmissible).
+> New program-level insight = a **BAR MISMATCH**: we optimize per-mode within-run lift but freeze/falsify on
+> worst-of-K — the targets have diverged, which makes the route-pool-FLOOR / freeze-win-condition pre-registration
+> call urgent. **CENSUS DONE (2026-06-19, fresh paired live K=8 both cells, four-way `census-classify.mjs`):
+> the worst-of-K=8 gating draw is `route-incompetence` in 4/4 arms** (broken code / MISSING surface → only fix =
+> re-draw = inadmissible), the deterministic stack lifts the median (quota-B 5/8 draws i25→i100) but moves the
+> worst-of-K cell verdict **0 pp** in 4/4 (BAR MISMATCH confirmed), and the incompetence class is **stable across
+> A/B** (drift-robust)._
+>
+> _**⚡ DIRECTION CORRECTION + REPAIR LEVER (2026-06-19, the headline).** The user rejected the "unreachable / (C)
+> boundary" read outright: **model-agnosticism is the definition of the problem, not a constraint that ends it**;
+> cheap models emitting broken code is the PREMISE; the job is to find the secret sauce that turns a shit model
+> into a golden goose — WITHOUT excluding or pre-selecting models (memory [[incompetence-is-the-target]]). The
+> census wasn't wrong, my interpretation was: all four existing levers (shape/contract/persist/seam) assume the
+> code already RUNS — NONE attacks broken code, which is the dominant worst-of-K-gating mode. So I built the
+> missing lever class. **The SELF-REPAIR gate (`src/repair-gate.mjs` + `gates/lib/smoke-run.mjs`, smoke 18/18):**
+> a permissive-harness smoke executes each surface to surface runtime free-id ReferenceErrors (`bio` /
+> `generateUniqueId is not defined` — invisible to import-only validation), then route-backs the SAME cheap pool
+> with the exact error to fix-or-remove the symbol. Oracle-blind, model-agnostic (iterates the pool's own output).
+> **CAUSALLY VALIDATED via dump-replay on the 3 census worst-draws that gated the worst-of-K** (`replay-repair.mjs`,
+> live route-back, $0): quota-A d4 c20/i0 → **c100/i100 (full recovery)**; quota-B d5 c20/i0 → c100/i25 (residual =
+> admin-over, contract-gate's target); approval-A d4 c0/i0 → c57/i25 (residual = tenancy field-drift, a form mode).
+> **The "unreachable" verdict is OVERTURNED** — the cheap pool, handed its own stack trace, rewrites its own broken
+> code; and fixing the crash EXPOSES the form modes the other levers already handle (repair = the unblocker at the
+> bottom of the stack). NEXT: stack repair+form-levers, check repair-route robustness, expand the lever class
+> (best-of-N, extraction), then the search has a fitness the levers actually move. See `COEVO-RUNG1-PROGRESS.md`
+> "REPAIR LEVER" section._
 
 ---
 

@@ -50,7 +50,7 @@ function parseArgs(argv) {
     else if (a === '--help' || a === '-h') { usage(); process.exit(0); }
     else throw new Error('unknown argument: ' + a);
   }
-  opts.rounds = Math.max(2, Math.min(8, Math.floor(Number.isFinite(opts.rounds) ? opts.rounds : 4)));
+  opts.rounds = Math.max(2, Math.min(40, Math.floor(Number.isFinite(opts.rounds) ? opts.rounds : 4)));
   opts.maxTokens = Math.max(256, Math.floor(Number.isFinite(opts.maxTokens) ? opts.maxTokens : 1800));
   return opts;
 }
@@ -85,7 +85,8 @@ function readContext(files) {
       continue;
     }
     const text = fs.readFileSync(full, 'utf8');
-    chunks.push('# ' + rel + '\n' + text.slice(0, 28000) + (text.length > 28000 ? '\n[TRUNCATED]' : ''));
+    const CAP = 60000;
+    chunks.push('# ' + rel + '\n' + text.slice(0, CAP) + (text.length > CAP ? '\n[TRUNCATED]' : ''));
   }
   return chunks.join('\n\n---\n\n');
 }
@@ -108,7 +109,9 @@ function buildPrompt({ role, question, context, turns }) {
     '- Separate known evidence from assumptions.',
     '- Prefer a small next action that would change a decision over a broad research wishlist.',
     '- Call out failure modes and what evidence would reverse your recommendation.',
+    '- Engage directly with the other model\'s prior turn: state explicitly where you agree, where you still disagree, and what (if anything) changed your mind.',
     '- End with a concise recommendation.',
+    '- Convergence protocol: the VERY LAST line of your turn must be exactly "CONVERGED: yes" or "CONVERGED: no". Answer yes ONLY when no material disagreement remains, you and the other model agree on the single next action, and the decision is stable to further argument. Do not declare convergence merely to end the discussion.',
     '',
     'Decision question: ' + question,
     '',
@@ -306,9 +309,16 @@ async function main() {
       usd: result.usd,
       wallClockSec: result.wallClockSec,
     };
+    const convMatches = [...String(turn.text).matchAll(/converged:\s*(yes|no)/gi)];
+    turn.converged = convMatches.length ? convMatches[convMatches.length - 1][1].toLowerCase() === 'yes' : null;
     turns.push(turn);
     fs.writeFileSync(path.join(outDir, 'turn-' + String(i + 1).padStart(2, '0') + '-' + speaker + '.md'), turn.text.trim() + '\n');
-    console.error('turn ' + (i + 1) + '/' + opts.rounds + ': ' + speaker + ' (' + turn.model + ') ' + Math.round(turn.wallClockSec) + 's');
+    console.error('turn ' + (i + 1) + '/' + opts.rounds + ': ' + speaker + ' (' + turn.model + ') ' + Math.round(turn.wallClockSec) + 's converged=' + turn.converged);
+    // Early stop: both most-recent turns (necessarily different speakers) report convergence, after >=2 full exchanges.
+    if (turns.length >= 4 && turns[turns.length - 1].converged === true && turns[turns.length - 2].converged === true) {
+      console.error('CONVERGED after ' + turns.length + ' turns (both speakers agree, decision stable).');
+      break;
+    }
   }
 
   const manifest = {

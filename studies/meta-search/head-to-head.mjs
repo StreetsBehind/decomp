@@ -80,9 +80,13 @@ async function loadEpic(spec) {
   return { order, preamble, skeleton, surfaces };
 }
 
-const rate = (b) => (b && b.total ? b.pass / b.total : 1);
+// HARDENED (2026-06-18): a missing/empty bucket is a FAIL (0), never a pass (see coevo-rung1.mjs for the
+// VOID-92/92 footgun this removes). A whole harnessError/timeout/empty grade carries no buckets ⇒ epicOK is
+// false and relOf reads 0, instead of the old `: 1` default silently scoring a grading crash as 100%.
+const rate = (b) => (b && b.total ? b.pass / b.total : 0);
 const frac = (b) => (b ? `${b.pass}/${b.total}` : '0/0');
-const epicOK = (g) => rate(g.crosscut) === 1 && rate(g.integration) === 1;
+const isGrade = (g) => !!(g && (g.crosscut || g.integration || g.happy));
+const epicOK = (g) => isGrade(g) && rate(g.crosscut) === 1 && rate(g.integration) === 1;
 const relOf = (g) => ({ happy: rate(g.happy), crosscut: rate(g.crosscut), integration: rate(g.integration) });
 const failsOf = (g) => ({ crosscut: (g.crosscut?.fails || []).map((f) => ({ name: f.name, why: f.why })), integration: (g.integration?.fails || []).map((f) => ({ name: f.name, why: f.why })) });
 
