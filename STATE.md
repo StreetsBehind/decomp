@@ -80,6 +80,18 @@
 > bottom of the stack). NEXT: stack repair+form-levers, check repair-route robustness, expand the lever class
 > (best-of-N, extraction), then the search has a fitness the levers actually move. See `COEVO-RUNG1-PROGRESS.md`
 > "REPAIR LEVER" section._
+>
+> _**▶ RUN-FOR-DAYS PLAN — CONVERGED (2026-06-19, 4 live codex×opus deliberations, `studies/meta-search/RUN-FOR-DAYS-PLAN.md`).**
+> To run the genome-mutation search hands-off for days *trustworthily*, the plan does NOT press "go" — it gates on a
+> **Phase −1 TWO-AXIS variance characterization** of the post-output-QA-stack worst-of-K metric on the EXISTING
+> `coevo-rung1.mjs` full-gate stack (build-draw temporal blocks + a repair-route micro-arm r≈3), behind a
+> **pre-committed GO/HALT rule**: GO iff a real lever effect > max(2×SD, block-drift, repair-spread) AND residual worst
+> draws are **repairable form** (labeled by **dump-replay OUTCOME**, regex demoted to telemetry; a **null replay is
+> `unresolved → human adjudication`, NEVER auto-(C)** — an unbuilt lever is a target, not a wall). Statistic = **raw-min
+> K=8** by default (softening = a USER win-condition call); ONE metric across search/freeze/sequestered-TEST. Gated by
+> an **instrument self-test manifest** (every B5 guard must be shown to FIRE — the generalized `rate()` defense).
+> **THE SINGLE NEXT ACTION: build the check-of-checks manifest, then run the two-axis Phase −1 characterization** —
+> NOT MAP-Elites, NOT more lever design, NOT metric softening, until a clean GO._
 
 ---
 
@@ -95,6 +107,24 @@ that fixed architecture *works and pays*:
 
 **The system is the product** — a harness / router / "whatever fits" (the term is open). Every decision
 in the program should serve **building that system and proving it beats all-frontier on cost.**
+
+> ### ⚖️ BINDING PREMISE — the ground truth that governs every decision (do not relax)
+> These three are non-negotiable. Any plan, lever, metric, or stop-rule that violates one is invalid.
+> 1. **No control over which model builds.** The cheap coding pool (the fusion gateway) is an
+>    adversarial, **non-stationary** mixture of dumb/bad models. **Route/model selection is NOT an
+>    admissible fix** — the system must work with *any* above-floor model the pool serves; a lucky-route
+>    100% is not a model-agnostic 100%. (memory: [[model-agnostic-and-failure-attribution]])
+> 2. **Dumb models emitting broken code is the PREMISE and the TARGET — never a wall.** Cheap-model
+>    garbage (runtime crashes, missing surfaces, shape drift, over-applied guards) is *exactly* what the
+>    system must turn into reliable software. It is a **(B) output-QA** problem to be **repaired**, **not a
+>    (C) thesis boundary** to stop at. The 2026-06-19 "incompetence is unreachable" verdict was
+>    **OVERTURNED** by the self-repair lever (it rewrites the pool's own broken code). Reserve **(C)** for a
+>    gap that survives the *full* output-QA stack (repair → best-of-N → form levers) across routes — broken
+>    code by itself is never (C). (memory: [[incompetence-is-the-target]])
+> 3. **The method is MUTATION of the harness/methodology.** We extract quality code from bad models with a
+>    frontier orchestrator/planner (the frozen skeleton) + an evolving **output-QA stack**, discovered by
+>    **mutating genomes** and searching. The search is the instrument; the frozen config is the product.
+>    This is **NOT** a search for an "optimal mix."
 
 The full statement, the evidence table, and the substrate plan are in
 [`docs/PROPOSAL-HYBRID.md`](docs/PROPOSAL-HYBRID.md) (the north-star doc). This page is its operational

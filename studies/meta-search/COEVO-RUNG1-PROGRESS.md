@@ -1,5 +1,12 @@
 # Co-evolution program — rung-1 progress (session handoff, 2026-06-18)
 
+> ### ⚖️ BINDING PREMISE (read first — see STATE.md "BINDING PREMISE")
+> No control over which model builds (route/model selection is inadmissible; fitness = worst-of-K-across-routes).
+> Dumb models emitting broken code is the **TARGET**, repaired by the **(B) output-QA stack** (self-repair →
+> best-of-N → form levers) — **NOT a (C) wall.** The "incompetence is unreachable" verdict below was
+> **OVERTURNED** (see the ⚡ banner + "REPAIR LEVER" section). The method is mutating genomes; the search is the
+> instrument, the frozen config is the product. Earlier sections that read incompetence as (C) are SUPERSEDED.
+
 > **PICK UP HERE in a new session.** This is the live state of the A×B co-evolution program
 > (`COEVOLUTION-SPEC.md`). Read that spec first for the program; read this for "what's built, what's
 > measured, what's the next action." Operational SoT remains `STATE.md`.

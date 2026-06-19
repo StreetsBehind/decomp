@@ -19,6 +19,15 @@ repeat ("see what breaks, mutate again"). Re-use the existing engine; expand the
 The freeze + once-only sequestered-TEST falsification comes at the **END**, on the champion this search
 produces — NOT now.
 
+> ### ⚖️ BINDING PREMISE (governs this whole program — see STATE.md "BINDING PREMISE")
+> 1. **No control over which model builds** — the fusion pool is adversarial + non-stationary; route/model
+>    selection is NOT an admissible fix; the fitness IS worst-of-K-across-routes for exactly this reason.
+> 2. **Dumb models emitting broken code is the PREMISE and the TARGET, never a wall.** Runtime crashes /
+>    missing surfaces / drift are **(B) output-QA to be repaired**, not a **(C)** boundary. (C) applies ONLY
+>    to a gap that survives the *full* output-QA stack (repair → best-of-N → form levers) across routes.
+> 3. **The method is mutating genomes** (harness + methodology). The search is the instrument; the frozen
+>    config is the product. NOT an "optimal mix" search.
+
 ---
 
 ## 1. Where we are (why this program exists)
@@ -43,8 +52,12 @@ produces — NOT now.
   Corollary: even the head-to-head WINS are **provisional** until they hold **worst-of-K across routes**
   (a lucky-route 100% is not a model-agnostic 100%).
 - **Failure-attribution lens** (the operating discipline): every failure is **(A)** planning/orchestration ·
-  **(B)** output-QA · **(C)** neither = a thesis boundary (scope-shrink). Many are dual; co-evolution lets the
-  search find the cheaper/more-general layer, and credit-attribution reads out which one it was.
+  **(B)** output-QA · **(C)** neither = a genuine thesis boundary (scope-shrink). Many are dual; co-evolution
+  lets the search find the cheaper/more-general layer, and credit-attribution reads out which one it was.
+  **(C) is reserved, not default:** broken code, runtime crashes, missing surfaces, and route-incompetence are
+  **(B) output-QA targets** (the self-repair + best-of-N levers, below) — NOT (C). A cell is only (C) once the
+  *full* output-QA stack has been tried and still fails across routes. The "incompetence is unreachable"
+  reading was overturned by the self-repair lever; do not relapse to it.
 
 ## 2. The decision (the research lead's call, 2026-06-18)
 
@@ -89,6 +102,16 @@ four conditions in §3. Factual refinement folded in: breakage is already presen
   genes, which split epic→surface, not surface→sub-step.
 - **(B) model-agnostic extraction/format-forcing gene** — turn any above-floor model's output (incl. verbose
   reasoning blobs) into a valid module, or fail cleanly into repair. Today `isValidSurface` is pass/fail only.
+- **(B) self-repair gene — the bottom of the output-QA stack (BUILT, `src/repair-gate.mjs`).** Smoke-execute
+  each surface under a permissive harness, capture genuine runtime errors (`X is not defined` / `is not a
+  function`), and route the *same* cheap pool back with its own stack trace to fix-or-remove the symbol. This
+  is the lever that makes route-incompetence a (B) target instead of a (C) wall (causally validated: a
+  worst-of-K-gating crash draw went FAIL → 100/100). It must run **first** — fixing the crash exposes the form
+  modes the other levers target.
+- **(B) best-of-N repair gene — launders repair-route variance (model-agnostic).** A model route-back is a
+  *single* gateway draw; grading it once smuggles single-draw route-luck into a worst-of-K fitness. Best-of-N
+  draws N route-backs and selects the one that smokes clean AND passes the most structural/contract checks —
+  selecting among the *pool's own* outputs, never a privileged model, so it stays admissible.
 - **(B) generalized integration-gate** — `src/integration-gate.mjs` is membership-only (`isWriter`/`isReader`
   via `surfaceRole`; `NON_MEMBER` store classifier). Generalize the seam detection to: **SoD/approve→execute**
   (an approved request must execute & audit once; idempotency), **conservation** (counter accounting,
@@ -108,8 +131,12 @@ four conditions in §3. Factual refinement folded in: breakage is already presen
    every d1 cell. (membership/lifecycle already pass; the work is approval + quota.)
 2. **Climb.** Add d2, then d3, … keeping earlier rungs in the cumulative eval set (per-cell veto guards
    re-breakage). Each new rung surfaces new erosion → mutate again.
-3. **Stop** when the archive holds across the ladder at worst-of-K, OR a cell hits a **(C) boundary** (no A or
-   B fix across routes works → record it, shrink scope — a valid kill-finding).
+3. **Stop** when the archive holds across the ladder at worst-of-K, OR a cell hits a **(C) boundary** —
+   defined strictly: the **full output-QA stack** (self-repair → best-of-N → form levers: shape, contract,
+   extraction, seam) has been applied and the cell *still* fails worst-of-K across routes, because the
+   residual is a pure-semantics gap an oracle-blind lever cannot close. Broken code / crashes / missing
+   surfaces are NEVER (C) on their own — they are repair targets. A real (C) finding is a valid kill-result;
+   a premature (C) call (stopping at incompetence) violates the binding premise.
 
 ## 6. End game (the final gate — NOT now)
 
