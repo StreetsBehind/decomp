@@ -28,6 +28,28 @@ nodes colored by `type`, edges from cross-links (relative + absolute), click a n
 "Cited by" backlinks, type-legend filter, and a node search box. `viz.html` is a build artifact — generate on
 demand; it is not committed into the bundle (the gate ignores non-`.md` files).
 
+## okf_mcp.py — the MCP server (agent consumption surface)
+`okf_mcp.py` is a **stdlib-only MCP (Model Context Protocol) server** that exposes the bundle to any MCP client
+(Claude Code, Claude Desktop, subagents) as the canonical **enumerate → fetch** surface — no embeddings; the LLM
+ranks relevance over names/tags/links. Registered for this repo in `.mcp.json` (Claude Code launches it).
+
+Tools (READ-ONLY in v1; write tools — status promotion / proposals — are deliberately phase 2):
+- `okf_list({status?, type?, tag?, query?})` → concept index rows `{id,title,type,status,description,tags}` (no bodies)
+- `okf_get({id})` → one concept `{id, frontmatter, body, links_to, cited_by}`
+- `okf_backlinks({id})` → concepts that cite this one (the computed reverse link graph)
+
+**K3 oracle-blindness guard (load-bearing):** the server serves ONLY the leak-safe allowlist
+(`agentic-workflow-optimization`). Pointing it at an oracle-adjacent bundle (`hybrid-builder-domain`,
+`meta-search-learnings`) **refuses to start** (exit 2) unless a human passes `--allow-unsafe` for a deliberately
+non-builder context. So a code-building / meta-search candidate agent given only this MCP cannot leak
+oracle-shaped knowledge.
+
+```bash
+python3 okf/tools/okf_mcp.py                     # serve the default leak-safe bundle over stdio (MCP)
+python3 okf/tools/okf_mcp.py --bundle okf/<x>    # serve another allowlisted bundle
+```
+No `pip install` — it implements the MCP stdio JSON-RPC transport directly (stdlib only).
+
 ## Conventions this tooling assumes
 - **Links:** prefer bundle-absolute (`/concepts/x.md`) — stable under moves, spec-preferred, and supported here.
 - **`status` extension key** (on `findings/` + `synthesis/`): `confirmed | provisional | superseded` — see the

@@ -20,9 +20,12 @@ When a task touches what this bundle covers — agentic-workflow optimization/se
 findings, or the fitness / lethal-quadrant / two-term framing — **consult the bundle as part of gathering
 context**, like this:
 
-1. **Enumerate, then fetch.** Read `okf/agentic-workflow-optimization/index.md` (and the per-section
-   `index.md`s) to see what exists, then open the specific concept files you need. **Do not** treat it as a
-   vector store — navigate by the index and by following the markdown cross-links (the bundle is graph-shaped).
+1. **Enumerate, then fetch.** If the **`okf` MCP server** is connected (registered in `.mcp.json`), use its
+   tools — `okf_list` (optionally filtered by `status`/`type`/`tag`/`query`) to see what exists, then
+   `okf_get`/`okf_backlinks` for the specific concepts you need. Otherwise read
+   `okf/agentic-workflow-optimization/index.md` (and the per-section `index.md`s) and open the concept files
+   directly. Either way: **do not** treat it as a vector store — navigate by the index and the markdown
+   cross-links (the bundle is graph-shaped).
 2. **Trust by frontmatter.** Each concept carries a `type`; `findings/` and `synthesis/` carry
    `status: confirmed | provisional | superseded`. Weight `confirmed` over `provisional`; treat `superseded` as
    historical. Provenance is each concept's `# Citations` section.
