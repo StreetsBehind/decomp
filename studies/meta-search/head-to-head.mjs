@@ -26,6 +26,7 @@
 //       node studies/meta-search/head-to-head.mjs --arms hybrid                # hybrid only, LIVE, ~$0 (free gateway)
 //       node studies/meta-search/head-to-head.mjs --arms both                  # also re-run the baseline LIVE (spends $)
 //       node studies/meta-search/head-to-head.mjs --epics approval-d1,membership-d1 --arms hybrid
+//       node studies/meta-search/head-to-head.mjs --settled --k 8                    # P3 prereq: co-measure BOTH arms worst-of-K → runs/head-to-head-settled.json (LIVE $ on the baseline arm; add --mock to dry-run)
 
 import fs from 'node:fs';
 import os from 'node:os';
@@ -46,6 +47,15 @@ const RETRY = Math.max(1, parseInt(arg('retry', '2'), 10) || 2);          // str
 const REPAIR = Math.max(0, parseInt(arg('repair', '2'), 10));            // integration-gate model repairDepth
 const CONC = Math.max(1, parseInt(arg('conc', '6'), 10) || 6);
 const CALL_TIMEOUT_MS = Math.max(10000, parseInt(arg('callTimeout', '120000'), 10) || 120000); // bound a slow gateway call
+const K = Math.max(1, parseInt(arg('k', '1'), 10) || 1);   // worst-of-K draws/epic (settled path only): the gateway re-routes each draw, so K spans the route zoo
+const SETTLED = has('settled');
+// the full DEV epic ladder for a settled co-measured run — NOT the sequestered TEST ids (sealed until P3).
+const DEV_LADDER = [
+  'membership-d1', 'membership-d2', 'membership-d3', 'membership-d4', 'membership-d5',
+  'approval-d1', 'approval-d2', 'approval-d3', 'approval-d4',
+  'lifecycle-d1', 'lifecycle-d2', 'lifecycle-d3', 'lifecycle-d4',
+  'quota-d1', 'quota-d2', 'quota-d3', 'quota-d4',
+];
 
 // ---- routing (baseline arm) — the cost-optimized roster (verbatim from routed-baseline.mjs) ----------
 const TIER = { haiku: 'claude-haiku-4-5', sonnet: 'claude-sonnet-4-6', opus: 'claude-opus-4-8' };
@@ -67,7 +77,8 @@ const chunkPrompt = (preamble, skeleton, surfaceText) => ['## Shared context (ev
 function epicSpec(id) {
   if (id.startsWith('membership-d')) {
     const D = id.split('-d')[1];
-    return { id, dir: path.join(BUILD_GAP, 'epics', `scale-d${D}`), testsPath: path.join(HERE, 'gates', 'lib', 'oracle2-tests-d1.mjs') };
+    return { id, dir: path.join(BUILD_GAP, 'epics', `scale-d${D}`), testsPath: path.join(HERE, 'gates', 'lib', `oracle2-tests-d${D}.mjs`) }; // 2nd oracle, depth-matched
+
   }
   return { id, dir: path.join(HERE, 'epics', id), testsPath: path.join(HERE, 'epics', id, 'tests.mjs') };
 }
@@ -89,6 +100,16 @@ const isGrade = (g) => !!(g && (g.crosscut || g.integration || g.happy));
 const epicOK = (g) => isGrade(g) && rate(g.crosscut) === 1 && rate(g.integration) === 1;
 const relOf = (g) => ({ happy: rate(g.happy), crosscut: rate(g.crosscut), integration: rate(g.integration) });
 const failsOf = (g) => ({ crosscut: (g.crosscut?.fails || []).map((f) => ({ name: f.name, why: f.why })), integration: (g.integration?.fails || []).map((f) => ({ name: f.name, why: f.why })) });
+
+// worst-of-K aggregation (verbatim convention from coevo-rung1.mjs §worst-of-K): per-bucket worst=min over the
+// K logged draws. Frozen rule (DESIGN §5/A5): worst-of-K for both cost AND reliability; a missing/empty draw is
+// 0 via the fail-CLOSED rate() above → counts as the worst, never excluded.
+const min = (xs) => xs.reduce((a, b) => Math.min(a, b), Infinity);
+const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2; };
+const max = (xs) => xs.reduce((a, b) => Math.max(a, b), -Infinity);
+const stat = (xs) => ({ worst: +min(xs).toFixed(4), median: +med(xs).toFixed(4), best: +max(xs).toFixed(4) });
+// cost axis: higher $ = worse, so worst-of-K cost = MAX draw, best = MIN (reliability uses stat() where worst=min).
+const costStat = (xs) => ({ worst: +max(xs).toFixed(4), median: +med(xs).toFixed(4), best: +min(xs).toFixed(4) });
 
 async function pool(items, n, fn) {
   const out = new Array(items.length); let i = 0;
@@ -186,6 +207,100 @@ async function runHybrid(spec, invoke) {
   };
 }
 
+// ============================== worst-of-K wrappers (settled path) ==================================
+// K independent whole-epic draws per arm, aggregated per cell. For the hybrid arm the free gateway re-routes
+// each draw, so the K draws span the route zoo (the model-agnosticism test, not noise reduction). For the
+// fixed-policy baseline arm K measures the frontier models' own nondeterminism.
+async function runBaselineWorstOfK(spec, invoke, k) {
+  const draws = [];
+  for (let i = 0; i < k; i++) {
+    let d; try { d = await runBaseline(spec, invoke); } catch (e) { d = { reliability: { happy: 0, crosscut: 0, integration: 0 }, totalUsd: SKELETON_OPUS_ANCHOR_USD, surfaces: 0, routeDist: {}, harnessError: String((e && e.message) || e) }; } // §4.5 hard worst-of-K FAIL, never excluded
+    draws.push(d);
+  }
+  const bk = (sel) => stat(draws.map(sel));
+  const worst = { happy: +min(draws.map((d) => d.reliability.happy)).toFixed(4), crosscut: +min(draws.map((d) => d.reliability.crosscut)).toFixed(4), integration: +min(draws.map((d) => d.reliability.integration)).toFixed(4) };
+  return {
+    arm: 'baseline', id: spec.id, surfaces: draws[0].surfaces, k, routeDist: draws[0].routeDist,
+    reliability: { happy: bk((d) => d.reliability.happy), crosscut: bk((d) => d.reliability.crosscut), integration: bk((d) => d.reliability.integration) },
+    worst, epicOK_worst: worst.crosscut === 1 && worst.integration === 1,
+    cost: costStat(draws.map((d) => d.totalUsd)),
+  };
+}
+async function runHybridWorstOfK(spec, invoke, k) {
+  const draws = [];
+  for (let i = 0; i < k; i++) {
+    let d; try { d = await runHybrid(spec, invoke); } catch (e) { d = { raw: { reliability: { crosscut: 0, integration: 0 } }, final: { reliability: { happy: 0, crosscut: 0, integration: 0 } }, gate: { fired: false }, missingDraws: [], totalUsd: SKELETON_OPUS_ANCHOR_USD, harnessError: String((e && e.message) || e) }; } // §4.5 hard worst-of-K FAIL, never excluded
+    draws.push(d);
+  }
+  const bk = (sel) => stat(draws.map(sel));
+  const rawWorst = { crosscut: +min(draws.map((d) => d.raw.reliability.crosscut)).toFixed(4), integration: +min(draws.map((d) => d.raw.reliability.integration)).toFixed(4) };
+  const worst = { happy: +min(draws.map((d) => d.final.reliability.happy)).toFixed(4), crosscut: +min(draws.map((d) => d.final.reliability.crosscut)).toFixed(4), integration: +min(draws.map((d) => d.final.reliability.integration)).toFixed(4) };
+  return {
+    arm: 'hybrid', id: spec.id, surfaces: draws[0].surfaces, k,
+    raw: { crosscut: bk((d) => d.raw.reliability.crosscut), integration: bk((d) => d.raw.reliability.integration) },
+    final: { happy: bk((d) => d.final.reliability.happy), crosscut: bk((d) => d.final.reliability.crosscut), integration: bk((d) => d.final.reliability.integration) },
+    worst, rawWorst, epicOK_worst: worst.crosscut === 1 && worst.integration === 1,
+    gateFiredAny: draws.some((d) => d.gate.fired), missingDrawsAny: draws.some((d) => (d.missingDraws || []).length > 0),
+    cost: costStat(draws.map((d) => d.totalUsd)),
+  };
+}
+
+// SETTLED driver (P3 prereq): co-measure BOTH arms on IDENTICAL epics by the SAME oracles, worst-of-K, →
+// runs/head-to-head-settled.json + a per-epic parity-at-lower-cost verdict. Mock writes a *-settled-mock.json
+// so it can NEVER flip the pre-p3 gate (which keys on the existence of the real filename).
+async function runSettled(baselineInvoke, hybridInvoke) {
+  const ids = (arg('epics', null) || DEV_LADDER.join(',')).split(',').map((s) => s.trim()).filter(Boolean);
+  console.log(`HEAD-TO-HEAD — SETTLED — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — co-measured both arms — worst-of-K=${K} — ${ids.length} epics\n`);
+  const results = [];
+  const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
+  const outFile = path.join(outDir, MOCK ? 'head-to-head-settled-mock.json' : 'head-to-head-settled.json');
+  const flush = (payload) => fs.writeFileSync(outFile, JSON.stringify(payload, null, 2) + '\n'); // incremental — long live runs survive a kill
+  for (const id of ids) {
+    const spec = epicSpec(id);
+    const base = await runBaselineWorstOfK(spec, baselineInvoke, K);
+    const hy = await runHybridWorstOfK(spec, hybridInvoke, K);
+    const integParity = hy.worst.integration >= base.worst.integration - 1e-9;     // hybrid FINAL lethal-non-inferior to baseline, worst-of-K
+    const crosscutParity = hy.worst.crosscut >= base.worst.crosscut - 1e-9;
+    const costWin = hy.cost.worst < base.cost.worst;                               // §7: total_cost STRICTLY < baseline; worst-of-K cost = max draw (costStat)
+    const verdict = {
+      lethalNonInferior: integParity && crosscutParity, integParity, crosscutParity, costWin,
+      win: integParity && crosscutParity && costWin,
+      deltaInteg: +(hy.worst.integration - base.worst.integration).toFixed(3),
+      deltaCostUsd: +(base.cost.worst - hy.cost.worst).toFixed(4),
+    };
+    results.push({ id, topo: id.split('-d')[0], depth: id.includes('-d') ? +id.split('-d').pop() : null, baseline: base, hybrid: hy, verdict });
+    flush({ settled: true, mock: MOCK, generatedAt: new Date().toISOString(), arms: 'both', k: K, epics: ids, results, verdict: null });
+    console.log(`${id}: base i ${(base.worst.integration * 100).toFixed(0)}% $${base.cost.median} | hybrid i ${(hy.worst.integration * 100).toFixed(0)}% $${hy.cost.median} → ${verdict.win ? 'WIN' : (verdict.lethalNonInferior ? 'parity' : 'LOSS')} (Δinteg ${verdict.deltaInteg >= 0 ? '+' : ''}${(verdict.deltaInteg * 100).toFixed(0)}pp, Δcost $${verdict.deltaCostUsd})`);
+  }
+  const byTopo = {};
+  for (const r of results) {
+    byTopo[r.topo] = byTopo[r.topo] || { epics: 0, wins: 0, lethalNonInf: 0, losses: 0 };
+    byTopo[r.topo].epics++;
+    if (r.verdict.win) byTopo[r.topo].wins++;
+    if (r.verdict.lethalNonInferior) byTopo[r.topo].lethalNonInf++; else byTopo[r.topo].losses++;
+  }
+  const baselineTotalCostWorst = +results.reduce((a, r) => a + r.baseline.cost.worst, 0).toFixed(4);
+  const hybridTotalCostWorst = +results.reduce((a, r) => a + r.hybrid.cost.worst, 0).toFixed(4);
+  const allLethalNonInferior = results.length > 0 && results.every((r) => r.verdict.lethalNonInferior);
+  const overall = {
+    epics: results.length, k: K,
+    // §7 battery DOMINANCE: EVERY cell lethal-non-inferior AND battery total_cost STRICTLY < baseline (worst-of-K cost).
+    win: allLethalNonInferior && hybridTotalCostWorst < baselineTotalCostWorst,
+    allLethalNonInferior,
+    wins: results.filter((r) => r.verdict.win).length,
+    lethalNonInferior: results.filter((r) => r.verdict.lethalNonInferior).length,
+    losses: results.filter((r) => !r.verdict.lethalNonInferior).length,
+    baselineTotalCostWorst, hybridTotalCostWorst,
+    baselineTotalCostMedian: +results.reduce((a, r) => a + r.baseline.cost.median, 0).toFixed(4),
+    hybridTotalCostMedian: +results.reduce((a, r) => a + r.hybrid.cost.median, 0).toFixed(4),
+    byTopo,
+    note: 'Co-measured worst-of-K on IDENTICAL epics by the SAME oracles. Reliability worst-of-K = min over K; cost worst-of-K = max over K (costStat). Battery `win` = ALL cells lethal-non-inferior (crosscut+integration ≥ baseline non-inferiority) AND battery total_cost STRICTLY < baseline (DESIGN §7). Per-epic `win` is a per-cell indicator, NOT the §7 battery verdict. PROVISIONAL until run LIVE (real $ on the baseline arm) and scored at P3 on the sequestered TEST.',
+  };
+  flush({ settled: true, mock: MOCK, generatedAt: new Date().toISOString(), arms: 'both', k: K, epics: ids, results, verdict: overall });
+  console.log(`\noverall: battery §7 win=${overall.win}  (${overall.lethalNonInferior}/${overall.epics} cells lethal-non-inferior; baseline $${overall.baselineTotalCostWorst} vs hybrid $${overall.hybridTotalCostWorst} worst-of-K total)`);
+  console.log(`wrote ${path.relative(ROOT, outFile)}`);
+}
+
 // ============================== driver ==============================================================
 async function main() {
   const armsArg = (arg('arms', 'hybrid')).toLowerCase();
@@ -195,6 +310,7 @@ async function main() {
 
   const baselineInvoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : claudeInvoke;
   const hybridInvoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : makeGatewayInvoke({ timeoutMs: CALL_TIMEOUT_MS });
+  if (SETTLED) return runSettled(baselineInvoke, hybridInvoke); // co-measured both arms, worst-of-K → head-to-head-settled.json
 
   console.log(`HEAD-TO-HEAD — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — arms=${armsArg} retry=${RETRY} gate.repair=${REPAIR} conc=${CONC} callTimeout=${CALL_TIMEOUT_MS}ms — ${ids.length} epics\n`);
   const results = { mock: MOCK, arms: armsArg, retry: RETRY, repair: REPAIR, conc: CONC, epics: ids, baseline: [], hybrid: [] };

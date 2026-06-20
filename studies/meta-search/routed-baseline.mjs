@@ -14,6 +14,7 @@
 // Run:  node studies/meta-search/routed-baseline.mjs --mock          # zero-spend wiring dry-run + token sizing
 //       node studies/meta-search/routed-baseline.mjs --epics approval-d1,lifecycle-d1   # real (spends $)
 //       node studies/meta-search/routed-baseline.mjs --estimate      # mock + project full-battery $ (no real spend)
+//       node studies/meta-search/routed-baseline.mjs --settled --k 8  # P3 prereq: worst-of-K over the full DEV ladder → runs/routed-baseline-settled.json (LIVE $; add --mock to dry-run)
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
@@ -26,6 +27,17 @@ const ROOT = path.resolve(HERE, '..', '..');
 const arg = (n, d) => { const i = process.argv.indexOf(`--${n}`); return i !== -1 && process.argv[i + 1] && !process.argv[i + 1].startsWith('--') ? process.argv[i + 1] : d; };
 const has = (n) => process.argv.includes(`--${n}`);
 const MOCK = has('mock') || has('estimate');
+const K = Math.max(1, parseInt(arg('k', '1'), 10) || 1);   // worst-of-K draws/epic (settled path only); routing is deterministic, so K measures the frontier models' own nondeterminism
+const SETTLED = has('settled');
+// the complete DEV epic ladder — NOT the sequestered TEST ids (TEST stays sealed until P3). membership
+// scale-d1..d5 + the diverse topologies approval/lifecycle/quota d1..d4: mirrors the TEST battery's depth
+// shape on DEV epics so the settle reaches the D≥4 region where the opus-whole proxy eroded.
+const DEV_LADDER = [
+  'membership-d1', 'membership-d2', 'membership-d3', 'membership-d4', 'membership-d5',
+  'approval-d1', 'approval-d2', 'approval-d3', 'approval-d4',
+  'lifecycle-d1', 'lifecycle-d2', 'lifecycle-d3', 'lifecycle-d4',
+  'quota-d1', 'quota-d2', 'quota-d3', 'quota-d4',
+];
 
 // frontier model ids per tier (the routed all-frontier roster).
 const TIER = { haiku: 'claude-haiku-4-5', sonnet: 'claude-sonnet-4-6', opus: 'claude-opus-4-8' };
@@ -49,7 +61,7 @@ const chunkPrompt = (preamble, skeleton, surfaceText) => ['## Shared context (ev
 function epicSpec(id) {
   if (id.startsWith('membership-d')) {
     const D = id.split('-d')[1];
-    return { id, dir: path.join(ROOT, 'studies', 'build-gap', 'epics', `scale-d${D}`), testsPath: path.join(HERE, 'gates', 'lib', 'oracle2-tests-d1.mjs') }; // graded by the independent 2nd oracle (d1)
+    return { id, dir: path.join(ROOT, 'studies', 'build-gap', 'epics', `scale-d${D}`), testsPath: path.join(HERE, 'gates', 'lib', `oracle2-tests-d${D}.mjs`) }; // graded by the independent 2nd oracle (depth-matched: d${D})
   }
   return { id, dir: path.join(HERE, 'epics', id), testsPath: path.join(HERE, 'epics', id, 'tests.mjs') };
 }
@@ -68,6 +80,17 @@ async function loadEpic(spec) {
 // VOID-92/92 footgun fixed in coevo-rung1.mjs / head-to-head.mjs on 2026-06-18; the lint surfaced that the P3
 // baseline reliability metric still used the fail-OPEN `: 1` default. A crashed surface must not read 100%.
 const rate = (b) => (b && b.total ? b.pass / b.total : 0);
+
+// worst-of-K aggregation (verbatim convention from coevo-rung1.mjs §worst-of-K): per-bucket worst=min,
+// best=max, median over the K logged draws. Frozen rule (DESIGN §5/A5): K-run aggregation = worst-of-K for
+// both cost AND reliability; a harnessError/empty draw scores 0 via the fail-CLOSED rate() above and so counts
+// as the worst — NEVER excluded (no lucky-draw cherry-pick).
+const min = (xs) => xs.reduce((a, b) => Math.min(a, b), Infinity);
+const med = (xs) => { const s = [...xs].sort((a, b) => a - b); return s.length % 2 ? s[(s.length - 1) / 2] : (s[s.length / 2 - 1] + s[s.length / 2]) / 2; };
+const max = (xs) => xs.reduce((a, b) => Math.max(a, b), -Infinity);
+const stat = (xs) => ({ worst: +min(xs).toFixed(4), median: +med(xs).toFixed(4), best: +max(xs).toFixed(4) });
+// cost axis: higher $ = worse, so worst-of-K cost = MAX draw, best = MIN (reliability uses stat() where worst=min).
+const costStat = (xs) => ({ worst: +max(xs).toFixed(4), median: +med(xs).toFixed(4), best: +min(xs).toFixed(4) });
 
 // concurrency-limited map (frontier calls are slow; build an epic's surfaces in parallel).
 async function pool(items, n, fn) {
@@ -101,6 +124,71 @@ async function runEpic(spec, invoke, conc = 5) {
   };
 }
 
+// worst-of-K wrapper around runEpic: K independent whole-epic draws, aggregated per cell (worst/median/best).
+// The routed policy is deterministic (routeDist stable across draws), so the variance is the frontier models'
+// own nondeterminism — the route lottery lives on the hybrid side, not this fixed-policy comparator.
+async function runEpicWorstOfK(spec, invoke, k) {
+  const draws = [];
+  for (let i = 0; i < k; i++) {
+    let d; try { d = await runEpic(spec, invoke); } catch (e) { d = { reliability: { happy: 0, crosscut: 0, integration: 0 }, totalUsd: SKELETON_OPUS_ANCHOR_USD, surfaces: 0, routeDist: {}, harnessError: String((e && e.message) || e) }; } // §4.5: a harness throw is a hard worst-of-K FAIL (0), never excluded / never aborts the battery
+    draws.push(d);
+  }
+  const bk = (sel) => stat(draws.map(sel));
+  const worst = {
+    happy: +min(draws.map((d) => d.reliability.happy)).toFixed(4),
+    crosscut: +min(draws.map((d) => d.reliability.crosscut)).toFixed(4),
+    integration: +min(draws.map((d) => d.reliability.integration)).toFixed(4),
+  };
+  const depth = spec.id.includes('-d') ? +spec.id.split('-d').pop() : null;
+  return {
+    id: spec.id, topo: spec.id.split('-d')[0], depth, surfaces: draws[0].surfaces, k, routeDist: draws[0].routeDist,
+    reliability: { happy: bk((d) => d.reliability.happy), crosscut: bk((d) => d.reliability.crosscut), integration: bk((d) => d.reliability.integration) },
+    worst, epicOK_worst: worst.crosscut === 1 && worst.integration === 1,
+    cost: { ...costStat(draws.map((d) => d.totalUsd)), skeletonUsd: SKELETON_OPUS_ANCHOR_USD },
+    draws: draws.map((d) => ({ reliability: d.reliability, totalUsd: d.totalUsd })),
+  };
+}
+
+// SETTLED driver (P3 prereq): worst-of-K across the full DEV ladder → runs/routed-baseline-settled.json + an
+// erosion verdict (does the cost-optimized routed baseline drop below 100% worst-of-K at depth, the way the
+// opus-whole proxy did?). This is the COMPARATOR arm only; the dominance comparison is co-measured in
+// head-to-head-settled.json / scored at P3. Mock writes a *-settled-mock.json so it can NEVER flip the gate.
+async function runSettled(invoke) {
+  const ids = (arg('epics', null) || DEV_LADDER.join(',')).split(',').map((s) => s.trim()).filter(Boolean);
+  console.log(`routed all-frontier baseline — SETTLED — ${MOCK ? 'MOCK (zero spend)' : 'LIVE ($)'} — worst-of-K=${K} — ${ids.length} epics\n`);
+  const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
+  const outFile = path.join(outDir, MOCK ? 'routed-baseline-settled-mock.json' : 'routed-baseline-settled.json');
+  const flush = (payload) => fs.writeFileSync(outFile, JSON.stringify(payload, null, 2) + '\n'); // incremental — a long live battery survives a kill
+  const results = [];
+  for (const id of ids) {
+    const r = await runEpicWorstOfK(epicSpec(id), invoke, K);
+    results.push(r);
+    flush({ settled: true, mock: MOCK, generatedAt: new Date().toISOString(), k: K, ladder: ids, results, verdict: null });
+    console.log(`${r.id}: worst{c ${(r.worst.crosscut * 100).toFixed(0)}% i ${(r.worst.integration * 100).toFixed(0)}%} epic✓ ${r.epicOK_worst ? 'Y' : 'N'}  cost worst$${r.cost.worst} med$${r.cost.median}  routes ${JSON.stringify(r.routeDist)}`);
+  }
+  const cellsBelow = results.filter((r) => r.worst.crosscut < 1 || r.worst.integration < 1)
+    .map((r) => ({ id: r.id, depth: r.depth, crosscut: r.worst.crosscut, integration: r.worst.integration }));
+  const byDepth = {};
+  for (const r of results) {
+    const key = `d${r.depth}`;
+    byDepth[key] = byDepth[key] || { crosscut: 1, integration: 1, epics: 0 };
+    byDepth[key].crosscut = Math.min(byDepth[key].crosscut, r.worst.crosscut);
+    byDepth[key].integration = Math.min(byDepth[key].integration, r.worst.integration);
+    byDepth[key].epics++;
+  }
+  const totalCostWorst = +results.reduce((a, r) => a + r.cost.worst, 0).toFixed(4);
+  const totalCostMedian = +results.reduce((a, r) => a + r.cost.median, 0).toFixed(4);
+  const verdict = {
+    epics: ids.length, k: K, totalCostWorst, totalCostMedian,
+    erosion: { anyBelow100: cellsBelow.length > 0, cellsBelow, byDepth },
+    note: 'Comparator only (single cost-optimized routed all-frontier arm). Worst-of-K (min over K) reliability + cost across the DEV ladder; TEST ids stay sealed until P3. The win-condition DOMINANCE comparison (hybrid ≥ baseline per cell at ≤ cost) is co-measured in runs/head-to-head-settled.json / scored at P3 — NOT decided here.',
+  };
+  flush({ settled: true, mock: MOCK, generatedAt: new Date().toISOString(), k: K, ladder: ids, results, verdict });
+  console.log(`\nTOTAL worst-of-K cost: $${totalCostWorst} (median $${totalCostMedian}) over ${ids.length} epics × K=${K}`);
+  console.log(`erosion: ${verdict.erosion.anyBelow100 ? `${cellsBelow.length} cell(s) below 100% worst-of-K — see verdict.erosion` : 'none — baseline holds 100% across the ladder'}`);
+  console.log(`wrote ${path.relative(ROOT, outFile)}`);
+}
+
 // estimate the full 86-epic battery from mock-measured per-surface output sizes × tier prices.
 function estimateFull(results) {
   // assume mock token sizes approximate real; price each surface at its routed tier using PRICE_TABLE (per Mtok)
@@ -111,6 +199,7 @@ function estimateFull(results) {
 }
 
 async function main() {
+  if (SETTLED) return runSettled(MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : claudeInvoke);
   const epicsArg = arg('epics', MOCK ? 'approval-d1,lifecycle-d1,quota-d1,membership-d1' : null);
   if (!epicsArg) { console.error('routed-baseline: pass --epics <id,id,...> for a real run, or --mock / --estimate'); process.exit(1); }
   const ids = epicsArg.split(',').map((s) => s.trim()).filter(Boolean);
