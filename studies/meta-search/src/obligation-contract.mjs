@@ -179,7 +179,13 @@ function checkObligation(category, surface, code, runConditions) {
   const verb = surfaceVerb(surface);
   switch (category) {
     case 'tenancy':
-      return /orgId/.test(c);                                   // references the caller-org stamp/scope at all
+      // The org MUST be sourced from the SESSION (the skeleton declares `ctx.session.orgId`). A bare /orgId/
+      // token-presence check is too lenient — it passes a surface that reads the WRONG session field
+      // (`ctx.session.organizationId`) while still naming `orgId` as a record property (the exact tenancy
+      // field-drift the causality probe surfaced on quota createWallet). Require either a direct
+      // `session.orgId` read or a `{ orgId } = …session` destructure; the drifted field matches neither.
+      return /session\s*\.\s*orgId\b/.test(c)                   // ctx.session.orgId / session.orgId
+        || /\{[^}]*\borgId\b[^}]*\}\s*=\s*[\w.]*session/.test(c); // const { orgId, … } = ctx.session
     case 'input-validation': {
       // amount-bearing surfaces (deposit/withdraw): require an explicit non-positive guard.
       if (/amount/.test(c) || verb === 'deposit' || verb === 'withdraw') {

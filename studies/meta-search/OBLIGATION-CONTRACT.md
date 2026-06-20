@@ -1,10 +1,35 @@
 # The obligation-contract lever — the crosscut/obligation output-QA gene
 
-> **Status: BUILT + smoke-GREEN + harness-wired. NOT yet live-validated (causality + worst-of-K are
-> spend-gated — the next increment).** Additive, dev-only, oracle-blind; the frozen tree
-> (`studies/build-gap/`) is untouched and P0 re-ran GREEN 5/5 with K8 bit-identical (29/30, worst evals
-> 199/300). Apparatus: `src/obligation-contract.mjs`, `gates/obligation-contract-smoke.mjs` (33/33),
-> `coevo-rung1.mjs --obligation`.
+> **Status: BUILT + smoke-GREEN (36/36) + harness-wired + CAUSALITY CONFIRMED (live, $0 free gateway).**
+> The lever moves the grade on real cheap builds — it is NOT inert like P1's per-surface checker. It does NOT
+> yet close worst-of-K; the residual was diagnosed (tenancy field-drift) and the verifier tightened. Additive,
+> dev-only, oracle-blind; the frozen tree (`studies/build-gap/`) is untouched and P0 re-ran GREEN 5/5 with K8
+> bit-identical (29/30, worst evals 199/300). Apparatus: `src/obligation-contract.mjs`,
+> `gates/obligation-contract-smoke.mjs` (36/36), `coevo-rung1.mjs --obligation`.
+
+## Causality probe — CONFIRMED (2026-06-20, `runs/coevo-obligation-causality.json`)
+
+Ran `coevo-rung1.mjs --obligation` isolated on the two crosscut-killer topologies, worst-of-K=4, free gateway
+($0), paired `raw → afterObligation`:
+
+- **approval-d1: worst-of-K crosscut 57→71, integration 0→75** (median crosscut 79→100). The missing-obligation
+  repairs lifted draw 1 (c86→100, i75→100) and draw 3 (c57→100, i0→75). 7 missing + 1 invented detected, 4
+  repairs, 2/4 draws flagged.
+- **quota-d1: the RESTRICTION half is causal** — removing the hallucinated `only-admin-may-withdraw` lifted
+  **integration 25→100 on 2 draws** (conservation tests, run as a non-admin member, then pass). 3 invented
+  detected + repaired. Median crosscut held at 70.
+- **Zero false positives** (already-clean draws untouched), **zero K3 leak**.
+
+**Residual (why worst-of-K is not yet closed) — a precisely localized FORM leniency, NOT a (C) wall.** The
+worst draws are gated by a **tenancy field-name drift**: `createWallet` reads `ctx.session.organizationId` (the
+wrong field; the skeleton declares `ctx.session.orgId`), so the record is stamped with `undefined` org and the
+tenancy tests fail. The original `/orgId/` token-presence check **passed** it (the string "orgId" appears as a
+record property) — the same P1 lesson (token-presence under-flags). **FIXED:** the tenancy verifier now requires
+the org be *sourced from the session* (`session.orgId` read or `{ orgId } = …session` destructure); the drifted
+field matches neither → flagged → repair routed. Regression-locked in the smoke (the exact dumped drift +
+both legit forms as no-false-positive controls). Remaining worst-of-K residuals: quota draw-4 integration (the
+seam — needs the generalized `--seamgate`, no-op'd in this isolated probe) and one approval missing-draw (the
+extraction/best-of-N target).
 
 ## Why this lever exists
 

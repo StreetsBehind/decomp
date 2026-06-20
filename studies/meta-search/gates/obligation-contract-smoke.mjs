@@ -129,6 +129,30 @@ const GATE = { kind: 'deterministic', repairDepth: 2 };
   }`;
   ok(cats(verifySurface('deposit', depNoAuthz, dp)).has('authz'), 'deposit missing admin gate → MISSING authz (the obligation half of the same rule)');
 
+  // tenancy FIELD-DRIFT (the causality-probe finding): a surface that reads the WRONG session field
+  // (ctx.session.organizationId) while still naming orgId as a record property must be FLAGGED — a bare
+  // /orgId/ token-presence check passed it (the P1 leniency); the session-sourced check catches it.
+  const cw = deriveSurfaceContract(QUOTA, 'createWallet', QSURF);
+  const drifted = `export function createWallet(ctx, name) {
+    const orgId = ctx.session.organizationId;
+    const wallet = { id: genId(), name, orgId, ownerId: orgId };
+    ctx.db.wallets ??= new Map();
+    ctx.db.wallets.set(wallet.id, wallet);
+    return wallet;
+  }`;
+  ok(cats(verifySurface('createWallet', drifted, cw)).has('tenancy'), 'tenancy field-drift (ctx.session.organizationId) is FLAGGED despite naming orgId');
+  const correctDirect = `export function createWallet(ctx, name) {
+    const wallet = { id: genId(), name, orgId: ctx.session.orgId };
+    ctx.db.wallets ??= new Map(); ctx.db.wallets.set(wallet.id, wallet); return wallet;
+  }`;
+  const correctDestructure = `export function createWallet(ctx, name) {
+    const { orgId } = ctx.session;
+    const wallet = { id: genId(), name, orgId };
+    ctx.db.wallets ??= new Map(); ctx.db.wallets.set(wallet.id, wallet); return wallet;
+  }`;
+  ok(!cats(verifySurface('createWallet', correctDirect, cw)).has('tenancy'), 'ctx.session.orgId (direct) passes tenancy — no false positive');
+  ok(!cats(verifySurface('createWallet', correctDestructure, cw)).has('tenancy'), '{ orgId } = ctx.session (destructure) passes tenancy — no false positive');
+
   // approval execute: dense obligations.
   const ex = deriveSurfaceContract(APPROVAL, 'executeRequest', ASURF);
   const exBare = `export function executeRequest(ctx, requestId) {
