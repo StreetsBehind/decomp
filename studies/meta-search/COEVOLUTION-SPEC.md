@@ -117,6 +117,39 @@ four conditions in §3. Factual refinement folded in: breakage is already presen
   (an approved request must execute & audit once; idempotency), **conservation** (counter accounting,
   no-overspend, exactly-once), **state-ordering** (already passes unaided — keep as control). Keep the
   deterministic surgical-repair + model route-back structure; keep oracle-blindness.
+- **(A↔B) per-surface obligation-contract gene — structured declarative build-contract + enforced verifier
+  (NEW candidate, NOT built; added 2026-06-20).** Provenance: external agent-governance config — Jekko's
+  `ZYAL` (`docs/ZYAL/`) and gascity's `orders`/`formulas` — whose load-bearing idea is the **advisory↔enforced
+  split**: a declarative file the *host* hands the agent, where guidance is prompt-injected (the model may
+  ignore it) but restrictions/run-conditions are **runtime-enforced independent of the model** ("the agent is
+  only trusted with the prose"). Here the frontier orchestrator emits, **per surface and FROM THE PUBLIC
+  SKELETON ONLY**, a small typed contract — `obligations` (what this surface must do), `restrictions` (what it
+  must NOT invent — directly attacks the quota `only-admin-may-withdraw` hallucination, the structured-artifact
+  form of the (A) contract-precision gene above), `runConditions` (return-shape / which store to touch). It has
+  two coupled halves: the contract is **INJECTED** into the cheap builder's prompt (the (A) hand-off — an
+  amortizable skeleton-author extension) AND, in `inject+verify` mode, the SAME contract is the
+  machine-checkable spec a cheap-tier **enforced verifier** grades the build against, routing repair on a miss
+  (the (B) output-QA half). Encoding (clean-restart node, R2-10; hash-safe — `canonical()`-stripped when off,
+  exactly like `integrationGate`):
+  ```
+  obligationContract: { mode:   ['off', 'inject', 'inject+verify'],
+                        source: ['skeleton'],                                  // K3 baked in — see (1)
+                        carries:['obligations','restrictions','runConditions'],// subset, order-insensitive
+                        verifyDepth: [0, 1, 2] }                               // 0 unless mode='inject+verify'
+  ```
+  **Three guardrails, two of them structural (not just prose):** (1) **K3 in the type system** — `source` has
+  the single value `skeleton`; there is **no** `oracle`/`tests` value to evolve, so the search *structurally
+  cannot* author an oracle-shaped contract (the inadmissible move that killed the falsy-return lever —
+  `coevo-grader-bug-and-baseline`). (2) **advisory-only is expected NULL** — `mode:inject` reproduces the P1
+  per-surface-checker failure shape under worst-of-K (the worst route ignores prose, fail-open); keeping it
+  in-domain lets the search *empirically prove* the `inject+verify` enforcement coupling is the load-bearing
+  half instead of assuming it. (3) builder stays FIXED `fusion`; the verifier selects among the **pool's own**
+  outputs (composes with the best-of-N gene), never a privileged model. **Admission:** cheap P0-style
+  smoke-test + anti-gaming vet (judge untouched, oracle-blind K3 scan, K6/K7/K8 re-validated) before it enters
+  the type system, per DESIGN §11. **Attribution:** the gene spans (A) inject and (B) verify+repair →
+  credit-attribution reads out which half lands the fix — the direct A×B co-evolution case §3.4 exists for.
+  This **resolves §8-Q2** by construction: the contract-precision fix lives in *both* layers (amortizable
+  skeleton-derived contract + cheap-tier enforced verifier), and the search decides which is load-bearing.
 - `builder.model` stays **FIXED to `fusion`** (the thesis constraint — cheap coding). NO route-selection gene.
 
 **Archive / fitness:**
@@ -164,6 +197,9 @@ instrument, the frozen config is the product (NOT "optimal mix").
    or rely on natural variance across K draws?). Drives cost/time per evaluation.
 2. **Where the (A) contract-precision fix lives** — a richer skeleton author (frontier, amortizable) vs a
    cheap-tier contract-lint (B). The search can explore both; pre-decide how each is genome-encoded.
+   *Candidate answer (2026-06-20): the §4 per-surface obligation-contract gene encodes BOTH halves in one
+   node (skeleton-derived inject + cheap-tier enforced verifier) and lets credit-attribution decide which is
+   load-bearing — see that bullet.*
 3. **Generalized-gate scope** — one gate with per-topology detection, or a small gate-per-topology library
    selected by the skeleton's declared seam kind? (Keep oracle-blind either way.)
 4. **Budget/stop rule for the climb** (reuse K5 eval cap discipline, scaled for worst-of-K cost).

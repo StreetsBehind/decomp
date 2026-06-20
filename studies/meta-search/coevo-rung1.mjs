@@ -33,6 +33,7 @@ import { runShapeGate } from './src/shape-gate.mjs';
 import { runContractGate } from './src/contract-gate.mjs';
 import { runPersistenceGate } from './src/persistence-gate.mjs';
 import { runRepairGate } from './src/repair-gate.mjs';
+import { runObligationContract } from './src/obligation-contract.mjs';
 
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
@@ -74,6 +75,14 @@ const PERSISTGATE = has('persistgate');
 // exact error to fix-or-remove the bad symbol. Model-agnostic + oracle-blind. With it on we grade an extra point
 // — afterRepair — so the repair lever's worst-of-K delta is attributable separately.
 const REPAIRGATE = has('repairgate');
+// --obligation runs the OBLIGATION-CONTRACT gate (src/obligation-contract.mjs) after the contract gate: it
+// derives each surface's typed obligation contract FROM THE PUBLIC SKELETON (tenancy/input-validation/authz-
+// applicability/idempotency/audit + a no-over-apply restriction), verifies the built code against it, and routes
+// a repair on a miss — the lever for the crosscut/obligation gap the settled worst-of-K=8 head-to-head flagged
+// as the killer (16/17 cells). Deterministic + oracle-blind. Verifies FORM obligations only (semantic ones —
+// conservation/legal-transition — are left to the oracle, never flagged). With it on we grade an extra point —
+// afterObligation — so this lever's worst-of-K crosscut delta is attributable separately from shape/contract/seam.
+const OBLIGATION = has('obligation');
 // --dump <dir>: write each draw's RAW built surface files to <dir>/<tag>/ for offline diagnosis (why a gate
 // did/didn't fire on a worst route). Diagnostic only; no effect on grading. $0.
 const DUMP = arg('dump', null);
@@ -211,6 +220,17 @@ async function runHybridOnce(fx, invoke, tag = null) {
     afterContractGrade = await evaluateEpic({ mode: 'isolated', files: { ...files }, testsPath: fx.testsPath });
   }
 
+  // OBLIGATION-CONTRACT gate (only with --obligation): verify each surface against its skeleton-derived typed
+  // obligation contract and route repair on a miss (the crosscut/obligation lever). Runs after the contract gate
+  // (which strips an over-applied admin guard) so the two compose: contract removes the hallucinated guard, the
+  // obligation gate adds the MISSING obligations. Deterministic + oracle-blind ($0 detection; repair route-backs
+  // the same cheap pool). Grades afterObligation for separate worst-of-K attribution.
+  let obligationRes = null, afterObligationGrade = null;
+  if (OBLIGATION) {
+    obligationRes = await runObligationContract({ surfaces: fx.order, files, prompts, skeleton: fx.skeleton, gate: gateCfg, rebuild: rebuildFn });
+    afterObligationGrade = await evaluateEpic({ mode: 'isolated', files: { ...files }, testsPath: fx.testsPath });
+  }
+
   // STORE-PERSISTENCE gate (only with --persistgate): rewrite the local-copy-not-written-back pattern, then
   // grade afterPersist. Deterministic ($0); runs before the seam-gate so its surgical init pre-empts the
   // seam-gate Mode-A mis-firing the wrong-shape init on the `?? []` alias.
@@ -232,12 +252,14 @@ async function runHybridOnce(fx, invoke, tag = null) {
     ...(REPAIRGATE ? { afterRepair: gradeRec(afterRepairGrade) } : {}),
     ...(SHAPEGATE ? { afterShape: gradeRec(afterShapeGrade) } : {}),
     ...(CONTRACTGATE ? { afterContract: gradeRec(afterContractGrade) } : {}),
+    ...(OBLIGATION ? { afterObligation: gradeRec(afterObligationGrade) } : {}),
     ...(PERSISTGATE ? { afterPersist: gradeRec(afterPersistGrade) } : {}),
     final: gradeRec(finalGrade),
     gate: { fired: gateRes.pairs > 0, pairs: gateRes.pairs, mismatches: gateRes.mismatches, repairs: gateRes.repairs, leak: gateRes.leak },
     ...(REPAIRGATE ? { repair: { ran: repairRes.ranGate, surfacesFlagged: repairRes.surfacesFlagged, freeIds: repairRes.freeIds, repairs: repairRes.repairs, fixed: repairRes.fixed, leak: repairRes.leak, detail: repairRes.detail } } : {}),
     ...(SHAPEGATE ? { shape: { ran: shapeRes.ranGate, surfacesFlagged: shapeRes.surfacesFlagged, violations: shapeRes.violations, repairs: shapeRes.repairs, leak: shapeRes.leak, shapes: shapeRes.shapes, detail: shapeRes.detail } } : {}),
     ...(CONTRACTGATE ? { contract: { ran: contractRes.ranGate, adminScoped: contractRes.adminScoped, surfacesFlagged: contractRes.surfacesFlagged, repairs: contractRes.repairs, leak: contractRes.leak, detail: contractRes.detail } } : {}),
+    ...(OBLIGATION ? { obligation: { ran: obligationRes.ranGate, surfacesFlagged: obligationRes.surfacesFlagged, violations: obligationRes.violations, missing: obligationRes.missing, invented: obligationRes.invented, repairs: obligationRes.repairs, leak: obligationRes.leak, detail: obligationRes.detail } } : {}),
     ...(PERSISTGATE ? { persist: { ran: persistRes.ranGate, stores: persistRes.stores, surfacesFlagged: persistRes.surfacesFlagged, violations: persistRes.violations, repairs: persistRes.repairs, leak: persistRes.leak, detail: persistRes.detail } } : {}),
     routes,
     missingDraws: Object.entries(perSurface).filter(([, v]) => !v.valid).map(([s]) => s),
@@ -309,7 +331,7 @@ async function main() {
   const ids = (arg('epics', 'membership-d1,lifecycle-d1,quota-d1,approval-d1')).split(',').map((s) => s.trim()).filter(Boolean);
   const invoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : makeGatewayInvoke({ timeoutMs: CALL_TIMEOUT_MS });
 
-  const gateName = `${REPAIRGATE ? 'repair+' : ''}${SHAPEGATE ? 'shape+' : ''}${CONTRACTGATE ? 'contract+' : ''}${PERSISTGATE ? 'persist+' : ''}${has('seamgate') ? 'seam' : 'membership'}`;
+  const gateName = `${REPAIRGATE ? 'repair+' : ''}${SHAPEGATE ? 'shape+' : ''}${CONTRACTGATE ? 'contract+' : ''}${OBLIGATION ? 'obligation+' : ''}${PERSISTGATE ? 'persist+' : ''}${has('seamgate') ? 'seam' : 'membership'}`;
   console.log(`COEVO RUNG-1 — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — worst-of-K=${K} retry=${RETRY} gate=${gateName} gate.repair=${REPAIR} conc=${CONC} — ${ids.length} epics\n`);
   const out = { mock: MOCK, k: K, retry: RETRY, repair: REPAIR, generatedAt: null, epics: [] };
   const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
@@ -329,9 +351,10 @@ async function main() {
       const repairSeg = REPAIRGATE ? `→ repair{c ${(d.afterRepair.crosscut * 100).toFixed(0)} i ${(d.afterRepair.integration * 100).toFixed(0)} ${d.repair.surfacesFlagged}f/${d.repair.repairs}r/${d.repair.fixed}fix${d.repair.leak ? ' LEAK' : ''}} ` : '';
       const shapeSeg = SHAPEGATE ? `→ shape{c ${(d.afterShape.crosscut * 100).toFixed(0)} i ${(d.afterShape.integration * 100).toFixed(0)} ${d.shape.surfacesFlagged}f/${d.shape.repairs}r${d.shape.leak ? ' LEAK' : ''}} ` : '';
       const contractSeg = CONTRACTGATE ? `→ contract{c ${(d.afterContract.crosscut * 100).toFixed(0)} i ${(d.afterContract.integration * 100).toFixed(0)} ${d.contract.surfacesFlagged}f/${d.contract.repairs}r${d.contract.leak ? ' LEAK' : ''}} ` : '';
+      const obligationSeg = OBLIGATION ? `→ oblig{c ${(d.afterObligation.crosscut * 100).toFixed(0)} i ${(d.afterObligation.integration * 100).toFixed(0)} ${d.obligation.surfacesFlagged}f/${d.obligation.missing}m/${d.obligation.invented}o/${d.obligation.repairs}r${d.obligation.leak ? ' LEAK' : ''}} ` : '';
       const persistSeg = PERSISTGATE ? `→ persist{c ${(d.afterPersist.crosscut * 100).toFixed(0)} i ${(d.afterPersist.integration * 100).toFixed(0)} ${d.persist.surfacesFlagged}f/${d.persist.repairs}r${d.persist.leak ? ' LEAK' : ''}} ` : '';
       const rm = drawResidualMode(d);
-      process.stdout.write(`  [${id}] draw ${k + 1}/${K}: raw{c ${(d.raw.crosscut * 100).toFixed(0)} i ${(d.raw.integration * 100).toFixed(0)}} ${repairSeg}${shapeSeg}${contractSeg}${persistSeg}→ final{c ${(d.final.crosscut * 100).toFixed(0)} i ${(d.final.integration * 100).toFixed(0)}} [${rm.mode}/${rm.cls}] ${d.gate.fired ? `gate[${d.gate.pairs}p ${d.gate.repairs}r]` : 'gate[no-op]'} ${d.missingDraws.length ? `MISSING:${d.missingDraws.join(',')}` : ''} routes:${d.routes.join('|') || '?'}\n`);
+      process.stdout.write(`  [${id}] draw ${k + 1}/${K}: raw{c ${(d.raw.crosscut * 100).toFixed(0)} i ${(d.raw.integration * 100).toFixed(0)}} ${repairSeg}${shapeSeg}${contractSeg}${obligationSeg}${persistSeg}→ final{c ${(d.final.crosscut * 100).toFixed(0)} i ${(d.final.integration * 100).toFixed(0)}} [${rm.mode}/${rm.cls}] ${d.gate.fired ? `gate[${d.gate.pairs}p ${d.gate.repairs}r]` : 'gate[no-op]'} ${d.missingDraws.length ? `MISSING:${d.missingDraws.join(',')}` : ''} routes:${d.routes.join('|') || '?'}\n`);
     }
     const agg = {
       id, topology, surfaces: fx.order.length, K,
@@ -339,6 +362,7 @@ async function main() {
       ...(REPAIRGATE ? { afterRepair: { crosscut: stat(draws.map((d) => d.afterRepair.crosscut)), integration: stat(draws.map((d) => d.afterRepair.integration)) } } : {}),
       ...(SHAPEGATE ? { afterShape: { crosscut: stat(draws.map((d) => d.afterShape.crosscut)), integration: stat(draws.map((d) => d.afterShape.integration)) } } : {}),
       ...(CONTRACTGATE ? { afterContract: { crosscut: stat(draws.map((d) => d.afterContract.crosscut)), integration: stat(draws.map((d) => d.afterContract.integration)) } } : {}),
+      ...(OBLIGATION ? { afterObligation: { crosscut: stat(draws.map((d) => d.afterObligation.crosscut)), integration: stat(draws.map((d) => d.afterObligation.integration)) } } : {}),
       ...(PERSISTGATE ? { afterPersist: { crosscut: stat(draws.map((d) => d.afterPersist.crosscut)), integration: stat(draws.map((d) => d.afterPersist.integration)) } } : {}),
       final: { crosscut: stat(draws.map((d) => d.final.crosscut)), integration: stat(draws.map((d) => d.final.integration)) },
       routeDiversity: { distinct: new Set(draws.flatMap((d) => d.routes)).size, routes: [...new Set(draws.flatMap((d) => d.routes))] },
@@ -346,6 +370,7 @@ async function main() {
       ...(REPAIRGATE ? { repair: { totalFreeIds: draws.reduce((s, d) => s + (d.repair.freeIds || 0), 0), totalRepairs: draws.reduce((s, d) => s + (d.repair.repairs || 0), 0), totalFixed: draws.reduce((s, d) => s + (d.repair.fixed || 0), 0), drawsFlagged: draws.filter((d) => d.repair.surfacesFlagged > 0).length, leakAny: draws.some((d) => d.repair.leak) } } : {}),
       ...(SHAPEGATE ? { shape: { shapes: draws[0]?.shape?.shapes || {}, totalViolations: draws.reduce((s, d) => s + (d.shape.violations || 0), 0), totalRepairs: draws.reduce((s, d) => s + (d.shape.repairs || 0), 0), drawsFlagged: draws.filter((d) => d.shape.surfacesFlagged > 0).length, leakAny: draws.some((d) => d.shape.leak) } } : {}),
       ...(CONTRACTGATE ? { contract: { adminScoped: draws[0]?.contract?.adminScoped || [], totalRepairs: draws.reduce((s, d) => s + (d.contract.repairs || 0), 0), drawsFlagged: draws.filter((d) => d.contract.surfacesFlagged > 0).length, leakAny: draws.some((d) => d.contract.leak) } } : {}),
+      ...(OBLIGATION ? { obligation: { totalMissing: draws.reduce((s, d) => s + (d.obligation.missing || 0), 0), totalInvented: draws.reduce((s, d) => s + (d.obligation.invented || 0), 0), totalRepairs: draws.reduce((s, d) => s + (d.obligation.repairs || 0), 0), drawsFlagged: draws.filter((d) => d.obligation.surfacesFlagged > 0).length, leakAny: draws.some((d) => d.obligation.leak) } } : {}),
       ...(PERSISTGATE ? { persist: { stores: draws[0]?.persist?.stores || [], totalViolations: draws.reduce((s, d) => s + (d.persist.violations || 0), 0), totalRepairs: draws.reduce((s, d) => s + (d.persist.repairs || 0), 0), drawsFlagged: draws.filter((d) => d.persist.surfacesFlagged > 0).length, leakAny: draws.some((d) => d.persist.leak) } } : {}),
       // residualWorst = the FINAL-grade failure mode of the WORST draw (min integration, then min crosscut) + its
       // form/semantics class + a per-mode tally over all draws (the deliberation's headline readout).
@@ -368,8 +393,9 @@ async function main() {
     const repairSummary = REPAIRGATE ? `  | repair→ c ${(agg.afterRepair.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterRepair.integration.worst * 100).toFixed(0)}% (${agg.repair.totalFreeIds}freeIds/${agg.repair.totalRepairs}r/${agg.repair.totalFixed}fix on ${agg.repair.drawsFlagged}d)` : '';
     const shapeSummary = SHAPEGATE ? `  | shape→ c ${(agg.afterShape.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterShape.integration.worst * 100).toFixed(0)}% (${agg.shape.totalRepairs}r/${agg.shape.drawsFlagged}d)` : '';
     const contractSummary = CONTRACTGATE ? `  | contract→ c ${(agg.afterContract.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterContract.integration.worst * 100).toFixed(0)}% (${agg.contract.totalRepairs}r/${agg.contract.drawsFlagged}d; admin-scoped ${JSON.stringify(agg.contract.adminScoped)})` : '';
+    const obligationSummary = OBLIGATION ? `  | oblig→ c ${(agg.afterObligation.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterObligation.integration.worst * 100).toFixed(0)}% (${agg.obligation.totalMissing}m/${agg.obligation.totalInvented}o/${agg.obligation.totalRepairs}r on ${agg.obligation.drawsFlagged}d)` : '';
     const persistSummary = PERSISTGATE ? `  | persist→ c ${(agg.afterPersist.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterPersist.integration.worst * 100).toFixed(0)}% (${agg.persist.totalRepairs}r/${agg.persist.drawsFlagged}d; stores ${JSON.stringify(agg.persist.stores)})` : '';
-    console.log(`  => ${id} [${topology}] worst-of-K  raw c ${(agg.raw.crosscut.worst * 100).toFixed(0)}% i ${(agg.raw.integration.worst * 100).toFixed(0)}%${repairSummary}${shapeSummary}${contractSummary}${persistSummary}  final c ${(agg.final.crosscut.worst * 100).toFixed(0)}% i ${(agg.final.integration.worst * 100).toFixed(0)}%  vs baseline ${b.c * 100}/${b.i * 100}  routes:${agg.routeDiversity.distinct}  ${agg.verdict}  (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
+    console.log(`  => ${id} [${topology}] worst-of-K  raw c ${(agg.raw.crosscut.worst * 100).toFixed(0)}% i ${(agg.raw.integration.worst * 100).toFixed(0)}%${repairSummary}${shapeSummary}${contractSummary}${obligationSummary}${persistSummary}  final c ${(agg.final.crosscut.worst * 100).toFixed(0)}% i ${(agg.final.integration.worst * 100).toFixed(0)}%  vs baseline ${b.c * 100}/${b.i * 100}  routes:${agg.routeDiversity.distinct}  ${agg.verdict}  (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
     console.log(`     RESIDUAL WORST draw: ${agg.residualWorst.mode} [${agg.residualWorst.cls.toUpperCase()}]  (worst final c${(agg.residualWorst.worstFinal.c * 100).toFixed(0)}/i${(agg.residualWorst.worstFinal.i * 100).toFixed(0)}) — ${agg.residualWorst.cls === 'semantics' ? 'oracle-blind-UNREACHABLE → (C) boundary candidate' : agg.residualWorst.cls === 'form' ? 'form defect → a lever can reach it' : agg.residualWorst.cls}`);
     console.log(`     mode tally: ${Object.entries(agg.residualWorst.modeTally).map(([m, v]) => `${m}:${v.n}(${v.cls})`).join(', ')}`);
     console.log(`     attribution: ${agg.attribution.map((a) => `${a.layer}:${a.mechanism}`).join(', ')}\n`);
