@@ -28,8 +28,10 @@ monolithic frontier once an epic exceeds ~9 surfaces (which silently drops cross
 3. **[`docs/REPORT-2026-06-16.md`](docs/REPORT-2026-06-16.md)** — the full evidence synthesis (M0 → the
    M-coh ladder → the skeleton double dissociation).
 4. **[`studies/build-gap/RESULTS.md`](studies/build-gap/RESULTS.md)** + **[`DESIGN.md`](studies/build-gap/DESIGN.md)**
-   — the live experiments and apparatus (the workspace epic, the scale ladder, the cohesion oracle).
-5. The **Era-1 docs** (CHARTER, OBLIGATIONS, BUILD-TOLERANT-REFRAME, RESEARCH-PROGRAM, RECONCILIATION,
+   — the build-gap experiments and apparatus (the workspace epic, the scale ladder, the cohesion oracle).
+5. **[`studies/meta-search/`](studies/meta-search/)** — the **current live instrument**: DESIGN.md + FREEZE.md
+   (frozen apparatus), the P0–P2c records, the EVO-GLEANINGS batches, and Phase −1 (defer to STATE.md for status).
+6. The **Era-1 docs** (CHARTER, OBLIGATIONS, BUILD-TOLERANT-REFRAME, RESEARCH-PROGRAM, RECONCILIATION,
    STAIRCASE-RESULTS, PRIOR-ART-COMPLETENESS, KILL-TESTS, ARCHETYPE-PREMISE, FINDINGS) — historical
    headline framing; load-bearing **findings** still feed the current program. Read as evidence, not goal.
 
@@ -40,11 +42,15 @@ STATE.md               CURRENT goal + status (read first). The source of truth f
 docs/                  PROPOSAL-HYBRID (north star) + REPORT synthesis; plus the Era-1 framing docs
                        (charter, research program, obligations, staircase, prior-art) — banners on top.
 studies/               The CURRENT live experiments (the cheap-vs-frontier / hybrid work).
+  meta-search/         the pre-registered M5 meta-search instrument — the ACTIVE program: DESIGN.md +
+                       FREEZE.md (frozen apparatus), the P0–P2c result records, the EVO-GLEANINGS batches,
+                       Phase −1, src/ + gates/. See STATE.md for live status.
   build-gap/           M0 + the M-coh cohesion ladder: the workspace epic, the scale-d{1..4} ladder,
                        the cohesion oracle, the frozen-skeleton lever (DESIGN.md + RESULTS.md).
   oneshot-capacity/    the naked per-model break-point sub-study (feeds the Phase-2 local story).
-okf/                   Imported knowledge bundle on automated agentic-workflow optimization (the M5
-                       horizon — sits AFTER the system clears the reliability gate; see STATE.md).
+okf/                   Imported knowledge bundle on automated agentic-workflow optimization. The M5 search
+                       was BROUGHT FORWARD as the active discovery instrument (see studies/meta-search/ +
+                       STATE.md); the bundle stays REFERENCE material, not the goal.
 schemas/               JSON Schema for every artifact that crosses a boundary (snapshot, cost,
                        outcome-manifest, planted-gaps, build-completeness, scorecard).
 strategies/            The methods under test, behind one adapter contract.
@@ -86,11 +92,15 @@ npm run battery:live   # live against the headless `claude` CLI (SPENDS MONEY)
 is intact (`npm run selftest` green; `battery:mock` runs the full matrix at zero spend; the edge-join
 mechanism is parked in `archive/`). The live work is the **cohesion ladder** under `studies/build-gap/`:
 M0 (obligation-blindness is tier-independent), M-coh-1.5 (frozen-skeleton + retry = bare opus at $0),
-M-coh-3 (monolithic frontier breaks at N≈9), M-coh-2 (the skeleton double dissociation).
+M-coh-3 (monolithic frontier breaks at N≈9), M-coh-2 (the skeleton double dissociation), and M-coh-2.5
+(skeleton provenance — **DONE**: frontier authoring necessary; cost win unproven at N=5).
 
-**Next concrete step** (per [`STATE.md`](STATE.md)): **M-coh-2.5 — skeleton provenance** (does the
-orchestration layer need frontier, and what does it cost?), then **cost instrumentation** + a
-**cost-optimized all-frontier baseline** — the headline cost-vs-reliability metric, currently missing.
+**Current frontier** (per [`STATE.md`](STATE.md), the source of truth — read it for live status): M-coh-2.5 is
+resolved, and the active work is the pre-registered **M5 meta-search instrument** under
+[`studies/meta-search/`](studies/meta-search/) — P0→P2c done (a PROVISIONAL cost×reliability crossover at N≥13
+vs an opus-whole proxy), the P3 prerequisites built, then the **EVO-GLEANINGS** program and the **Phase −1**
+GO/HALT characterization. The immediate open step is **Phase −1 block B**; the two remaining P3 prerequisites
+are user-deferred **live-spend** runs (the settled routed baseline + the live co-measured INTEG head-to-head).
 
 ## Design rules (non-negotiable — see CHARTER §6)
 

@@ -32,8 +32,13 @@ The default prompt asks whether the next research step should be:
 - move toward freeze
 - do a smaller preparatory action first
 
-That default is based on the current STATE.md and
-studies/meta-search/COEVO-RUNG1-PROGRESS.md handoff.
+That default is anchored to whatever STATE.md and the current
+studies/meta-search handoff flag as the open decision — re-read those before a
+live run rather than assuming a fixed question. (UPDATE 2026-06-19: the original
+text pinned studies/meta-search/COEVO-RUNG1-PROGRESS.md, which is now an earlier
+era — the frontier has since moved to the P3-prerequisites, EVO-GLEANINGS, and
+Phase -1 work. Always defer to the live STATE.md / latest meta-search handoff
+for what the open decision actually is.)
 
 ## Dry run
 
@@ -48,6 +53,10 @@ Prerequisites:
 
 - Codex CLI is logged in. The default binary path is
   /home/cstaulbee/.openclaw/npm/node_modules/@openai/codex/bin/codex.js.
+- Set CODEX_HOME=/home/cstaulbee/.codex when invoking the deliberation tool. The
+  default env CODEX_HOME points at an authless home, so codex turns return 401 /
+  "Missing bearer" without it. A 401 here is NOT a revoked session — do NOT
+  re-login; just set CODEX_HOME=/home/cstaulbee/.codex.
 - The claude CLI is logged in and can run claude-opus-4-8.
 - You are comfortable spending tokens on both services.
 

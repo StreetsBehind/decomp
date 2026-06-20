@@ -43,6 +43,13 @@ to K6). With nothing trustworthy to retrieve and the highest K3 leak surface of 
 one mechanism whose value is gated on an unbuilt external-validity prerequisite. It is "an optional enhancement,
 reverting is free" (§10) → switched on *after* the 2nd oracle lands, not now.
 
+> **UPDATE 2026-06-19 (knowledge-conditioning UNBLOCKED).** The blocking prerequisite above is now MET: the
+> **2nd hand-authored oracle EXISTS + is GREEN** (`src/oracle2.mjs` + `ORACLE2.md`, committed `5f9b452`;
+> `gates/pre-p3-axis-gate.mjs` marks prereq (iii) second-hand-authored-oracle ✅ MET). So
+> knowledge-conditioning (§10) is **no longer oracle-blocked** and is newly actionable (it remains the
+> highest K3-leak surface, so build with care). The "DEFERRED — blocked until the 2nd oracle exists" text
+> above is now **historical**.
+
 ## Method — why a calibrated landscape, and what that does/doesn't buy
 
 A single **live** N=13 eval **exceeds 150s** (measured this session on the free gateway), so a multi-generation
@@ -109,6 +116,26 @@ N=17.** The instrument→product step — *the search can find the product* — 
 5. **Knowledge-conditioning not switched on** (blocked on the 2nd oracle, above).
 
 ## Next (P2c→P3)
+
+> **UPDATE 2026-06-18/19 — the "Next (P2c→P3)" plan below was SUPERSEDED; the P2c proposed winner is NOT
+> freezable as-is.** Three of the prerequisites listed in this section + in "Does NOT claim" items 2–5 have
+> moved on:
+> - **Routed all-frontier baseline = now BUILT** (`ROUTED-BASELINE.md`). It **builds 100% through D=3**, which
+>   means the P2b/P2c cost×reliability "crossover" was measured against a **weak opus-whole proxy**, not a
+>   settled routed baseline — so the result is a cost/reliability **TRADE, not dominance**. (The earlier
+>   "iProxy / external workstream" caveat is now resolved into a concrete artifact.)
+> - **2nd hand-authored oracle = now EXISTS + GREEN** (`src/oracle2.mjs` + `ORACLE2.md`, committed `5f9b452`;
+>   `gates/pre-p3-axis-gate.mjs` prereq (iii) ✅ MET) — so the "external validity" bullet's oracle prerequisite
+>   and "Does NOT claim" item 5 (knowledge-conditioning blocked) are **cleared/unblocked**.
+> - **Terminal plan SUPERSEDED 2026-06-18 by the head-to-head** (`HEAD-TO-HEAD.md`): the P2c proposed winner is
+>   **TOPOLOGY-GATED** (WINS on lifecycle/membership, LOSES on quota/approval), so it is **NOT freezable as a
+>   single fixed config**. The terminal "freeze the P2c proposed winner + sequestered-TEST falsification" step
+>   below is **replaced** by the live **A × B co-evolution program** (`COEVOLUTION-SPEC.md`).
+> - **The two genuinely-unmet P3 prereqs are now LIVE-SPEND runs the USER DEFERRED 2026-06-19**: (i) the
+>   *settled* routed baseline, (ii) the live co-measured INTEG head-to-head. Do not launch those without an
+>   explicit go-ahead (real frontier/gateway spend).
+>
+> The original "Next" bullets are kept below as the historical P2c record.
 
 - **The routed all-frontier baseline** (external workstream) — converts the opus-whole/INTEG-proxy comparison
   into the full lethal-quadrant cost win, and gives the per-cell veto a *measured* baseline INTEG.

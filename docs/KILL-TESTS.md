@@ -19,7 +19,7 @@ Append-only log in the spirit of [`STAIRCASE-RESULTS.md`](STAIRCASE-RESULTS.md).
 | Kill-test | Branch | Verdict |
 |---|---|---|
 | **#1 cost-weighted re-score on hearth** | *kills if quadrants not separable* | **NOT KILLED.** 37% of hearth's 162 oracle edges are lethal (silent+expensive), cleanly typed, only *coarsely* aligned with the seam proxy. Uniform edge recall is 58% composed of cheap-quadrant edges the build recovers for free. |
-| **#2 build-batch history as ground truth** | *how big is the lethal quadrant in practice?* | _pending — mining in progress_ |
+| **#2 build-batch history as ground truth** | *how big is the lethal quadrant in practice?* | **CORROBORATED.** ~11 concrete shipped-then-detonated lethal-quadrant misses (authz/RLS, tenancy, consistency, race, data-loss, prod-blinding observability), all past a green automated gate (`validation:PASS`), each caught only later by smoke/audit/user-report. The data structurally under-records silent misses, so ~11 is a floor, not an estimate. |
 
 **Consequence:** the §10 ρ re-spec (report recall/ρ **per quadrant**, gate the deferral claim on the
 **lethal-quadrant tail**, never the median) is **supported by #1**. The strict method-re-ordering

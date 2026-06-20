@@ -5,6 +5,12 @@ does not replace its machinery. The stage-by-stage method, the lever menu, the b
 every M0 → M-coh finding survive unchanged — they are now read in service of one product question.
 Plain-language on purpose, matching v1._
 
+> **⚠️ Status banner (2026-06-19).** The **question** and the **win condition** in this doc are DURABLE and
+> current. The **"What changes in the roadmap"** and **"Status"** sections below are a **2026-06-16 snapshot**
+> and have been superseded (M-coh-2.5 is DONE; the M5 meta-search instrument was brought forward and run P0→P2c
+> + EVO-GLEANINGS). For live status / next-action, **[`STATE.md`](../STATE.md) is the operational source of
+> truth.**
+
 ---
 
 ## The question
@@ -109,12 +115,17 @@ Milestones are re-pointed at the win condition, not discarded:
   dominance); (b) **whether frontier orchestration is necessary at all** — if a *cheap-authored* skeleton
   is just as reliable, then you don't need frontier in the loop and the cheaper answer is all-local (a
   *different* system than the one hypothesized, but it would still need to clear the reliability gate).
-  Run it next.
-- **Cost instrumentation** — the battery must report orchestration tokens vs coding tokens per epic, and
-  compute the **hybrid-vs-cost-optimized-all-frontier** total per task. This is the headline metric now,
-  and it is currently missing.
-- **A cost-optimized all-frontier baseline** — implement the bar honestly (cloud routing across
-  opus/sonnet/haiku), not naive all-opus. Without it the cost win is unconvincing.
+  **DONE (2026-06-16, [`../studies/build-gap/MCOH25-RESULTS.md`](../studies/build-gap/MCOH25-RESULTS.md)):**
+  frontier (opus-class) authoring IS necessary — cheap/sonnet authors fail the shared-shape seam; orchestration
+  cost ≈ $0.40/epic; at N=5 the hybrid *loses* on cost (reliability parity, not dominance). The active crux is
+  now the **checker lever × scale**, pursued via the brought-forward M5 meta-search program ([`../STATE.md`](../STATE.md)).
+- **Cost instrumentation** — DONE: cost is reported/analytic per config (P2b/P2c) and per-cell $ appears in
+  the head-to-head ([`../studies/meta-search/HEAD-TO-HEAD.md`](../studies/meta-search/HEAD-TO-HEAD.md)).
+- **A cost-optimized all-frontier baseline** — BUILT (cloud routing across opus/sonnet/haiku,
+  [`../studies/meta-search/ROUTED-BASELINE.md`](../studies/meta-search/ROUTED-BASELINE.md)). It builds 100%
+  through D=3, so the P2b/P2c "crossover" was vs the weak opus-whole proxy — a cost/reliability TRADE, not
+  dominance. What remains open is the **SETTLED** routed baseline + a **live co-measured INTEG** head-to-head
+  (deferred live-spend runs).
 - **The per-surface checker lever (M-coh-2)** stays doubly-motivated: it closes the contender's
   statistical reliability residue at scale *and* it is the verification-design that lives in the
   orchestration layer.
@@ -139,8 +150,9 @@ different direction on framing — recorded so the pivot is deliberate:
 
 - **The OKF's "next step" is M5 = automated workflow search (GEPA-first)** — a contribution to the
   *academic agentic-workflow-search literature*. This program's deliverable is a **product** (the system
-  that beats all-frontier on cost). The search is a tool that comes *after* the system is shown to work,
-  not the goal.
+  that beats all-frontier on cost). Here the search was **brought forward** as the *instrument* used to
+  discover and validate the fixed hybrid config now (the meta-search program, P0→P2c) — the search is the
+  instrument and the frozen config is the product; it is not the goal in itself.
 - **The OKF is API-only and silent on local-inference economics** — exactly the substrate Phase 2 (and
   the fixed-cost thesis) needs.
 - **Contribution re-ranking.** The OKF says "the non-gameable fitness *is* the contribution." Here the
@@ -149,13 +161,16 @@ different direction on framing — recorded so the pivot is deliberate:
   (>15,000-example break-even for automated design) argues the static, hand-built system — which pays off
   immediately — should precede any search.
 
-M5 / workflow-search and the lens-ensemble precursor stay on the roadmap; they sit **after** the system
-is shown to clear the reliability gate and beat all-frontier on cost, not before.
+The **lens-ensemble precursor** stays on the roadmap *after* the system clears the reliability gate and beats
+all-frontier on cost. The **M5 / workflow-search** instrument, by contrast, was **brought forward** and is the
+active apparatus for the current crux (see [`../STATE.md`](../STATE.md)).
 
 ## Status
 
 Draft north-star (2026-06-16, rev. 2), **committed for iteration.** Substrate decision: free gateway
-first (proxies fixed cost), owned local hardware later (realizes it). Next experiment under this frame:
-**M-coh-2.5 skeleton provenance** (orchestration cost + necessity) + the **cost-instrumentation /
-cost-optimized-all-frontier baseline** (the headline metric). No findings were edited; this doc only
-reframes the headline question of `PROPOSAL.md`.
+first (proxies fixed cost), owned local hardware later (realizes it). **Update 2026-06-19:** M-coh-2.5 is
+resolved, cost-instrumentation + the routed all-frontier baseline are built, and the M5 meta-search instrument
+was brought forward and run P0→P2c (PROVISIONAL crossover at N≥13 vs the opus-whole proxy) + the EVO-GLEANINGS
+program; the genuinely-open items are the deferred **live-spend** runs (settled routed baseline + live
+co-measured INTEG head-to-head) and **Phase −1 block B**. See [`../STATE.md`](../STATE.md) for live status. No
+findings were edited; this doc only reframes the headline question of `PROPOSAL.md`.

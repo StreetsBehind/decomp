@@ -29,10 +29,17 @@ history (KT#2) — and a blind free-model panel reproduced the lethal typing wit
 a clean 0/5-vs-0/5-vs-80% ablation, not a single run.
 
 # The consequence
-For this program, the field's open question is a **closed finding to contribute.** When M5 runs a search,
-it should use the two-term fitness from the start — not because theory says so, but because this program's
-own data shows the one-term version is the thing that breaks. See the
-[experiment plan](/synthesis/m5-experiment-plan-gepa-first.md).
+For this program, the field's open question is a **closed finding to contribute.** The realized M5 search
+**did use the two-term fitness from the start** — not because theory said so, but because this program's
+own data showed the one-term version is the thing that breaks. See the original
+[experiment plan](/synthesis/m5-experiment-plan-gepa-first.md) (now superseded by the realized run).
+
+> **UPDATE 2026-06-19:** the original closer was a forward-looking recommendation ("When M5 runs a search,
+> it should use the two-term fitness from the start"). It has been **acted on**: the brought-forward
+> meta-search ran P0→P2c with the two-term performance-plus-per-cell-veto fitness wired in from the start
+> (P0 instrument self-validation gated on it; the P2c search converged under it without reward-hacking the
+> scalar). The existence-proof core above is unchanged — the realized search is now *confirming evidence*
+> for it rather than a future test of it. All PROVISIONAL. See `../../STATE.md`.
 
 # Citations
 [1] docs/REPORT-2026-06-16.md §3, §8 (this repo)

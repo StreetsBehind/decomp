@@ -36,8 +36,13 @@ is an unvalidated gesture at fixing this.
 So the program's contribution to this literature is **the fitness, not the optimizer.** It can adopt
 [GEPA](/methods/gepa.md) or [OpenEvolve](/methods/openevolve.md) off the shelf; what it uniquely supplies
 is the thing those tools assume you already have and most users don't — a trustworthy evaluator. This is
-the publishable angle and the reason the program is *ahead* of the field on the dimension that matters,
-even though it has not yet run a search.
+the publishable angle and the reason the program is *ahead* of the field on the dimension that matters.
+
+> **UPDATE 2026-06-19:** the original closer ("…even though it has not yet run a search") is now false —
+> the program's own meta-search has run **P1→P2c (PROVISIONAL)** *on top of* this non-gameable fitness
+> (the search is the instrument; the fitness is what made it non-gameable). The wedge thesis is unchanged
+> and is in fact strengthened: the search converged on a $0 cheap-build + deterministic integration-gate
+> config under the two-term/per-cell-veto fitness rather than reward-hacking the scalar. See `../../STATE.md`.
 
 # Citations
 [1] docs/REPORT-2026-06-16.md §3, §7.1, §10 (this repo)

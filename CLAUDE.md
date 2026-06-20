@@ -6,7 +6,11 @@ those first for what the program is currently doing.
 
 ## Frozen — do not edit
 Pre-registration / frozen apparatus: `studies/meta-search/DESIGN.md`, `studies/meta-search/FREEZE.md`, and
-everything under `studies/build-gap/`. Treat these as read-only unless explicitly told otherwise.
+everything under `studies/build-gap/`. Treat these as read-only unless explicitly told otherwise. **One sanctioned
+exception for `DESIGN.md`:** purely **additive, non-void-invariant** amendments (anything that does NOT touch the
+weights vector, the per-cell veto definition, the parity δ/α, or the committed TEST-set hash) are permitted
+**when logged** in [`studies/meta-search/AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md) per its void-rule.
+`FREEZE.md` and the `studies/build-gap/` tree remain strictly read-only.
 
 ## OKF knowledge bundle — how agents should use it for context
 

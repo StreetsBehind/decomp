@@ -1,9 +1,20 @@
 # Lens-Ensemble Residual Probe — pre-registered spec (2026-06-16)
 
-> **Roadmap position — read [`STATE.md`](../STATE.md) first.** This is a *proposed-next* experiment. Per
-> the current north star ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)), it sits **after** the system clears
-> the reliability gate and the cost bar (alongside M5 / workflow-search), not before the crux experiments
-> (M-coh-2.5 provenance + cost instrumentation).
+> **Roadmap position — read [`STATE.md`](../STATE.md) first.** This is a *deferred* experiment. Per the
+> current north star ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)), it sits **after** the system clears the
+> reliability gate and the cost bar.
+>
+> **UPDATE 2026-06-19 — the original "alongside M5 / before the crux experiments" framing below is stale.**
+> M5 / meta-search was brought forward and is now the **active program** (P0→P1→P2a→P2b→P2c done; the search
+> rediscovers the cheap-skeleton + integration-gate config; now in P3-prerequisites + EVO-GLEANINGS). The
+> crux experiments it was deferred behind are **done** — M-coh-2.5 provenance + cost instrumentation
+> concluded. This probe remains **deferred behind the live-spend P3 work** (the two unmet P3 prereqs are
+> live-spend runs the user deferred 2026-06-19). Defer the exact ordering to STATE.md.
+>
+> *(Original framing, kept for history:)* Per the current north star
+> ([`PROPOSAL-HYBRID.md`](PROPOSAL-HYBRID.md)), it sits **after** the system clears the reliability gate and
+> the cost bar (alongside M5 / workflow-search), not before the crux experiments (M-coh-2.5 provenance + cost
+> instrumentation).
 
 _Does decomposing a thin plan through a panel of **lens-diverse** experts recover lethal-quadrant
 obligations that **no single pass** finds — and how much lethal mass remains invisible even to the

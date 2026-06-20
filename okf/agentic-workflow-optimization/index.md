@@ -7,9 +7,11 @@ okf_version: "0.1"
 > **Orientation — this is reference material, not the repo's goal.** The `decomp` project's current north
 > star is the **hybrid cost-vs-reliability product** (`../../STATE.md`, `../../docs/PROPOSAL-HYBRID.md`):
 > a system where a frontier model orchestrates and lightweight models do all the coding, beating
-> all-frontier on cost at equal reliability. Automated workflow-search (the M5 horizon distilled here) is
-> a **tool that comes after** the system is shown to work, not the deliverable. Here the non-gameable
-> fitness is the **instrument** that proves the reliability gate; the **system is the product**.
+> all-frontier on cost at equal reliability. Automated workflow-search (distilled here) is a
+> **tool/instrument the program is using NOW** to discover and validate that fixed hybrid config — the
+> search is the instrument, the **frozen config is the product** (it is reference material, not the goal).
+> Here the non-gameable fitness is the **instrument** that proves the reliability gate; the **system is
+> the product**.
 
 A distilled knowledge bundle covering (a) the external research field of **automatically
 searching/optimizing agentic workflows** for building software, and (b) the empirical

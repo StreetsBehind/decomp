@@ -1,7 +1,8 @@
 # OKF (Open Knowledge Format) — study of `GoogleCloudPlatform/knowledge-catalog` + how to take full advantage of our bundle
 
 > Study date 2026-06-19. Source studied: `GoogleCloudPlatform/knowledge-catalog` (cloned, OKF v0.1 Draft).
-> Spec: that repo's `okf/SPEC.md`. Reference toolchain: its `okf/src/enrichment_agent/` (Python) and
+> Spec: the upstream OKF spec at `GoogleCloudPlatform/knowledge-catalog` → `okf/SPEC.md` (external; not a
+> file in this repo). Reference toolchain: its `okf/src/enrichment_agent/` (Python) and
 > `toolbox/` (TypeScript, GCP-bound). This doc records what the format/tooling/agent-consumption model are,
 > where **our** `okf/agentic-workflow-optimization/` bundle stands against them (measured), and the concrete
 > moves to take full advantage. Findings were produced by four parallel read-agents over the clone and then

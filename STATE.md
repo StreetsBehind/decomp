@@ -5,6 +5,31 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-4 UPDATE (2026-06-19) — read this first; it supersedes the "SINGLE NEXT ACTION" at the bottom of
+> the Session-3 stack below.** Two threads advanced and are COMMITTED on `main` (HEAD `4d156bf`, working tree
+> clean, == origin/main; there is no separate feature branch). **(1) Phase −1 instruments BUILT + block A RAN**
+> (commit `86c06c3`): the replay-anchored labeler `src/label-draw.mjs` (self-test 9/9), the check-of-checks
+> manifest `gates/phase-neg1-manifest.mjs` (14/14), and the two-axis harness `phase-neg1.mjs`; block A ran (3
+> reps × 3 cells × K8). Record: `studies/meta-search/PHASE-NEG1-RESULTS.md`. **(2) The EVO-GLEANINGS program** —
+> the external evo-hq/evo instrument folded into the frozen meta-search apparatus across three clean commits:
+> **Batch 1** (`9087896`) = the six additive/audit-only gleanings (#5 aggregate-consistency lint, #2a
+> GAMING-RISKS register, #2b-PRE pre-verifier, #1 axis-check + the pre-P3 proxy→real BLOCKER gate + DESIGN §6b,
+> #3 strategy-registry, #4 eval-epoch stamping); **Batch 2 #3** (`2b8e2c3`) = the active strategy ablation
+> (`mu_best` vs `pareto_per_cell` → ROBUST-by-insensitivity); **Batch 2 #2b-POST** (`75c2789`) = the
+> score-reproducibility KILL (2×SE band). Records: `EVO-GLEANINGS-BATCH1-RESULTS.md`,
+> `BATCH2-3-STRATEGY-ABLATION-RESULTS.md`, `BATCH2-2-SCORE-REPRO-RESULTS.md`, `GAMING-RISKS.md`,
+> `EVAL-EPOCH-PROTOCOL.md`. **P0 GREEN 5/5 bit-identical and the frozen tree untouched throughout** — the only
+> `DESIGN.md` change is the additive, report-only §6b (logged in `AMENDMENTS.md`). **Corrected status:** the 2nd
+> hand-authored oracle ALREADY EXISTS + is GREEN (`src/oracle2.mjs`) and `gates/pre-p3-axis-gate.mjs` marks
+> prereq (iii) ✅ MET → **knowledge-conditioning is now UNBLOCKED**. **THE TWO genuinely-unmet P3 prereqs are
+> LIVE-SPEND runs the USER DEFERRED 2026-06-19** (no live spend without an explicit go-ahead): (i) the SETTLED
+> routed all-frontier baseline, (ii) the LIVE co-measured INTEG head-to-head. **▶ NEXT ACTION (no-spend):**
+> Phase −1 **block B** in a later session (the temporal separation IS the measurement) → compute the
+> instability band → apply the pre-committed GO/HALT rule (`PHASE-NEG1-RESULTS.md` §4). No-spend menu also open:
+> Batch-2 **#4 bump-op** (needs a candidate-independent defect fixture + a new FREEZE record) → **#6
+> literature-ideator**; knowledge-conditioning. Do NOT wire MAP-Elites / soften the statistic / press "go" until
+> a clean GO._
+>
 > _Last updated: 2026-06-18, **Session-3** (the "RUNG-1 / 92/92" was VOID — a grader bug, FIXED; real re-grade
 > = ALL 12 cells FAIL worst-of-K=8). **Session-3 progress:** (1) the `rate()` footgun is HARDENED in both
 > `coevo-rung1.mjs` + `head-to-head.mjs` (absent/empty/harnessError grades → FAIL, not the fake 1.0 that caused
@@ -90,8 +115,10 @@
 > `unresolved → human adjudication`, NEVER auto-(C)** — an unbuilt lever is a target, not a wall). Statistic = **raw-min
 > K=8** by default (softening = a USER win-condition call); ONE metric across search/freeze/sequestered-TEST. Gated by
 > an **instrument self-test manifest** (every B5 guard must be shown to FIRE — the generalized `rate()` defense).
-> **THE SINGLE NEXT ACTION: build the check-of-checks manifest, then run the two-axis Phase −1 characterization** —
-> NOT MAP-Elites, NOT more lever design, NOT metric softening, until a clean GO._
+> **THE SINGLE NEXT ACTION [Session-3 — SUPERSEDED by the Session-4 update at the top of this file: the manifest
+> IS built and block A ran (commit `86c06c3`); the open Phase −1 step is now block B]: build the check-of-checks
+> manifest, then run the two-axis Phase −1 characterization** — NOT MAP-Elites, NOT more lever design, NOT metric
+> softening, until a clean GO._
 
 ---
 
@@ -274,8 +301,9 @@ mechanism** (the P2b discipline): **celled MAP-Elites** (`src/map-elites.mjs` + 
 hook; K8 rediscovery 28/30, K4 no-collapse median 17 cells), **counterfactual credit-attribution**
 (skeleton-first + the 2×SE mis-attribution kill, `src/credit.mjs`; evals charged to K5), and the
 **surrogate-scorer under K7** (`src/surrogate.mjs`; fidelity ρ=0.96, the kill fires on decorrelation). The 4th —
-**knowledge-conditioning — is deferred with reason** (its `confirmed`-record store is blocked until the 2nd
-hand-authored oracle exists; highest K3 leak surface; optional). All flag-gated/injected → **P0 re-GREEN 5/5, K8
+**knowledge-conditioning** was deferred at P2c (its `confirmed`-record store was blocked on the 2nd
+hand-authored oracle; highest K3 leak surface). **UPDATE 2026-06-19: that oracle now exists + is GREEN
+(`src/oracle2.mjs`), so knowledge-conditioning is UNBLOCKED** (optional; still the highest K3-leak surface). All flag-gated/injected → **P0 re-GREEN 5/5, K8
 29/30 bit-identical**, frozen invariants untouched → nothing voided. **The search** (one live N=13 eval >150s, so
 it ran on a deterministic landscape **calibrated to the live P2a/P2b numbers** — the economics claim is P2b's,
 this run's claim is only that the SEARCH converges, cf. K8): from the **naive** pool, with all three mechanisms
@@ -357,7 +385,14 @@ erosion frontier** — membership-d4/d5 is runnable NOW (oracle generalizes; quo
 new d4 templates); or (2) **move toward freeze** + the once-only sequestered-TEST. The gene program is parked
 unless erosion appears.
 
-P2c apparatus UNCOMMITTED (user has not asked to commit); P3-prereq + head-to-head apparatus COMMITTED.
+**UPDATE 2026-06-19: the meta-search apparatus is now COMMITTED on `main`** (the P2c search machinery
+`src/{map-elites,credit,surrogate}.mjs`, the P3-prereqs, and the co-evolution/head-to-head apparatus all landed
+with the EVO-GLEANINGS commits). **Latest on this instrument (full detail in the Session-4 update at the top of
+this file):** the EVO-GLEANINGS program — Batch 1 (six additive/audit-only gleanings, `9087896`), Batch 2 #3
+strategy-ablation (`2b8e2c3`), Batch 2 #2b-POST score-repro KILL (`75c2789`) — plus the **Phase −1 instruments +
+block-A run** (`86c06c3`, record `PHASE-NEG1-RESULTS.md`); **P0 GREEN 5/5 bit-identical and the frozen tree
+untouched** throughout (the only `DESIGN.md` change is the additive report-only §6b, logged in `AMENDMENTS.md`).
+The remaining Phase −1 step is **block B** (a later session) → instability band → the GO/HALT rule.
 
 ### Two live tensions in the plan (open, deliberate)
 
@@ -384,10 +419,13 @@ P2c apparatus UNCOMMITTED (user has not asked to commit); P3-prereq + head-to-he
 The OKF bundle (`okf/agentic-workflow-optimization/`) does **not** contradict any finding, but it pulls a
 different way on framing: its "next step" (**M5 = automated workflow search, GEPA-first**) is an
 *academic* contribution to the agentic-workflow-search literature; **this program's deliverable is a
-product** (the system that beats all-frontier on cost). M5 / workflow-search and the lens-ensemble
-precursor stay on the roadmap but sit **after** the system clears the reliability gate and the cost bar —
-not before. (The OKF's own skeptical source, "Inefficiencies of Meta Agents," argues the same ordering:
-build the static system first.)
+product** (the system that beats all-frontier on cost). **UPDATE: the M5 / workflow-search instrument was
+brought forward** as the *instrument → fixed product* discovery tool for the current crux (the meta-search
+program, P0→P2c + EVO-GLEANINGS) — it is the active apparatus now, NOT a later academic horizon. The
+**lens-ensemble precursor** still stays on the roadmap *after* the system clears the reliability gate and the
+cost bar. (The OKF's skeptical source, "Inefficiencies of Meta Agents," still argues for building the static
+system first; here the search is the *instrument* that proves the reliability gate honestly, and the frozen
+config is the product.)
 
 ---
 

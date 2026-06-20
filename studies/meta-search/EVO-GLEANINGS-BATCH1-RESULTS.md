@@ -103,14 +103,22 @@ green after the edit.
 
 ## Standing posture
 
-- **The apparatus is UNCOMMITTED.** The user has not asked to commit. All Batch-1 work sits as uncommitted
-  state in the MAIN working tree on top of the prior uncommitted #5 / Phase −1 / lever work.
-- **Batch 2 remains clean-restart-gated** and was NOT built: active strategy ablation (`mu_best` vs
+- **UPDATE 2026-06-19: the apparatus is now COMMITTED.** Batch 1 (all six gleanings) is committed as
+  `9087896` on `main`, stacked on the Phase −1 instruments + block A commit `86c06c3`. The working tree is
+  clean (`runs/` gitignored). *(Original posture, now stale, preserved below for history.)*
+- ~~**The apparatus is UNCOMMITTED.** The user has not asked to commit. All Batch-1 work sits as uncommitted
+  state in the MAIN working tree on top of the prior uncommitted #5 / Phase −1 / lever work.~~
+- **UPDATE 2026-06-19: two Batch-2 epochs are now BUILT + COMMITTED on `main`** — epoch #3 active strategy
+  ablation (`mu_best` vs `pareto_per_cell`) as `2b8e2c3`, and the #2b POST score-reproducibility kill
+  (audit→kill) as `75c2789`. **Only the #4 eval-epoch bump-op and the #6 literature-ideator remain**, both
+  still clean-restart-gated. *(Original "Batch 2 ... was NOT built" line, now stale, preserved below.)*
+- ~~**Batch 2 remains clean-restart-gated** and was NOT built: active strategy ablation (`mu_best` vs
   `pareto_per_cell`), the #2b POST score-reproducibility kill (audit→kill), the #4 eval-epoch **bump**
-  operation (a restart event + a new FREEZE record / new pre-registration), and the #6 literature-ideator.
-  Cross-cutting rule (DECISION-BRIEF §"Cross-cutting"): **at most one trajectory-perturbing change per
-  clean-restart epoch**; never co-batch active-strategy + epoch-bump + new-gene + POST-kill; label every
-  trace `(eval_epoch, strategy)`; never read plateau evidence across mixed strategies or mixed epochs.
+  operation (a restart event + a new FREEZE record / new pre-registration), and the #6 literature-ideator.~~
+  Cross-cutting rule (DECISION-BRIEF §"Cross-cutting") still governs the remaining epochs: **at most one
+  trajectory-perturbing change per clean-restart epoch**; never co-batch active-strategy + epoch-bump +
+  new-gene + POST-kill; label every trace `(eval_epoch, strategy)`; never read plateau evidence across mixed
+  strategies or mixed epochs.
 
 **Bottom line:** Batch 1 complete. P0 GREEN 5/5. All eight Batch-1 / Phase −1 self-test gates pass
 (the pre-P3 gate correctly BLOCKED), zero sibling-gate regressions, no frozen invariant touched, frozen

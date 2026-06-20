@@ -8,8 +8,12 @@
 
 **Freeze status: FROZEN 2026-06-17** (full record + content hashes: [`FREEZE.md`](FREEZE.md)). Taken after
 the rev.3 freeze-readiness re-check returned GO-WITH-FIXES (all fixes applied: TEST-hash staged, anchor pair
-named/hashed, K8 budget + amortization max-M pinned to explicit numbers). P1 has **not** started, so pre-P1
-amendments are still allowed. **Next: P0.**
+named/hashed, K8 budget + amortization max-M pinned to explicit numbers). **Status as of 2026-06-19: P1 has
+STARTED — the void-rule is LIVE** (changes to the weights vector / per-cell veto / parity δ-α / committed
+TEST-hash void the run; every other amendment is logged here). Progress (see dated entries below): P0→P2c
+concluded; the P3 prerequisites are built (2nd oracle, diverse templates, sequestered-TEST hash, routed
+baseline); the EVO-GLEANINGS program + Phase −1 have run. **Next: P3** — gated on two deferred live-spend
+prereqs (the settled routed baseline + the live co-measured INTEG head-to-head).
 
 ---
 
@@ -376,3 +380,43 @@ veto §6, parity δ/α §7). The diverse templates + 2nd oracle are FREEZE §5 N
 TEST-set hash is the pre-registered §4 staged commitment, now made. **Remaining P3 prerequisites:** the routed
 all-frontier baseline (external workstream); then the winner-freeze + the once-only sequestered-TEST
 falsification via the independent graders.
+
+## 2026-06-18 — P3-prereq build: routed baseline + head-to-head (challenges the provisional win)
+
+_[Logged retroactively 2026-06-19 for ledger completeness — committed `5f9b452`.]_ The routed all-frontier
+baseline named "remaining" in the entry above was **BUILT** ([`ROUTED-BASELINE.md`](ROUTED-BASELINE.md)) — it
+builds 100% crosscut/integration through D=3, so the P2b/P2c crossover was measured against the *weak opus-whole
+proxy*; against the real routed baseline the result is a cost/reliability **TRADE, not dominance**. A live
+head-to-head ran ([`HEAD-TO-HEAD.md`](HEAD-TO-HEAD.md)) with a **topology-gated** verdict (WIN on
+lifecycle/membership, LOSS on quota/approval) → the P2c proposed winner is **not freezable as-is**, and the live
+plan became the A×B co-evolution program ([`COEVOLUTION-SPEC.md`](COEVOLUTION-SPEC.md)). The two genuinely-unmet
+P3 prerequisites are now the **deferred live-spend runs** (the SETTLED routed baseline + a LIVE co-measured INTEG
+head-to-head; user-deferred 2026-06-19). No frozen invariant touched → nothing voided.
+
+## 2026-06-19 — EVO-GLEANINGS: DESIGN §6b additive amendment + Batch-1/Batch-2 apparatus (logged)
+
+Records the DESIGN.md change made by commit `9087896` (this ledger states it tracks *every* change to DESIGN.md;
+this entry closes that gap). Disposition: a codex×opus deliberation CONVERGED
+(`runs/deliberations/20260619T220547Z/DECISION-BRIEF.md`); all six gleanings ADOPTED.
+
+- **DESIGN.md §6b — "Measurement-axis check" (gleaning #1).** A +41-line **additive, REPORT-ONLY** section
+  (engine `src/axis-check.mjs`): a plateau detector attached to the existing `loop.onGeneration` hook (a pure
+  observer — touches no rng/archive/population, so the trajectory stays **BIT-IDENTICAL**), an in-loop
+  **report-only** plateau keep, trigger (b) reclassified into a **hard pre-P3 proxy→real BLOCKER gate**
+  (`gates/pre-p3-axis-gate.mjs`), and the K8 planted-positive anti-abandonment discriminator. **It touches NONE
+  of the four void-triggering invariants** (weights vector / per-cell veto / parity δ-α / committed TEST-hash)
+  and never re-decides survivors → **the run is NOT voided.** This is the only DESIGN.md edit in the EVO-GLEANINGS
+  batches.
+- **The rest of Batch 1 (`9087896`) is additive code/docs outside DESIGN.md** — #5 aggregate-consistency lint,
+  #2a GAMING-RISKS register, #2b-PRE pre-verifier, #3 strategy-registry (`mu_best` bit-identical;
+  `pareto_per_cell` = selection, not veto), #4 eval-epoch stamping (default 0). **Batch 2:** #3 strategy-ablation
+  (`2b8e2c3`), #2b-POST score-reproducibility KILL (`75c2789`; additive `export { bucketSE, lethalCounts }` from
+  `credit.mjs`, credit path byte-identical). **P0 GREEN 5/5 bit-identical** across all three commits; the frozen
+  tree `studies/build-gap/` re-verified untouched. Records: `EVO-GLEANINGS-BATCH1-RESULTS.md`,
+  `BATCH2-3-STRATEGY-ABLATION-RESULTS.md`, `BATCH2-2-SCORE-REPRO-RESULTS.md`.
+
+> **Governance note (for the research lead).** `CLAUDE.md` lists `DESIGN.md` as read-only/frozen without the
+> carve-out this ledger's own void-rule defines (additive, non-void-invariant amendments are *allowed when logged
+> here*). §6b is exactly such an amendment. Recommend either (a) a one-line clarification in `CLAUDE.md`'s
+> "Frozen — do not edit" section pointing at this ledger's void-rule, or (b) if strict immutability of DESIGN.md
+> is preferred, moving the §6b text out of DESIGN.md into this ledger. Left for the research lead's call.
