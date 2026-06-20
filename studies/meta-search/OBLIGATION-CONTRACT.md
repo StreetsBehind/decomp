@@ -141,7 +141,17 @@ then prefers a candidate that fixes the obligation AND preserves the seam. Wired
 (`--bestofn N`; the per-draw telemetry shows `…/Nnr` reverts). Selection is over the **pool's own** outputs
 (never a privileged model) → admissible under model-agnosticism. **Honest limit:** the seam-preservation signal
 is a *store-reference* proxy, not a full cross-surface seam re-check — it catches a dropped store, not every
-logic-level seam break; the live re-validate will show how much regression it actually removes.
+logic-level seam break.
+
+**Live-VALIDATED (2026-06-20, `runs/coevo-obligation-bestofn.json` — composed stack + `--bestofn 3`, quota+
+approval, worst-of-K=4, $0):** the guard works as designed — **approval draw 2 reverted** a repair (`1m 0r 1nr`:
+a missing obligation found, best-of-N drawn, no candidate strictly beat the original → original kept), and there
+were **zero integration regressions across all 8 draws** (the prior run's `i100→50` is gone by construction).
+The lever still lands clean fixes where one exists (approval draw 3 `c86→100, i25→50`). Caveat: a different
+(weaker, gemini-flash-lite-heavy) route zoo this run — non-stationary pool — so the valid read is within-run
+paired + the mechanism behavior, NOT the absolute worst-of-K vs earlier runs. Remaining worst-of-K residuals are
+cleanly NOT the obligation lever's: quota = shape-drift (`--shapegate`'s target, not in this run's flags),
+approval = approve→execute semantics/seam (the (C)-boundary candidates).
 
 ## Next increment (spend-gated — a user spend call)
 
