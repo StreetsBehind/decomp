@@ -5,6 +5,26 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-6 UPDATE (2026-06-20) — read this FIRST; it supersedes the Session-5 "NEXT = build the output-QA
+> stack" line below.** The model-agnostic output-QA stack the Session-5 head-to-head called for is **BUILT +
+> live-validated + COMMITTED** (`091ac92`→`afcac9d` on `main`, **9 ahead of origin = UNPUSHED**; frozen tree
+> untouched, P0 GREEN 5/5, K8 bit-identical). Two new levers: **(1) the obligation-contract lever**
+> (`src/obligation-contract.mjs` — the crosscut/obligation gene; derives a typed `{obligations, restrictions,
+> runConditions}` contract per surface from the PUBLIC skeleton, verify+repair, oracle-blind; smoke 39/39) and
+> **(2) best-of-N repair with a no-regress floor** (`src/best-of-n-repair.mjs` — a repair ships only if it
+> strictly out-scores the original on an oracle-blind score → kills the repair-regression hazard; smoke 12/12).
+> **Causality CONFIRMED live** ($0 free gateway, `coevo-rung1.mjs --obligation`): a near-dead approval worst
+> route lifted **c14→71 / i0→75**; quota's restriction half (hallucinated-admin removal) lifted i25→100; the
+> no-regress guard fires with **ZERO integration regressions across 8 draws**. The remaining worst-of-K
+> residuals are cleanly NOT the obligation lever's (shape-drift → shape-gate; approve→execute/conservation
+> SEMANTICS → the genuine (C)-candidates; missing-draw → extraction). **▶ NEXT = run the full 17-cell ladder per
+> [`studies/meta-search/LADDER-RUNBOOK.md`](studies/meta-search/LADDER-RUNBOOK.md) (turnkey, mock-verified):** the
+> hybrid full-stack worst-of-K=8 vs the SETTLED **eroding** baseline (`baseline-settled-vector.json`, 10/17 cells
+> <100% — the bar is the measured vector, NOT 100%), per-cell **non-inferiority** (δ=0.05) + a LADDER ROLLUP
+> (`NON-INFERIOR: X/17`). $0 (free-gateway hybrid; baseline already spent), multi-hour → run in background / stage
+> by depth. Then classify failing cells (form→next lever; semantics→(C) only after best-of-N/extraction; missing
+> →extraction) and freeze only when broadly non-inferior. Record: `OBLIGATION-CONTRACT.md`._
+>
 > _**▶ SESSION-5 UPDATE (2026-06-20) — read this first; it supersedes the Session-4 banner below on the P3-prereq
 > status.** The first of the two deferred live-spend P3 prereqs — **the SETTLED routed all-frontier baseline — is
 > DONE** (user cleared spend; `routed-baseline.mjs --settled --k 8`, $64.61 live frontier spend, 136 draws / 0
