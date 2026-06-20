@@ -102,6 +102,30 @@ violations; off=no-op; the K3 guard fires on a planted token.
 Harness mock dry-run (`--mock --obligation`, $0) confirms wiring end-to-end: detects 7 missing obligations on
 quota's 4 surfaces, 8 on approval's, grades `afterObligation`, renders the attribution segment, exits clean.
 
+## Composed-stack validation (2026-06-20, `runs/coevo-obligation-stack.json`)
+
+Ran `--contractgate --obligation --seamgate` on quota+approval, worst-of-K=4, $0 (a *different* gateway route
+zoo — non-stationary pool — so cross-run worst-of-K is illustrative; the valid read is within-run paired
+`raw→afterContract→afterObligation→final`). **The lever is load-bearing and its attribution is clean:**
+
+- **approval draw 2 (a near-dead worst route): c14→71, i0→75** — 3 missing obligations → 2 repairs. The
+  headline causal win.
+- **quota draw 2: contract's deterministic admin-removal i25→100** (the restriction half, deterministic).
+- The obligation gate correctly **owns none of the residuals**: shape-drift (quota draw 3 c60 — flagged 0,
+  right call, → `--shapegate`); semantics (quota draw 1 conservation i25, approval draws 3/4 idempotency/audit
+  i50 — never flagged, the (C)-boundary candidates); a missing-draw (approval draw 2 `createRequest` →
+  extraction). No false positives; medians 100.
+
+**NEW hazard — repair-regression (approval draw 1, `raw i100 → afterObligation i50`).** The obligation gate's
+**model route-back** repair, fixing a missing crosscut obligation, REGRESSED a passing integration seam — the
+worst-of-K min-lowering problem (a repair that helps one bucket breaks another; the same effect the head-to-head
+saw where a membership repair lowered the min). The contract/integration gates already avoid this with
+deterministic *guard-preserving* surgical repairs; the obligation gate's missing-obligation repair is
+necessarily a model route-back (it must ADD code), so it needs an **oracle-blind no-regress guard**: after a
+repair, re-run the stack's own checks (obligation verify + seam/shape structural checks + smoke-execute) and
+**keep the repair only if it introduces no new check failure**, else revert. Open design fork: per-gate guard vs
+a stack-level repair-acceptance wrapper.
+
 ## Next increment (spend-gated — a user spend call)
 
 1. **Causality via dump-replay** (cheap, live route-back, ~$0): on the head-to-head's worst crosscut draws, does
