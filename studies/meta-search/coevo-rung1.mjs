@@ -88,14 +88,31 @@ const OBLIGATION = has('obligation');
 // did/didn't fire on a worst route). Diagnostic only; no effect on grading. $0.
 const DUMP = arg('dump', null);
 
-// The routed all-frontier baseline reference at d1 (already measured live — HEAD-TO-HEAD.md table; NOT re-run).
-const BASELINE_D1 = {
-  'membership-d1': { c: 1, i: 1, usd: 0.785 },
-  'lifecycle-d1': { c: 1, i: 1, usd: 0.701 },
-  'quota-d1': { c: 1, i: 1, usd: 0.742 },
-  'approval-d1': { c: 1, i: 1, usd: 0.811 },
-};
-const HYBRID_SKELETON_USD = 0.395; // the shared opus skeleton anchor (both arms pay it)
+// The routed all-frontier baseline comparator — the SETTLED worst-of-K=8 per-cell vector (the honest bar; the
+// old d1 K=1 100/100 values were a single-draw artifact the settled run falsified, STATE.md Session-5). Prefer
+// a fresh live settled artifact (runs/routed-baseline-settled.json, gitignored) if present; else the committed
+// vector (baseline-settled-vector.json). Covers all 17 DEV cells, so a FULL-LADDER run has a per-cell bar.
+function loadBaseline() {
+  const live = path.join(HERE, 'runs', 'routed-baseline-settled.json');
+  try {
+    if (fs.existsSync(live)) {
+      const j = JSON.parse(fs.readFileSync(live, 'utf8'));
+      if (Array.isArray(j.results)) {
+        const out = {};
+        for (const c of j.results) out[c.id] = { c: c.worst.crosscut, i: c.worst.integration, usd: c.cost?.worst ?? null, epicOK: c.epicOK_worst, src: 'live-settled' };
+        return out;
+      }
+    }
+  } catch {}
+  try {
+    const v = JSON.parse(fs.readFileSync(path.join(HERE, 'baseline-settled-vector.json'), 'utf8'));
+    const out = {}; for (const [id, c] of Object.entries(v.cells || {})) out[id] = { ...c, src: 'committed-vector' };
+    return out;
+  } catch { return {}; }
+}
+const BASELINE = loadBaseline();
+const DELTA = 0.05;                  // FREEZE per-cell non-inferiority margin (δ) — hybrid worst ≥ baseline worst − δ
+const HYBRID_SKELETON_USD = 0.395;   // the amortizable opus skeleton anchor; cheap coding is $0 (free gateway)
 
 // seam topology of an epic id (from the diverse-template family); membership = the d1 anchor (scale-d1).
 function topologyOf(id) {
@@ -328,8 +345,18 @@ function attribute(epic) {
 }
 function rateNum(fracStr) { const [a, b] = String(fracStr).split('/').map(Number); return b ? a / b : 1; }
 
+// The full DEV cell ladder (17 cells = the SETTLED baseline's cells): membership d1–d5, the other 3 topos d1–d4.
+const FULL_LADDER = [
+  'membership-d1', 'membership-d2', 'membership-d3', 'membership-d4', 'membership-d5',
+  'approval-d1', 'approval-d2', 'approval-d3', 'approval-d4',
+  'lifecycle-d1', 'lifecycle-d2', 'lifecycle-d3', 'lifecycle-d4',
+  'quota-d1', 'quota-d2', 'quota-d3', 'quota-d4',
+];
+
 async function main() {
-  const ids = (arg('epics', 'membership-d1,lifecycle-d1,quota-d1,approval-d1')).split(',').map((s) => s.trim()).filter(Boolean);
+  // --ladder = the full 17-cell DEV ladder (overrides --epics); else --epics list; else the 4 d1 anchors.
+  const ids = has('ladder') ? FULL_LADDER.slice()
+    : (arg('epics', 'membership-d1,lifecycle-d1,quota-d1,approval-d1')).split(',').map((s) => s.trim()).filter(Boolean);
   const invoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : makeGatewayInvoke({ timeoutMs: CALL_TIMEOUT_MS });
 
   const gateName = `${REPAIRGATE ? 'repair+' : ''}${SHAPEGATE ? 'shape+' : ''}${CONTRACTGATE ? 'contract+' : ''}${OBLIGATION ? 'obligation+' : ''}${PERSISTGATE ? 'persist+' : ''}${has('seamgate') ? 'seam' : 'membership'}`;
@@ -381,14 +408,23 @@ async function main() {
         const tally = {}; for (const d of draws) { const m = drawResidualMode(d); tally[m.mode] = tally[m.mode] || { n: 0, cls: m.cls }; tally[m.mode].n++; }
         return { mode: rm.mode, cls: rm.cls, worstFinal: { c: worst.final.crosscut, i: worst.final.integration }, modeTally: tally };
       })(),
-      baseline: BASELINE_D1[id] || null,
+      baseline: BASELINE[id] || null,
       hybridUsd: HYBRID_SKELETON_USD,
       draws,
     };
     agg.attribution = attribute(agg);
-    // verdict: route-robust WIN iff worst-of-K crosscut & integration both reach the baseline (100% at d1).
-    const b = agg.baseline || { c: 1, i: 1 };
-    agg.verdict = (agg.final.crosscut.worst >= b.c && agg.final.integration.worst >= b.i) ? 'WIN(worst-of-K)' : 'FAIL(worst-of-K)';
+    // verdict: per-cell NON-INFERIORITY vs the SETTLED baseline worst-of-K=8 (FREEZE δ): the hybrid is
+    // route-robustly non-inferior iff worst-of-K crosscut AND integration are each within δ of the baseline's
+    // worst-of-K on that cell. (Baseline erodes — 10/17 cells <100% — so the bar is the measured vector, not 100%.)
+    if (agg.baseline) {
+      const b = agg.baseline;
+      const relOK = agg.final.crosscut.worst >= b.c - DELTA && agg.final.integration.worst >= b.i - DELTA;
+      agg.nonInf = { deltaC: +(agg.final.crosscut.worst - b.c).toFixed(3), deltaI: +(agg.final.integration.worst - b.i).toFixed(3), relOK, baselineSrc: b.src };
+      agg.verdict = relOK ? 'NON-INF(worst-of-K)' : 'FAIL(worst-of-K)';
+    } else {
+      agg.nonInf = null;
+      agg.verdict = 'NO-BASELINE';
+    }
     out.epics.push(agg);
     flush();
     const repairSummary = REPAIRGATE ? `  | repair→ c ${(agg.afterRepair.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterRepair.integration.worst * 100).toFixed(0)}% (${agg.repair.totalFreeIds}freeIds/${agg.repair.totalRepairs}r/${agg.repair.totalFixed}fix on ${agg.repair.drawsFlagged}d)` : '';
@@ -396,13 +432,27 @@ async function main() {
     const contractSummary = CONTRACTGATE ? `  | contract→ c ${(agg.afterContract.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterContract.integration.worst * 100).toFixed(0)}% (${agg.contract.totalRepairs}r/${agg.contract.drawsFlagged}d; admin-scoped ${JSON.stringify(agg.contract.adminScoped)})` : '';
     const obligationSummary = OBLIGATION ? `  | oblig→ c ${(agg.afterObligation.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterObligation.integration.worst * 100).toFixed(0)}% (${agg.obligation.totalMissing}m/${agg.obligation.totalInvented}o/${agg.obligation.totalRepairs}r/${agg.obligation.totalReverts}nr on ${agg.obligation.drawsFlagged}d; bestofn=${BESTOFN})` : '';
     const persistSummary = PERSISTGATE ? `  | persist→ c ${(agg.afterPersist.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterPersist.integration.worst * 100).toFixed(0)}% (${agg.persist.totalRepairs}r/${agg.persist.drawsFlagged}d; stores ${JSON.stringify(agg.persist.stores)})` : '';
-    console.log(`  => ${id} [${topology}] worst-of-K  raw c ${(agg.raw.crosscut.worst * 100).toFixed(0)}% i ${(agg.raw.integration.worst * 100).toFixed(0)}%${repairSummary}${shapeSummary}${contractSummary}${obligationSummary}${persistSummary}  final c ${(agg.final.crosscut.worst * 100).toFixed(0)}% i ${(agg.final.integration.worst * 100).toFixed(0)}%  vs baseline ${b.c * 100}/${b.i * 100}  routes:${agg.routeDiversity.distinct}  ${agg.verdict}  (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
+    console.log(`  => ${id} [${topology}] worst-of-K  raw c ${(agg.raw.crosscut.worst * 100).toFixed(0)}% i ${(agg.raw.integration.worst * 100).toFixed(0)}%${repairSummary}${shapeSummary}${contractSummary}${obligationSummary}${persistSummary}  final c ${(agg.final.crosscut.worst * 100).toFixed(0)}% i ${(agg.final.integration.worst * 100).toFixed(0)}%  vs baseline ${agg.baseline ? `${(agg.baseline.c * 100).toFixed(0)}/${(agg.baseline.i * 100).toFixed(0)} (Δc${agg.nonInf.deltaC >= 0 ? '+' : ''}${agg.nonInf.deltaC} Δi${agg.nonInf.deltaI >= 0 ? '+' : ''}${agg.nonInf.deltaI})` : 'none'}  routes:${agg.routeDiversity.distinct}  ${agg.verdict}  (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
     console.log(`     RESIDUAL WORST draw: ${agg.residualWorst.mode} [${agg.residualWorst.cls.toUpperCase()}]  (worst final c${(agg.residualWorst.worstFinal.c * 100).toFixed(0)}/i${(agg.residualWorst.worstFinal.i * 100).toFixed(0)}) — ${agg.residualWorst.cls === 'semantics' ? 'oracle-blind-UNREACHABLE → (C) boundary candidate' : agg.residualWorst.cls === 'form' ? 'form defect → a lever can reach it' : agg.residualWorst.cls}`);
     console.log(`     mode tally: ${Object.entries(agg.residualWorst.modeTally).map(([m, v]) => `${m}:${v.n}(${v.cls})`).join(', ')}`);
     console.log(`     attribution: ${agg.attribution.map((a) => `${a.layer}:${a.mechanism}`).join(', ')}\n`);
   }
   flush();
-  console.log(`wrote ${path.relative(ROOT, outFile)}`);
+
+  // ---- ladder rollup: per-cell non-inferiority vs the SETTLED baseline (the freeze-readiness scoreboard) ----
+  const scored = out.epics.filter((e) => e.baseline);
+  const nonInf = scored.filter((e) => e.nonInf?.relOK);
+  console.log('\n================  LADDER ROLLUP (vs SETTLED baseline worst-of-K=8)  ================');
+  console.log(`cells: ${out.epics.length} run, ${scored.length} with a baseline | NON-INFERIOR: ${nonInf.length}/${scored.length}  (δ=${DELTA})`);
+  for (const e of out.epics) {
+    const b = e.baseline;
+    const tag = !b ? 'NO-BASE' : e.nonInf.relOK ? 'PASS  ' : 'FAIL  ';
+    const bstr = b ? `base c${(b.c * 100).toFixed(0)}/i${(b.i * 100).toFixed(0)} → hyb c${(e.final.crosscut.worst * 100).toFixed(0)}/i${(e.final.integration.worst * 100).toFixed(0)} (Δc${e.nonInf.deltaC >= 0 ? '+' : ''}${e.nonInf.deltaC} Δi${e.nonInf.deltaI >= 0 ? '+' : ''}${e.nonInf.deltaI})` : '(no baseline)';
+    console.log(`  ${tag} ${e.id.padEnd(14)} ${bstr}  [residual ${e.residualWorst.mode}/${e.residualWorst.cls}]`);
+  }
+  out.rollup = { cellsRun: out.epics.length, scored: scored.length, nonInferior: nonInf.length, delta: DELTA, failing: scored.filter((e) => !e.nonInf?.relOK).map((e) => e.id) };
+  flush();
+  console.log(`\nwrote ${path.relative(ROOT, outFile)}`);
 }
 
 main().catch((e) => { console.error('coevo-rung1 FAILED:', e); process.exit(1); });

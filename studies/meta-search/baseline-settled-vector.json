@@ -1,0 +1,110 @@
+{
+  "_comment": "SETTLED routed all-frontier baseline, worst-of-K=8, the honest per-cell comparator for hybrid ladder runs. Extracted from runs/routed-baseline-settled.json (gitignored). Writeup: ROUTED-BASELINE.md. The K=1 100/100 values it supersedes were a single-draw artifact (see STATE.md Session-5).",
+  "source": "routed-baseline.mjs --settled --k 8",
+  "k": 8,
+  "generatedFrom": "runs/routed-baseline-settled.json",
+  "cells": {
+    "membership-d1": {
+      "c": 1,
+      "i": 1,
+      "epicOK": true,
+      "usd": 0.9281
+    },
+    "membership-d2": {
+      "c": 0.8333,
+      "i": 0.5,
+      "epicOK": false,
+      "usd": 1.3532
+    },
+    "membership-d3": {
+      "c": 1,
+      "i": 1,
+      "epicOK": true,
+      "usd": 1.8034
+    },
+    "membership-d4": {
+      "c": 0.9091,
+      "i": 0.75,
+      "epicOK": false,
+      "usd": 2.2719
+    },
+    "membership-d5": {
+      "c": 0.9259,
+      "i": 0.8,
+      "epicOK": false,
+      "usd": 2.6869
+    },
+    "approval-d1": {
+      "c": 1,
+      "i": 1,
+      "epicOK": true,
+      "usd": 0.8952
+    },
+    "approval-d2": {
+      "c": 1,
+      "i": 1,
+      "epicOK": true,
+      "usd": 1.3775
+    },
+    "approval-d3": {
+      "c": 1,
+      "i": 1,
+      "epicOK": true,
+      "usd": 1.8737
+    },
+    "approval-d4": {
+      "c": 0.9286,
+      "i": 1,
+      "epicOK": false,
+      "usd": 2.3333
+    },
+    "lifecycle-d1": {
+      "c": 0.8,
+      "i": 0,
+      "epicOK": false,
+      "usd": 0.8177
+    },
+    "lifecycle-d2": {
+      "c": 0.8,
+      "i": 1,
+      "epicOK": false,
+      "usd": 1.2648
+    },
+    "lifecycle-d3": {
+      "c": 0.7333,
+      "i": 1,
+      "epicOK": false,
+      "usd": 1.6805
+    },
+    "lifecycle-d4": {
+      "c": 1,
+      "i": 1,
+      "epicOK": true,
+      "usd": 2.0979
+    },
+    "quota-d1": {
+      "c": 1,
+      "i": 0.25,
+      "epicOK": false,
+      "usd": 0.888
+    },
+    "quota-d2": {
+      "c": 1,
+      "i": 1,
+      "epicOK": true,
+      "usd": 1.2136
+    },
+    "quota-d3": {
+      "c": 1,
+      "i": 0.75,
+      "epicOK": false,
+      "usd": 1.6745
+    },
+    "quota-d4": {
+      "c": 1,
+      "i": 0.625,
+      "epicOK": false,
+      "usd": 2.2485
+    }
+  }
+}
