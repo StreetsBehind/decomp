@@ -67,7 +67,10 @@ function enumerate() {
 
 async function main() {
   const epics = enumerate();
-  const rate = (b) => (b && b.total ? b.pass / b.total : 1);
+  // HARDENED (2026-06-19, gleaning #5 aggregate-consistency lint): fail-CLOSED. The test-set ADMISSION decision
+  // (`ok = rate(...) === 1`) must not read a crashed/empty reference grade as a clean 100% and silently admit a
+  // broken epic. Same VOID-92/92 footgun fixed in coevo-rung1.mjs / head-to-head.mjs (was the fail-OPEN `: 1`).
+  const rate = (b) => (b && b.total ? b.pass / b.total : 0);
   const records = [];
   let fp = 0;
 

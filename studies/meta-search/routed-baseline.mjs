@@ -63,7 +63,11 @@ async function loadEpic(spec) {
   return { order, preamble, skeleton, surfaces };
 }
 
-const rate = (b) => (b && b.total ? b.pass / b.total : 1);
+// HARDENED (2026-06-19, gleaning #5 aggregate-consistency lint): fail-CLOSED. An absent bucket — including a
+// whole harnessError/timeout/empty grade that carries no buckets — must score 0, never a fake 1.0. Same
+// VOID-92/92 footgun fixed in coevo-rung1.mjs / head-to-head.mjs on 2026-06-18; the lint surfaced that the P3
+// baseline reliability metric still used the fail-OPEN `: 1` default. A crashed surface must not read 100%.
+const rate = (b) => (b && b.total ? b.pass / b.total : 0);
 
 // concurrency-limited map (frontier calls are slow; build an epic's surfaces in parallel).
 async function pool(items, n, fn) {

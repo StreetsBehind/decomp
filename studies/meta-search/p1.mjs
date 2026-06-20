@@ -24,6 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import { makeGatewayInvoke, claudeInvoke } from '../../runner/model-client.mjs';
+import { stampEpoch } from './src/eval-epoch.mjs';
 import { makeRng } from './src/rng.mjs';
 import { makeArchive } from './src/archive.mjs';
 import { runSearch } from './src/loop.mjs';
@@ -243,7 +244,7 @@ function writeSummary(obj) {
   fs.mkdirSync(outDir, { recursive: true });
   const name = obj.phase === 'P1-pilot' ? 'p1-pilot-summary.json' : obj.phase === 'P1-probe' ? 'p1-probe-summary.json' : 'p1-full-summary.json';
   obj.finishedAt = new Date().toISOString();
-  fs.writeFileSync(path.join(outDir, name), JSON.stringify(obj, null, 2) + '\n');
+  fs.writeFileSync(path.join(outDir, name), JSON.stringify(stampEpoch(obj), null, 2) + '\n');
   console.log(`\nwrote studies/meta-search/runs/${name}`);
 }
 

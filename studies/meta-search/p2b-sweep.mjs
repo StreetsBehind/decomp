@@ -26,6 +26,7 @@ import path from 'node:path';
 import url from 'node:url';
 import { spawn } from 'node:child_process';
 import { makeGatewayInvoke } from '../../runner/model-client.mjs';
+import { stampEpoch, stampEach } from './src/eval-epoch.mjs';
 import { resolveSkeleton } from './src/skeleton-author.mjs';
 import { runIntegrationGate } from './src/integration-gate.mjs';
 import { buildScorecard } from './src/scorecard.mjs';
@@ -138,7 +139,7 @@ async function main() {
   log(` — the routed-baseline workstream — and the sequestered TEST at P3. Cost = opus-whole proxy → provisional.)`);
   log(`================================================================`);
   const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, 'p2b-sweep.json'), JSON.stringify({ phase: 'P2b-sweep', started, finishedAt: new Date().toISOString(), rounds, epics, tiers, bar: BAR, rows }, null, 2) + '\n');
+  fs.writeFileSync(path.join(outDir, 'p2b-sweep.json'), JSON.stringify(stampEpoch({ phase: 'P2b-sweep', started, finishedAt: new Date().toISOString(), rounds, epics, tiers, bar: BAR, rows: stampEach(rows) }), null, 2) + '\n');
   log(`\nwrote studies/meta-search/runs/p2b-sweep.json`);
 }
 main().catch((e) => { console.error('P2b sweep error:', e); process.exit(1); });

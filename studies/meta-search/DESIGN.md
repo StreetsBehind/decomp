@@ -338,6 +338,47 @@ judge) is amortized R&D: **reported, never charged to a candidate's product cost
 **Judge variance (finding #6).** Pinning the judge model does not pin its output. Re-judge a held set;
 report intra-model disagreement so judge noise is bounded, not assumed zero.
 
+### §6b. Measurement-axis check (gleaning #1 — additive; `src/axis-check.mjs`)
+
+_Added 2026-06-19 as the EVO-GLEANINGS Batch-1 disposition of gleaning #1 (codex×opus CONVERGED,
+`runs/deliberations/20260619T220547Z/DECISION-BRIEF.md`). Class B, REPORT-ONLY in-loop. Touches no frozen
+invariant; only halts/reports; **never re-decides which candidates survive.**_
+
+We have stacked five levers (checker → shape → contract → persistence → integration gate) on the **lever
+axis** while every headline caveat (opus-whole proxy, X-CUT sub-metric, **unmeasured INTEG**, K=1 noise) lives
+on the **measurement axis**. evo's optimize §6a: when structurally-distinct hypotheses plateau at one score,
+the bottleneck is the *harness/metric/proxy*, not the next lever. Two triggers, split by the disposition:
+
+- **(a) Plateau across distinct genotypes — the ONLY in-loop keep, REPORT-ONLY.** Fires when **≥ `distinctK`
+  (default 3) Hamming-distinct genomes** (distinct §2 genome-hash ⇒ ≥1 gene differs) sit **within δ (the
+  FROZEN parity 0.05)** of the front-best fitness for **≥ `consecutiveGens` (default 3) consecutive
+  generations** (`detectPlateau`). The driver attaches `makeAxisObserver(...)` to the existing
+  `loop.onGeneration` hook (no `loop.mjs` edit); on fire it **HALTs-and-notifies with an axis report** (is the
+  bottleneck the metric / proxy / harness?). It is a pure observer — it touches no rng/archive/population, so
+  **attaching it leaves the search trajectory BIT-IDENTICAL** (proven in `gates/axis-check.mjs`). The human or
+  the deliberation chooses continue / switch-axis / eval-epoch-bump (#4); the instrument never silently
+  re-decides survivors (a survivor-changing kill is a clean-restart-epoch event, §11/R2-10 — out of scope for
+  this additive audit).
+
+- **(b) Internal-vs-headline divergence — RECLASSIFIED out of the loop into a HARD pre-P3 proxy→real
+  BLOCKER.** Trigger (b) is **inert until measured-INTEG exists**: wired as an in-loop detector with INTEG
+  unmeasured it would silently never fire = a **false all-clear**. So it is reclassified into a gate run
+  **once, before TEST scoring** (`gates/pre-p3-axis-gate.mjs`) that forces *"is the headline resting on the
+  opus-whole proxy / X-CUT sub-metric / unmeasured INTEG?"*. The gate detects, by the **existence of the real
+  settled artifacts** (never a hardcoded pass), the three P3 prerequisites that convert the proxy headline into
+  a real one — **(i)** the *settled* routed all-frontier baseline (STATE.md #3), **(ii)** a *live co-measured*
+  INTEG head-to-head path, **(iii)** the 2nd hand-authored oracle grader. Until they land it reports
+  **BLOCKED + non-zero exit**, and P3 must not proceed. (As of this build: BLOCKED — (i)/(ii) unmet, (iii)
+  met.)
+
+- **Anti-abandonment guard — the K8 planted-positive discriminator (`runDiscriminator`).** A plateau is NOT
+  proof the axis is wrong — it can be a *disappointing-but-CORRECT* front. So before "wrong axis" may be
+  asserted, re-run the known-dominating genome (`evaluator.plantedOptimumGenome`) through the synthetic loop;
+  **if it is still discoverable AND dominating, the search machinery + the fitness axis are demonstrably
+  sound** and the plateau is a real-front signal, not a metric defect. This is the peek-proofing that stops
+  the plateau detector from licensing premature phase-abandonment (the rationalization the deliberation
+  flagged).
+
 ---
 
 ## 7. Decision rule and kill conditions (pre-registered)

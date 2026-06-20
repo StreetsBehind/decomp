@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
 import * as cfg from './src/config.mjs';
+import { stampEpoch } from './src/eval-epoch.mjs';
 import { run as g1 } from './gates/g1-per-cell-metric.mjs';
 import { run as g2 } from './gates/g2-oracle-gate.mjs';
 import { run as k8 } from './gates/k8-instrument-validation.mjs';
@@ -77,7 +78,7 @@ async function main() {
   };
   const outDir = path.join(HERE, 'runs');
   fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, 'p0-summary.json'), JSON.stringify(summary, null, 2) + '\n');
+  fs.writeFileSync(path.join(outDir, 'p0-summary.json'), JSON.stringify(stampEpoch(summary), null, 2) + '\n');
   console.log(`wrote ${path.relative(path.resolve(HERE, '..', '..'), path.join(outDir, 'p0-summary.json'))}`);
 
   process.exit(allPass ? 0 : 1);

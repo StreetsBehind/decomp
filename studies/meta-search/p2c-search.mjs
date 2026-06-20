@@ -20,6 +20,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import url from 'node:url';
+import { stampEpoch, stampEach } from './src/eval-epoch.mjs';
 import { makeRng } from './src/rng.mjs';
 import { runSearch } from './src/loop.mjs';
 import { makeMapElitesArchive, makeCelledSelect } from './src/map-elites.mjs';
@@ -139,7 +140,7 @@ async function main() {
   log(`================================================================`);
 
   const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, 'p2c-search.json'), JSON.stringify({ phase: 'P2c-search', started, finishedAt: new Date().toISOString(), Ns, seeds, gens, results: all }, null, 2) + '\n');
+  fs.writeFileSync(path.join(outDir, 'p2c-search.json'), JSON.stringify(stampEpoch({ phase: 'P2c-search', started, finishedAt: new Date().toISOString(), Ns, seeds, gens, results: stampEach(all) }), null, 2) + '\n');
   fs.writeFileSync(path.join(outDir, 'p2c-search.log'), lines.join('\n') + '\n');
   log(`\nwrote studies/meta-search/runs/p2c-search.json`);
 }
