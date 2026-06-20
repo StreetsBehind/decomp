@@ -119,6 +119,15 @@ export function makeCreditStep({ restoreMarginSE = RESTORE_MARGIN_SE } = {}) {
   };
 }
 
+// ADDITIVE EXPORT (Batch-2 #2b POST, behaviour-unchanged) — the FROZEN restore-margin band as a single
+// source of truth. The score-reproducibility kill (src/score-repro.mjs) MUST reuse the SAME band the
+// credit-attribution mis-attribution kill uses (margin = RESTORE_MARGIN_SE × bucketSE on the lethal bucket),
+// not a drift-prone copy. bucketSE carries the [0.15,0.85] clamp so a genuinely-broken 0/n bucket still has a
+// non-zero noise floor (a single-cell jitter can't kill). These functions were already module-private and used
+// by attributeBlame above; exporting them changes NO existing behaviour (gates/p2c-credit.mjs + p0.mjs stay
+// green — the credit path is byte-identical, the export is purely additive).
+export { bucketSE, lethalCounts };
+
 // Pick the single worst lethal-bucket candidate among a generation's children (highest lethal fail count;
 // tie-break highest cost so we don't burn attribution on a cheap-but-clean genome). Returns null if none has
 // a lethal failure (nothing to attribute this generation).
