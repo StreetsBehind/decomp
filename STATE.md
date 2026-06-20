@@ -5,6 +5,44 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-5 UPDATE (2026-06-20) — read this first; it supersedes the Session-4 banner below on the P3-prereq
+> status.** The first of the two deferred live-spend P3 prereqs — **the SETTLED routed all-frontier baseline — is
+> DONE** (user cleared spend; `routed-baseline.mjs --settled --k 8`, $64.61 live frontier spend, 136 draws / 0
+> harness errors; artifact `runs/routed-baseline-settled.json`; writeup `ROUTED-BASELINE.md`). **THE HEADLINE
+> REVERSES the 2026-06-18 interim:** under the program's own **worst-of-K=8** statistic the cost-optimized routed
+> ALL-FRONTIER baseline **also erodes** — 10/17 DEV cells below 100%, a **14% per-draw lethal-fail rate**, failing
+> even at d1. The earlier "builds at 100% through D=3" was a **K=1 single-draw artifact** (the non-stationarity
+> footgun worst-of-K exists to catch — 3rd independent sighting after VOID-92/92 + the coevo "d1 = route variance",
+> now on the FRONTIER side). HONEST READ: the erosion is **bounded variance** (median 100% in 16/17 cells; 6/10
+> eroding cells miss on 2–4 draws, only quota-d4's median actually moves to 91% — the conservation/wallet seam),
+> so it **RESETS the comparator, it does NOT decide the win** — both arms erode under worst-of-K, so the contest
+> (which erodes less per cell at what cost) is the *co-measured head-to-head*. It does establish **reliability
+> parity is a reachable bar** (baseline ≠ 100% wall) and gives the P3 per-cell veto a **measured** baseline vector.
+> Cost direction unchanged (skeleton anchor shared; hybrid saves the $0.42–2.29/epic coding, gap widens with depth).
+> Verified: every load-bearing number recomputed by an adversarial reviewer (EXACT), graders confirmed
+> deterministic, frozen tree untouched (`routed-baseline.mjs` pre-existed; only the gitignored data artifact +
+> these docs changed).
+> **▶ PREREQ #2 ALSO DONE (2026-06-20, same session, user said "Run it") — the co-measured HEAD-TO-HEAD, and it
+> FALSIFIES the proposed winner.** `head-to-head.mjs --settled --k 8` co-measured BOTH arms live (baseline routed
+> frontier $27.40; hybrid cheap+gate $0) worst-of-K=8 on identical epics by the same oracles. **The hybrid LOSES
+> every cell — 0/17 lethal-non-inferior — at ¼ the cost.** Its reliability collapses across the route zoo
+> (worst-of-8 over *distinct* cheap models): integration worst-of-K 0–67% vs baseline 75–100%, and the
+> **crosscut/obligation gap is the killer** (16/17 cells, median −36pp, max −86pp) — which the membership-only
+> integration-gate has NO lever for (no-op on 12/17 topologies). REVERSES the 2026-06-18 K=1 "topology-gated WIN
+> on 2 of 4" (route-luck — the same single-draw footgun). **NOT a (C) thesis-kill** (cheap broken code = the
+> target, [[incompetence-is-the-target]]): this hybrid arm ran ONLY the integration-gate+retry, NOT the fuller
+> output-QA stack the coevo work built (self-repair `repair-gate.mjs` / `contract-gate` / `shape-gate` /
+> best-of-N / extraction) → the **PROPOSED P2c WINNER is falsified, not the thesis**. HONEST LIMITS (adversarial
+> review, all folded into `HEAD-TO-HEAD.md`): on 8/17 cells transport-vs-code can't be separated (≥9 are
+> certified bad-code; §7 verdict doesn't hinge on transport); the worst-of-8 *magnitude* is K/zoo-dependent
+> (direction robust); and whether an 86pp worst-of-route crosscut gap is (B)-repairable or a (C) wall is **OPEN**
+> — the obligation-repair lever was not run. **▶ pre-P3 gate is now READY (3/3 MET) — but READY ≠ freeze:** the
+> head-to-head IS the reliability test and the proposed winner LOSES, so freezing it for sequestered-TEST would
+> only confirm a loss. **NEXT (a user direction call, mostly no-spend to build):** build the model-agnostic
+> output-QA stack (obligation/crosscut repair + self-repair + best-of-N), re-measure the hybrid worst-of-K toward
+> the baseline, and only THEN freeze a candidate worth falsifying on TEST. Records: `ROUTED-BASELINE.md`,
+> `HEAD-TO-HEAD.md`; artifacts `runs/{routed-baseline,head-to-head}-settled.json` (gitignored)._
+>
 > _**▶ SESSION-4 UPDATE (2026-06-19) — read this first; it supersedes the "SINGLE NEXT ACTION" at the bottom of
 > the Session-3 stack below.** Two threads advanced and are COMMITTED on `main` (HEAD `4d156bf`, working tree
 > clean, == origin/main; there is no separate feature branch). **(1) Phase −1 instruments BUILT + block A RAN**
@@ -21,9 +59,11 @@
 > `EVAL-EPOCH-PROTOCOL.md`. **P0 GREEN 5/5 bit-identical and the frozen tree untouched throughout** — the only
 > `DESIGN.md` change is the additive, report-only §6b (logged in `AMENDMENTS.md`). **Corrected status:** the 2nd
 > hand-authored oracle ALREADY EXISTS + is GREEN (`src/oracle2.mjs`) and `gates/pre-p3-axis-gate.mjs` marks
-> prereq (iii) ✅ MET → **knowledge-conditioning is now UNBLOCKED**. **THE TWO genuinely-unmet P3 prereqs are
-> LIVE-SPEND runs the USER DEFERRED 2026-06-19** (no live spend without an explicit go-ahead): (i) the SETTLED
-> routed all-frontier baseline, (ii) the LIVE co-measured INTEG head-to-head. **▶ NEXT ACTION (no-spend):**
+> prereq (iii) ✅ MET → **knowledge-conditioning is now UNBLOCKED**. **BOTH deferred LIVE-SPEND P3 prereqs are
+> now DONE (2026-06-20 — see the Session-5 banner at the very top): (i) the SETTLED routed all-frontier baseline
+> AND (ii) the LIVE co-measured head-to-head; pre-P3 gate is READY (3/3 MET). But the head-to-head FALSIFIED the
+> proposed winner (hybrid LOSES 0/17 at ¼ cost), so READY ≠ freeze — NEXT is the output-QA stack, not P3.** The
+> Phase −1 / no-spend menu below remains valid as parallel work. **▶ (earlier) NEXT ACTION (no-spend):**
 > Phase −1 **block B** in a later session (the temporal separation IS the measurement) → compute the
 > instability band → apply the pre-committed GO/HALT rule (`PHASE-NEG1-RESULTS.md` §4). No-spend menu also open:
 > Batch-2 **#4 bump-op** (needs a candidate-independent defect fixture + a new FREEZE record) → **#6
@@ -329,13 +369,19 @@ p2a-smoke 44/44 + P0 GREEN + a live scale-d1 check (INTEG 50%→100%, X-CUT held
 **P3 PREREQUISITES BUILT + COMMITTED, and the HEAD-TO-HEAD reframed the program (2026-06-18; committed
 `5f9b452`, `5e65291`).** (a) 2nd oracle, diverse templates (4 seam topologies), sequestered TEST + content hash
 (`74f10cbc…`), and the **routed all-frontier baseline** all built (`ORACLE2.md`, `DIVERSE-TEMPLATES.md`,
-`TEST-SET.md`, `ROUTED-BASELINE.md`). The routed baseline builds at **100% through D=3** — so the P2b/P2c
+`TEST-SET.md`, `ROUTED-BASELINE.md`). The routed baseline builds at **100% through D=3** [⚠️ SUPERSEDED
+2026-06-20 by the SETTLED worst-of-K=8 run — that "100%" was a **K=1 single-draw artifact**; under worst-of-K=8
+the routed baseline ALSO erodes (10/17 cells, 14% per-draw lethal-fail, even at d1), so it is **not** the 100%
+wall this line assumed; see the Session-5 banner + `ROUTED-BASELINE.md`] — so the P2b/P2c
 "crossover" win was vs the weak **opus-WHOLE proxy**; against the real baseline it was a cost/reliability TRADE,
 not dominance. (b) The **live head-to-head** (`HEAD-TO-HEAD.md`; hybrid vs routed baseline, identical epics,
 same oracles, ~$0) gave a **topology-gated** verdict: **WIN** (parity at ⅓–½ cost) on state-ordering
-(lifecycle) + set-membership; **LOSS** on conservation (quota) + separation-of-duties (approval). The gap is
+(lifecycle) + set-membership; **LOSS** on conservation (quota) + separation-of-duties (approval) [⚠️ SUPERSEDED
+2026-06-20 by the SETTLED co-measured worst-of-K=8 head-to-head — those WINS were **K=1 route-luck**; at
+worst-of-K=8 across the route zoo the hybrid LOSES **all 17 cells** (0/17 lethal-non-inferior), the membership +
+lifecycle "wins" included; see Session-5 banner + `HEAD-TO-HEAD.md`]. The gap is
 mostly **cheap-tier coding-quality, not an unhandled seam** — the integration-gate is membership-specific and
-no-ops elsewhere. (c) **The P2c "proposed winner" is NOT ready to freeze.** NEW DIRECTION = the **A×B
+no-ops elsewhere [this read SURVIVES + is strengthened: the crosscut/obligation gap dominates, 16/17 cells]. (c) **The P2c "proposed winner" is NOT ready to freeze.** NEW DIRECTION = the **A×B
 co-evolution program** (co-evolve orchestration **and** output-QA, scale-laddered, worst-of-K across routes,
 freeze the champion at the end). Full handoff spec: [`COEVOLUTION-SPEC.md`](studies/meta-search/COEVOLUTION-SPEC.md).
 Binding principle: the system must be **model-agnostic** (route/model selection is NOT an admissible fix);

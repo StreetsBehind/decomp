@@ -1,111 +1,125 @@
-# Head-to-head — hybrid vs routed all-frontier baseline (P3, first live results)
+# Head-to-head — hybrid vs routed all-frontier baseline — SETTLED (P3 prerequisite #2)
 
-> **Status (2026-06-18): RUN + the verdict is TOPOLOGY-DEPENDENT — a clean win on 2 of 4 seam topologies,
-> a clear loss on the other 2; and the binding constraint is LAYER-2 cheap-tier quality, NOT the gate.**
-> Hybrid arm measured live on the free gateway (~$0 real spend; coding is free, skeleton is the on-disk
-> orchestration artifact). Baseline column is the prior routed-baseline run (same epics, same independent
-> oracles, same `evaluateEpic` path — directly comparable; not co-measured in one process). Harness:
-> `head-to-head.mjs`. Raw: `runs/head-to-head-hybrid.json`.
+> **Status (2026-06-20): SETTLED, co-measured, worst-of-K=8. The hybrid (cheap-fusion + integration-gate)
+> LOSES every cell — 0/17 lethal-non-inferior — at ¼ the cost.** Under the program's own worst-of-K=8
+> statistic, measuring BOTH arms live on identical epics by the same oracles, the hybrid's reliability
+> collapses across the route zoo while the (also-eroding) routed baseline mostly holds. This REVERSES the
+> 2026-06-18 K=1 "topology-gated WIN on 2 of 4 topologies" — that was **route-luck** on a single draw, the
+> same non-stationarity footgun the routed baseline's K=1 "100% wall" was. The pre-P3 gate is now **READY**
+> (all 3 prereqs met), but the head-to-head IS the test, and **the proposed P2c winner does not win** — so
+> there is no winner to freeze. Harness: `head-to-head.mjs --settled --k 8`. Raw:
+> `runs/head-to-head-settled.json` (both arms, K=8; baseline arm $27.40 live frontier; hybrid arm $0).
 
-## The comparison (identical epics, identical skeleton + $0.395 opus anchor, ONLY the coding tier differs)
+## The co-measured comparison (identical epics + skeleton + $0.395 opus anchor; ONLY the coding tier differs)
 
-| epic | seam topology | gate | hybrid raw c/i | hybrid **final** c/i | baseline c/i | hybrid $ | baseline $ | verdict |
-|---|---|---|---|---|---|---|---|---|
-| membership-d1 | set-membership | fired 1p/3r | 100 / 100 | **100 / 100** | 100 / 100 | 0.395 | 0.785 | **WIN** (parity, ½ cost) |
-| lifecycle-d1 | state-ordering | no-op | 100 / 100 | **100 / 100** | 100 / 100 | 0.395 | 0.701 | **WIN** |
-| lifecycle-d2 | state-ordering | no-op | 100 / 100 | **100 / 100** | 100 / 100 | 0.395 | 1.026 | **WIN** |
-| lifecycle-d3 | state-ordering | no-op | 100 / 100 | **100 / 100** | 100 / 100 | 0.395 | 1.316 | **WIN** (⅓ cost) |
-| quota-d1 | conservation | no-op | 100 / 25 | 100 / **25** | 100 / 100 | 0.395 | 0.742 | LOSS (integ) |
-| quota-d2 | conservation | no-op | 100 / 63 | 100 / **63** | 100 / 100 | 0.395 | 0.946 | LOSS (integ) |
-| quota-d3 | conservation | no-op | 100 / 75 | 100 / **75** | 100 / 100 | 0.395 | 1.316 | LOSS (integ) |
-| approval-d1 | SoD / two-party | no-op | 100 / 75 | 100 / **75** | 100 / 100 | 0.395 | 0.811 | LOSS (integ) |
-| approval-d2 | SoD / two-party | no-op | 79 / 25 | **79 / 25** | 100 / 100 | 0.395 | 1.169 | LOSS (both) |
-| approval-d3 | SoD / two-party | no-op | 71 / 17 | **71 / 17** | 100 / 100 | 0.395 | 1.525 | LOSS (both) |
+Reliability = **worst (min) over 8 draws**; the hybrid's 8 draws span the **route zoo** (the free gateway
+re-routes each draw — the model-agnosticism test, *not* noise reduction), the baseline's 8 span frontier
+nondeterminism (deterministic per-tier routing). `raw` = bare cheap draw before the gate; `final` = after the
+integration-gate repair. Lethal buckets shown as integration **i** / crosscut **c** (%).
 
-**raw == final in every cell except membership** — because the integration-gate is membership-seam-specific
-(`surfaceRole` only recognises the addMember/post pair) and **no-ops on the other three topologies**. On
-membership the gate ran 3 repairs but raw was already 100/100, so the gate was belt-and-suspenders here,
-**not load-bearing** on this run (the cheap tier nailed the seam unaided).
+> **Operator-asymmetry caveat (load-bearing for reading the magnitude).** The two "worst-of-8" are not the
+> same operator: the hybrid's min is over **8 distinct cheap models** (so it deterministically includes the
+> cell's single *worst* cheap route), while the baseline's is over **8 re-samples of the same frontier tier**
+> (a much tighter distribution). The verdict *direction* (hybrid loses) is robust, but the *magnitude* of the
+> gap is a function of K and of the route zoo's weak tail — not a stationary property of "cheap models." This
+> asymmetry is intended (the binding premise: route selection is not an admissible fix, so the worst route IS
+> the bar), but it means a different K or a less-bad zoo would show a smaller gap.
 
-## What this answers
+| epic | gate | baseline i/c | hybrid raw i/c | hybrid **final** i/c | verdict |
+|---|---|---|---|---|---|
+| membership-d1 | fires | 100 / 100 | 0 / 71 | **0 / 86** | LOSS (Δi −100pp) |
+| membership-d2 | fires | 100 / 100 | 50 / 75 | **33 / 83** | LOSS (Δi −67) |
+| membership-d3 | fires | 100 / 94 | 67 / 71 | **56 / 71** | LOSS (Δi −44) |
+| membership-d4 | fires | 75 / 86 | 50 / 82 | **58 / 82** | LOSS (Δi −17) |
+| membership-d5 | fires | 80 / 93 | 47 / 81 | **67 / 81** | LOSS (Δi −13) |
+| approval-d1 | no-op | 100 / 100 | 0 / 14 | **0 / 14** | LOSS (Δi −100) |
+| approval-d2 | no-op | 100 / 86 | 25 / 50 | **25 / 50** | LOSS (Δi −75) |
+| approval-d3 | no-op | 100 / 90 | 25 / 67 | **25 / 67** | LOSS (Δi −75) |
+| approval-d4 | no-op | 100 / 93 | 56 / 89 | **56 / 89** | LOSS (Δi −44) |
+| lifecycle-d1 | no-op | 100 / 100 | 50 / 100 | **50 / 100** | LOSS (Δi −50) |
+| lifecycle-d2 | no-op | 50 / 90 | 0 / 20 | **0 / 20** | LOSS (Δi −50) |
+| lifecycle-d3 | no-op | 100 / 87 | 17 / 47 | **17 / 47** | LOSS (Δi −83) |
+| lifecycle-d4 | no-op | 75 / 90 | 31 / 45 | **31 / 45** | LOSS (Δi −44) |
+| quota-d1 | no-op | 25 / 100 | 0 / 20 | **0 / 20** | LOSS (Δi −25) |
+| quota-d2 | no-op | 100 / 100 | 0 / 40 | **0 / 40** | LOSS (Δi −100) |
+| quota-d3 | no-op | 75 / 100 | 0 / 47 | **0 / 47** | LOSS (Δi −75) |
+| quota-d4 | no-op | 100 / 100 | 6 / 50 | **6 / 50** | LOSS (Δi −94) |
 
-- **Does cheap+gate reach baseline parity live?** On **set-membership** and **state-ordering** seams: **yes —
-  full 100/100 at ~½–⅓ the cost** (the pre-registered win, in those regimes). On **conservation** and
-  **separation-of-duties** seams: **no.**
-- The win is **real but topology-gated.** It is NOT "the hybrid wins where the baseline erodes" (the baseline
-  is perfect everywhere here) — it is "the cheap tier *matches* a perfect baseline for less money **on the
-  seams it can handle.**" Lifecycle is the cleanest demonstration: 100/100 across D=1–3, gate off, ~⅓ cost.
+**§7 battery verdict: LOSS — 0/17 cells lethal-non-inferior.** Cost: hybrid **$6.715** worst-of-K total
+(= $0.395 skeleton × 17; coding is free) vs baseline **$27.40** — the hybrid is **~4× cheaper and still loses
+reliability on every cell.** A cheaper system that ships software this much less reliable is, by the win
+condition, **not a win** (parity is mandatory; cost is the tie-breaker).
 
-## Layer-2 decomposition (the `why` records — this is the actionable part)
+## The read — three findings
 
-The shortfall on approval+quota is **mostly a raw cheap-tier coding-quality problem, not an unhandled seam the
-current gate would catch.** Three distinct failure modes, all visible in the fail records:
+**1. The hybrid loses everywhere under the honest statistic; the K=1 "topology win" was route-luck.** The
+2026-06-18 run scored membership-d1 + lifecycle-d1/2/3 as 100/100 WINS on a single draw. At worst-of-K=8
+across the route zoo those same cells are LOSSES (membership-d1 integration 0%, lifecycle-d1 50%). This is
+the third time the program's single-draw verdicts evaporated under worst-of-K (after the routed baseline's
+"100% wall" and the coevo "d1 = route variance") — here on the **hybrid** side, and far more severe: the
+cheap pool's worst-of-8-routes is dramatically worse than the frontier's worst-of-8-draws.
 
-1. **MISSING valid draws on the hardest seam surfaces (approval).** `executeRequest` (d2), `shipRelease` +
-   `settlePayout` (d3) produced **no structurally-valid module in 2 attempts** → every test touching them
-   fails as `touched-unwired`, which **cascades into the crosscut erosion** (79%, 71% are entirely
-   missing-surface cascade, not obligation-blindness on built surfaces). These surfaces were routed to
-   reasoning-heavy free models that emitted huge blobs (`executeRequest` d3 = 3641 output tokens) that don't
-   yield a clean module. → **LAYER-2: format discipline + more retries + route selection.**
-2. **Hallucinated obligation (quota).** Every quota integration miss is the cheap tier inventing an
-   *unrequested* `"only admin may withdraw"` guard, so the conservation/overspend/idempotency tests (which use
-   a non-admin) get refused. Crosscut is a perfect 100% (it nails the *real* obligations) but it **over-applies
-   the authz pattern** from the skeleton to `withdraw`. → **LAYER-2: spec-adherence / anti-over-restriction.**
-   (quota-d3 also shows genuine conservation-arithmetic bugs: "the 50 is still there after the refused
-   overspend".)
-3. **Wrong cross-surface seam logic (approval).** `SEAM+@release` fails with "Unauthorized: release not
-   approved" / "admin required" — the execute surface rejects a properly-approved request, i.e. the
-   approve→execute seam is mis-wired. → a **generalized integration-gate** (SoD-aware) could catch this class;
-   the membership gate cannot.
+**2. The killer is cheap-pool CODING QUALITY, not an unhandled seam — and the gate has no lever for it.** The
+**crosscut** (obligation: authz/validation/idempotency/audit) gap is the dominant signal: **16/17 cells**,
+median **−36pp**, max **−86pp**. The integration-gate has **no crosscut-repair mechanism** — it repairs the
+cross-surface seam, so the small worst-of-K crosscut *shifts* on membership-d1 (71→86) and -d2 (75→83) are a
+second-order effect of the seam rewrite changing which draw is the min, not obligation repair. That crosscut
+deficit is the cheap pool's worst routes failing to enforce obligations, wholly untouched here. The gate is a
+**no-op on 12/17 cells** (membership-specific) and on the 5 membership cells its raw→final integration lift is
+marginal and *sometimes negative* at worst-of-K (d2 50→33, d3 67→56: a repair that helps the median regresses
+a route → lowers the min). So the shortfall is **(B) output-QA**, and the one QA lever in this arm (the
+membership integration-gate + 2 structural retries) is nowhere near sufficient.
 
-**Model variance is the thing to ABSORB, not tune away (the model-agnostic thesis).** The free gateway
-adaptive-routes every surface to a different model (mistral-codestral, nemotron-nano-reasoning, deepseek-v32,
-glm-4.7-flash, poolside-laguna, minimax-m2.7, gpt-oss-120b…); quality varies wildly, and the failures cluster
-on the reasoning-heavy, high-token routes. Per the model-interchangeability principle, **route/model selection
-is NOT an admissible fix** — the system must turn ANY above-floor model's output into a valid, correct module.
-So this variance is a requirement on the OUTPUT-QA layer (extraction / format-forcing / retry / repair must be
-model-agnostic and validated worst-of-K ACROSS the route zoo, not on one draw), NOT a route-selection knob.
+**3. The PROPOSED WINNER is falsified; whether it's (B)-repairable or a (C) boundary is OPEN — this run does
+not settle it.** Per the binding premise, cheap-model broken code is the **target** to repair, not
+automatically a wall — and this hybrid arm ran only the **integration-gate + retry**, NOT the fuller output-QA
+stack the coevo work built (`repair-gate.mjs` self-repair / smoke-execute-and-fix, `contract-gate.mjs`,
+`shape-gate.mjs`, best-of-N, extraction). So the clean, honest statement is: **the P2c "proposed winner"
+(cheap-fusion + integration-gate) does not reach reliability parity under co-measured worst-of-K=8** — the
+integration-gate alone does not close the crosscut/obligation gap (it was never designed to) and no-ops on 3
+of 4 topologies. The redirect is the output-QA stack, especially a model-agnostic **obligation/crosscut
+repair** (the crosscut gap is the bulk of the deficit and is wholly untouched here). **But against
+over-optimism:** the gap is **bimodal** — 9/17 cells are **>50pp** integration blowouts, only 2/17 are
+near-parity (membership-d4 Δi −17, d5 Δi −13) — and **no evidence is offered that an obligation-repair lever
+closes an 86pp worst-of-route crosscut gap** (that lever was not run). Whether the cheapest tail of the route
+zoo is (B)-repairable or a (C) wall is exactly what the next experiment must *decide*, not assume.
 
-## The honest read
+## Integrity checks (what the loss is — and the one thing this run cannot separate)
 
-- The pre-registered win (parity at lower cost) **is achievable and was achieved live — on 2 of 4 seam
-  topologies.** That is the first *live, apples-to-apples, non-proxy* evidence the thesis can hold.
-- It does **not** generalize across seam kinds as-is. The two losing topologies fail for reasons the
-  membership-specific gate cannot touch, and the dominant lever to close them is **layer-2 cheap-tier quality
-  (route selection, format discipline, spec adherence)** — with a secondary lever being a **gate that
-  generalizes** to the SoD and conservation invariants.
-- Cost favors the hybrid everywhere ($0.395 flat vs $0.70–1.53); reliability is the whole question, and it is
-  now a *measured, decomposed* question rather than a proxy one.
+- **Baseline arm: 0/17 harness errors**, and its worst-of-K integration agrees with the independent
+  `routed-baseline-settled.json` run within 25pp on **13/17** cells (the rest is expected frontier
+  sampling variance — both are min-over-8 of a stochastic builder). The comparator is sound.
+- **The loss is NOT purely a gateway artifact: ≥9/17 cells lose with ZERO missing draws** — unambiguously
+  broken cheap-tier code (approval-d1 i0%, quota-d1 i0%, quota-d4 i6%, all with no missing draws). The §7
+  verdict (0/17 non-inferior) does not hinge on transport.
+- **HONEST LIMIT — on the 8 cells WITH missing draws, this run cannot separate transport from bad code.**
+  `missingDrawsAny` is a *boolean* (any of 8 draws) and the artifact stores no per-draw vector, and the
+  harness scores a missing/empty surface as **0** — identical to a graded-broken draw at 0. So a single
+  gateway JSON/format miss is enough to drive a cell's worst-of-K to 0, indistinguishable from bad code. The
+  tell is membership-d1 (integration worst 0 / median 100 / best 100, with a missing draw): one bad draw of
+  *unknown cause* against an otherwise-perfect distribution. A future run should log per-draw outcomes to
+  attribute these 8 cells; for now, treat their worst-of-K=0 as "transport-or-code," not certified code.
+- Same deterministic oracle graders as the routed baseline (already verified pure); the grader discriminates
+  (the baseline arm scores ~100% where the hybrid scores ~0% on the same cells).
 
-## Caveats / not-yet
+## What it means for P3
 
-- K=1 single runs (no worst-of-K); the gateway's adaptive routing makes a re-run non-deterministic (a
-  different model may draw each surface) — a worst-of-K / route-pinned re-run would tighten the seam numbers.
-- Baseline column is the prior routed-baseline run, not co-measured in the same process (re-running it is
-  ~$10 and re-confirms 100%); available on request.
-- Sequestered TEST untouched — these are the development epics (`approval-d1…`, not the windowed TEST ids);
-  `membership-d1` = the frozen anchor `scale-d1`, already a dev fixture. No P3 TEST contamination.
+The pre-P3 gate flips to **READY** (both deferred live-spend prereqs converted to real). But "READY" means
+*the proxies are now measured*, not *the winner wins*: the co-measured head-to-head — which is prereq #2 — is
+itself the reliability test, and the proposed winner **loses 0/17**. Freezing this config and scoring it on
+the sequestered TEST would only confirm a loss. **So P3-as-freeze-the-current-winner is not warranted.** The
+honest next step is to strengthen the output-QA stack (self-repair + a generalized obligation/crosscut repair
++ best-of-N), validate it lifts the hybrid's worst-of-K crosscut/integration toward the baseline, and only
+then freeze a candidate worth falsifying on TEST. The cost headroom is enormous (4×), so the entire question
+is reliability — now a *measured, decomposed* question, not a proxy one.
 
-## Failure attribution (the operating lens for layer-2)
+## Audit trail — the superseded K=1 topology-win (2026-06-18)
 
-Every failure mode is classified — **(A)** planning/orchestration (fix the skeleton/contract/decomposition;
-frontier $, amortizable, model-agnostic by nature) · **(B)** output-QA (fix the checker/gate/repair/extraction;
-cheap, per-surface, MUST hold worst-of-K across the route zoo) · **(C)** neither = a thesis boundary
-(scope-shrink). Route/model selection is never an admissible fix (it abandons model-interchangeability).
-
-| failure mode | attribution | fix lives in |
-|---|---|---|
-| MISSING valid draws (approval execute/ship/settle; 3641-tok blobs) | **(B)**, maybe **(A)** | model-agnostic extraction/format/retry (B); or decompose the obligation-dense seam surface (A) |
-| hallucinated "only admin may withdraw" (quota) | **(A)** primarily, (B)-catchable | sharpen the contract so authz is not over-applied to `withdraw` (A); spec-adherence checker (B) |
-| wrong approve→execute seam logic (approval) | **(B)** + (A) | a generalized SoD-aware integration-gate (B); clearer approval-store contract (A) |
-
-## What this sets up (next forks, the lead's call)
-
-1. **Attribution pass first.** Decide (A)/(B)/(C) per failing cell, then build the fix each one warrants —
-   NOT a reflexive "generalize the gate" (that's a (B) reach; the quota guard is likely an (A) one-line
-   contract fix that helps every model at once).
-2. **Then the targeted fixes**, under the model-agnostic constraint: (A) contract/decomposition sharpening for
-   the over-restriction + obligation-dense surfaces; (B) model-agnostic extraction/retry + a generalized gate
-   for the approve→execute and conservation seams — each validated worst-of-K across routes.
-3. **Co-measure + worst-of-K** the baseline and hybrid in one process (worst-of-K across routes IS the
-   model-agnosticism test, not just noise reduction).
+The first run (K=1, hybrid arm only, baseline column reused from the prior routed-baseline) reported a
+**topology-gated WIN** — 100/100 at ½–⅓ cost on set-membership (d1) + state-ordering (lifecycle d1–3), LOSS
+on conservation (quota) + separation-of-duties (approval). Its own caveats (K=1; "the gateway's adaptive
+routing makes a re-run non-deterministic"; "co-measure + worst-of-K … IS the model-agnosticism test") named
+exactly this run as the decisive follow-up. Discharged: under co-measured worst-of-K=8 the "wins" were
+single-draw route-luck — the cheap pool, held to its *worst* route over 8, fails every cell. The K=1 numbers
+were not fabricated (those draws did pass) — they were **under-sampled**, and a single lucky route is not a
+model-agnostic result (the binding premise: route selection is not an admissible fix).

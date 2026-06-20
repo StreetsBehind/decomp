@@ -1,55 +1,110 @@
-# Routed all-frontier baseline — first live results (P3 prerequisite #3)
+# Routed all-frontier baseline — SETTLED (P3 prerequisite #1)
 
-> **Status (2026-06-18): BUILT + FIRST LIVE RESULTS IN — and they CHALLENGE the provisional hybrid win.**
-> The cost-optimized routed baseline (per-surface: haiku→CRUD, sonnet→writers, opus→seam; + opus skeleton
-> anchor), graded by the SAME independent oracles, **builds at 100% crosscut / 100% integration through D=3
-> with no erosion.** This is the proper (non-strawman) baseline the win condition names, and it is strong.
-> Harness: `routed-baseline.mjs`. Raw: `runs/routed-baseline-live.json` (NB: overwritten per run — the d1
-> rows below are preserved here because that file now holds only the d2/d3 run).
+> **Status (2026-06-20): SETTLED. The cost-optimized routed all-frontier baseline ALSO ERODES under the
+> program's own worst-of-K=8 statistic — 10/17 DEV cells drop below 100%, a 14% per-draw lethal-fail rate,
+> failing even at d1.** This REVERSES the 2026-06-18 interim headline ("builds at 100% through D=3 with no
+> erosion"), which was a **K=1 single-draw artifact** — the exact non-stationarity footgun worst-of-K exists
+> to expose (same lesson as the VOID-92/92 grader bug and the coevo "d1 losses were route variance" finding,
+> now reproduced on the FRONTIER side). The settled artifact flips the pre-P3 gate prereq #1 UNMET→**MET**.
+> Harness: `routed-baseline.mjs --settled --k 8`. Raw: `runs/routed-baseline-settled.json` (136 draws, 0
+> harness errors). Real frontier spend: **$64.61** (the 136 surface-coding draws; the $0.395/epic opus
+> skeleton anchor is analytic, not spent).
 
-## Measured epics (live `claude` CLI, real $; K=1)
+## The settled measurement (live `claude` CLI, real $; worst-of-K=8 over the full DEV ladder)
 
-| epic | routes (haiku/sonnet/opus) | crosscut | integration | surface $ | total $ (incl. $0.395 opus skeleton anchor) |
-|---|---|---|---|---|---|
-| approval-d1 | 2 / 1 / 1 | 100% | 100% | 0.416 | 0.811 |
-| lifecycle-d1 | 2 / 1 / 1 | 100% | 100% | 0.306 | 0.701 |
-| quota-d1 | 2 / 1 / 1 | 100% | 100% | 0.347 | 0.742 |
-| membership-d1 (graded by 2nd oracle) | 2 / 2 / 1 | 100% | 100% | 0.390 | 0.785 |
-| approval-d2 | 4 / 2 / 2 | 100% | 100% | 0.774 | 1.169 |
-| approval-d3 | 6 / 3 / 3 | 100% | 100% | 1.130 | 1.525 |
-| lifecycle-d2 | 4 / 2 / 2 | 100% | 100% | 0.631 | 1.026 |
-| lifecycle-d3 | 6 / 3 / 3 | 100% | 100% | 0.921 | 1.316 |
-| quota-d2 | 4 / 3 / 1 | 100% | 100% | 0.551 | 0.946 |
-| quota-d3 | 6 / 4 / 2 | 100% | 100% | 0.921 | 1.316 |
+17 DEV epics — membership d1–d5 (graded by the 2nd oracle, depth-matched) + approval/lifecycle/quota d1–d4.
+Routing is **deterministic** (haiku→CRUD, sonnet→writers, opus→seam), so K=8 measures the **frontier models'
+own nondeterminism**, not a route lottery. Reliability = **worst (min) over 8 draws**; cost = **worst (max)
+over 8 draws**. (TEST ids stay sealed until P3 — this is the DEV ladder mirroring the TEST depth shape.)
 
-10 epics, all lethal buckets 100%. Measured spend ≈ **$10.34** (d1 batch $3.04 + d2/d3 batch $7.30).
-Full 86-epic battery projected ≈ **$90** from real per-surface cost (~$0.073/surface + $0.395 skeleton/epic).
+| epic | surf | crosscut worst/med/best | integration worst/med/best | clean draws | epic✓ worst | cost worst$ (incl $0.395 skel) |
+|---|---|---|---|---|---|---|
+| membership-d1 | 5 | 100/100/100 | 100/100/100 | 8/8 | ✅ | 0.93 |
+| membership-d2 | 9 | **83**/100/100 | **50**/100/100 | 6/8 | ✗ | 1.35 |
+| membership-d3 | 13 | 100/100/100 | 100/100/100 | 8/8 | ✅ | 1.80 |
+| membership-d4 | 17 | **91**/100/100 | **75**/100/100 | 6/8 | ✗ | 2.27 |
+| membership-d5 | 21 | **93**/100/100 | **80**/100/100 | 5/8 | ✗ | 2.69 |
+| approval-d1 | 4 | 100/100/100 | 100/100/100 | 8/8 | ✅ | 0.90 |
+| approval-d2 | 8 | 100/100/100 | 100/100/100 | 8/8 | ✅ | 1.38 |
+| approval-d3 | 12 | 100/100/100 | 100/100/100 | 8/8 | ✅ | 1.87 |
+| approval-d4 | 16 | **93**/100/100 | 100/100/100 | 7/8 | ✗ | 2.33 |
+| lifecycle-d1 | 4 | **80**/100/100 | **0**/100/100 | 7/8 | ✗ | 0.82 |
+| lifecycle-d2 | 8 | **80**/100/100 | 100/100/100 | 7/8 | ✗ | 1.26 |
+| lifecycle-d3 | 12 | **73**/100/100 | 100/100/100 | 6/8 | ✗ | 1.68 |
+| lifecycle-d4 | 16 | 100/100/100 | 100/100/100 | 8/8 | ✅ | 2.10 |
+| quota-d1 | 4 | 100/100/100 | **25**/100/100 | 7/8 | ✗ | 0.89 |
+| quota-d2 | 8 | 100/100/100 | 100/100/100 | 8/8 | ✅ | 1.21 |
+| quota-d3 | 12 | 100/100/100 | **75**/100/100 | 6/8 | ✗ | 1.67 |
+| quota-d4 | 16 | 100/100/100 | **63/91**/100 | 4/8 | ✗ | 2.25 |
 
-## Why this challenges the provisional win (the honest read)
+**Worst-of-K aggregate cost** over the ladder: **$27.41** (median draw $12.82), incl. the analytic
+$0.395/epic opus skeleton. **7/17 cells hold 100% worst-of-K; 10/17 erode.** Per-draw lethal-fail rate:
+**19/136 = 14.0%**. ("clean draws" = both lethal buckets at 100% i.e. *lethal-clean*; this coincides with
+all-three-perfect everywhere except quota-d4, whose 4th lethal-clean draw carries a non-lethal happy miss.)
 
-- The P2b/P2c "cost×reliability crossover / hybrid win" was scored against the **opus-WHOLE proxy** — one opus
-  call building the *whole* epic monolithically, which eroded at scale (X-CUT 78→80%, EPIC✓ 33→0% at N≥13).
-- That erosion was a **monolithic** failure, NOT a frontier-capability failure. The proper cost-optimized
-  baseline routes **per-surface**, and per-surface frontier coding nails every obligation (100% through D=3).
-- So the provisional win was measured against a **weak monolithic proxy that flattered the hybrid.** Against
-  the real routed baseline: **cost** favors the hybrid (coding $0 vs routed $0.35–1.1/epic, gap widens with
-  scale), but **reliability** favors the baseline (100% vs the hybrid+gate's 69–85% INTEG). That is a
-  cost/reliability **TRADE, not the pre-registered DOMINANCE** (parity AND cheaper).
+## The read — three findings
 
-## Not yet settled (do not over-claim the reverse either)
+**1. The "100% wall" was a K=1 artifact; the honest statistic shows frontier coding is not perfectly
+reliable either.** At worst-of-K=8 the cost-optimized routed all-frontier baseline drops a lethal bucket on
+14% of draws and erodes in 10/17 cells — *including at d1* (lifecycle-d1 integration = one 0% draw out of
+[100,100,100,100,**0**,100,100,100]). The 2026-06-18 "builds at 100% through D=3" was a single-draw (K=1)
+measurement; re-sampling the SAME deterministic routing 8× exposes the variance. This is precisely the
+footgun worst-of-K exists to catch — and it is now the third independent place this program has caught it
+(the VOID-92/92 grader bug; the coevo "d1 losses were route variance"; and now the frontier baseline itself).
 
-1. **Only D≤3 tested.** Opus-whole eroded at N≥13 (D≥4). The routed baseline may still break at D=4,5 — untested.
-2. **The hybrid's 69–85% INTEG was proxy/landscape, NOT live.** The live gate hit 100% at d1 (P2a). A fair
-   verdict needs a **live HEAD-TO-HEAD**: hybrid (cheap+gate) vs routed baseline on **identical** epics,
-   co-measured.
-3. K=1 single runs (no worst-of-K yet).
+**2. The erosion is bounded variance, not depth-monotonic collapse — but the misses RECUR.** Every cell's
+**median is 100%/100%** (16/17; quota-d4 integration median 91%), so the typical draw is perfect. But the
+failures are not all one-off: **6 of the 10 eroding cells fail on 2–4 draws** (membership-d2/d4 = 2,
+membership-d5 = 3, lifecycle-d3 = 2, quota-d3 = 2, quota-d4 = 4); only 4/10 are true single-draw misses
+(approval-d4, lifecycle-d1, lifecycle-d2, quota-d1). The median holds at 100% only because an 8-draw median
+tolerates ≤3 misses — so "median 100%" understates how often a route-draw breaks. The bad draws are coherent
+(e.g. lifecycle-d1's worst draw is (crosscut 80, integration 0): one generation breaking both its obligation
+and the seam — a real-broken-module signature, not scattered grader flake). Depth is **not** monotonic (d1
+integration 0% vs d3 75%). The most depth-strained cell is **quota-d4** (the conservation/wallet seam): 4/8
+draws miss, integration draws [81,100,100,100,63,100,81,81], median 91% — the only cell whose median moves —
+consistent with the head-to-head's "quota is the hard topology."
 
-## Next (decisive, untested-live) — surfaced to the research lead as a thesis-level fork
+**3. This RESETS the comparator; it does not by itself decide the win.** The result demolishes the
+"perfect baseline vs eroding hybrid" framing of 2026-06-18, but it does **not** hand the hybrid a win. Both
+arms erode under worst-of-K=8; the win-condition contest is **which arm erodes LESS per cell, at what cost**,
+co-measured on identical epics. That is exactly the live head-to-head (pre-P3 prereq #2, still UNMET by
+design). What this settle establishes is that **reliability parity is a reachable bar** (the baseline is not
+a 100% wall), and that the per-cell non-inferiority veto at P3 now has a **measured** baseline reliability
+vector to compare against (not the opus-whole proxy).
 
-- **(recommended) Live head-to-head** — run the hybrid cheap+gate on the same epics the baseline just aced,
-  co-measured. The real P3 comparison; directly answers "does cheap+gate reach parity at ≤cost."
-- **Push the baseline to D≥4,5** — find where, if ever, per-surface routed frontier coding erodes.
-- **Reframe** — the honest framing may be "equal-reliability at lower cost only holds where frontier coding
-  itself degrades." Whether/where that regime exists is exactly (a)+(b).
+### Cost (unchanged direction; quantified)
 
-Routing policy + harness were decided autonomously; the experiment choice is the lead's (thesis-level).
+The $0.395 opus skeleton anchor is paid by **both** arms (the orchestration artifact is shared), so the cost
+**delta** is purely the per-surface coding. Coding-only (skeleton excluded) the routed baseline pays
+**$0.42–2.29/epic** (worst-of-K, growing with depth — d1 ≈ $0.42–0.53, d4 ≈ $1.70–1.94), the hybrid pays
+**$0** (free gateway). The hybrid dominates on cost; the gap widens with depth. The reliability question
+(finding 3) is what the head-to-head must settle.
+
+## Integrity checks (why this is not a grader artifact)
+
+- **0/136 harness-error draws** — every draw completed and was graded; no transport failure scored as a 0.
+- **All 17 oracle graders are deterministic** (no `Date.now`/`Math.random`/`new Date`/timers/ordering), and
+  `evaluateEpic` grades each draw in a fresh isolated child process → the only source of per-draw variation
+  is the model output. The 14% rate is genuine frontier nondeterminism.
+- **The grader discriminates** — 7 cells hold 100% worst-of-K and every cell's median is 100% (16/17), so the
+  failures are not a uniform "tests don't load" floor; they are real, isolated, broken generations.
+
+## Method notes (decided autonomously; no frozen invariant touched)
+
+- Worst-of-K=8 matches the statistic the hybrid arm, coevo, and head-to-head use — apples-to-apples for the
+  P3 per-cell veto. Cost = max-draw, reliability = min-draw (frozen convention, DESIGN §5/A5). A
+  harnessError/empty draw would score 0 (fail-closed `rate()`), never excluded — none occurred here.
+- This is the **comparator arm only**. The win-condition DOMINANCE comparison (hybrid ≥ baseline per cell at
+  ≤ cost) is co-measured in `runs/head-to-head-settled.json` and scored at P3 — NOT decided here.
+- No frozen apparatus touched: `routed-baseline.mjs` pre-existed; this run only produced the data artifact
+  (`runs/`, gitignored). DESIGN weights/veto/δ/α/TEST-hash, FREEZE.md, and `studies/build-gap/` are untouched.
+
+## Audit trail — the superseded K=1 interim (2026-06-18)
+
+The first live run (K=1, D≤3 only) reported **100% crosscut / 100% integration on all 10 cells tested** and
+was read as "the routed baseline is strong; the P2b/P2c hybrid win was vs a weak monolithic opus-whole proxy
+that flattered the hybrid → cost/reliability TRADE not dominance." That reading rested on a single draw per
+cell. Its own "not yet settled" caveats (D≤3 only; K=1; no worst-of-K; no live head-to-head) are now
+discharged: the settled worst-of-K=8 run above shows the 100%s were single-draw luck, and the baseline
+erodes under the honest statistic. The K=1 numbers were not *wrong* (those draws did pass) — they were
+**under-sampled**, and a single draw cannot certify route/sampling robustness.
