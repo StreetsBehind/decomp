@@ -5,5 +5,9 @@ runs/*
 *.log
 .DS_Store
 
+# Python bytecode cache (okf/tools)
+__pycache__/
+*.pyc
+
 # Study run outputs — reproducible scratch
 studies/**/runs/
