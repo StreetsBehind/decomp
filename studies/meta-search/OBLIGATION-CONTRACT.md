@@ -126,6 +126,23 @@ repair, re-run the stack's own checks (obligation verify + seam/shape structural
 **keep the repair only if it introduces no new check failure**, else revert. Open design fork: per-gate guard vs
 a stack-level repair-acceptance wrapper.
 
+## Best-of-N repair + no-regress guard (2026-06-20 — built, smoke-GREEN)
+
+The repair-regression hazard is addressed by a single mechanism — **best-of-N with the original code as the
+no-regress floor** (`src/best-of-n-repair.mjs`, `gates/best-of-n-repair-smoke.mjs` 12/12; obligation smoke now
+39/39). `selectBestRepair` draws N route-backs over the same cheap `fusion` pool and keeps the one that
+**strictly out-scores** the current code on an oracle-blind quality score; if no draw beats the original, the
+original is kept (a *strictly-worse* repair is never shipped — that IS the no-regress guard, and n=1 is the pure
+guard). The obligation gate's score (`obligationRepairScore`, K3-safe — `verifySurface` + structural checks
+only) rewards **preserving the declared seam store** (a repair that drops a `runConditions` store — the
+integration-seam regression mode — loses points) and penalizes remaining obligation violations. So a "fix" that
+adds the missing obligation but breaks the seam scores ≤ original → rejected (counted as a `revert`); best-of-N
+then prefers a candidate that fixes the obligation AND preserves the seam. Wired into `coevo-rung1.mjs`
+(`--bestofn N`; the per-draw telemetry shows `…/Nnr` reverts). Selection is over the **pool's own** outputs
+(never a privileged model) → admissible under model-agnosticism. **Honest limit:** the seam-preservation signal
+is a *store-reference* proxy, not a full cross-surface seam re-check — it catches a dropped store, not every
+logic-level seam break; the live re-validate will show how much regression it actually removes.
+
 ## Next increment (spend-gated — a user spend call)
 
 1. **Causality via dump-replay** (cheap, live route-back, ~$0): on the head-to-head's worst crosscut draws, does

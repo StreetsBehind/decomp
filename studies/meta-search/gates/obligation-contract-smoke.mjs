@@ -197,5 +197,50 @@ await (async () => {
   ok(r.leak === true, 'oracle token in the repair prompt → leak=true (candidate voided)');
 })();
 
+// ============ 7. best-of-N + no-regress through the obligation gate ============
+// The repair-regression hazard: a "fix" that adds the missing obligation but DROPS the declared seam store
+// (the integration-seam regression mode) must be REJECTED by the no-regress floor; best-of-N then prefers a
+// candidate that fixes the obligation AND preserves the store.
+await (async () => {
+  // original: references the declared ctx.db.ledger seam store + idempotency, but MISSING tenancy.
+  const original = `export function withdraw(ctx, walletId, amount, key) {
+    ctx.db.ledger ??= [];
+    if (ctx.db.ledger.some((e) => e.key === key)) return;
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('bad');
+    ctx.db.ledger.push({ walletId, delta: -amount, key });
+  }`;
+  // seam-breaking "fix": adds tenancy but switches off ctx.db.ledger (drops the seam store + the key dedup).
+  const seamBreaking = `export function withdraw(ctx, walletId, amount, key) {
+    if (wallet.orgId !== ctx.session.orgId) throw new Error('cross-org');
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('bad');
+    ctx.db.balances.set(walletId, 0);
+  }`;
+  // clean fix: adds tenancy AND preserves ctx.db.ledger + the key dedup.
+  const cleanFix = `export function withdraw(ctx, walletId, amount, key) {
+    if (wallet.orgId !== ctx.session.orgId) throw new Error('cross-org');
+    if (typeof amount !== 'number' || amount <= 0) throw new Error('bad');
+    ctx.db.ledger ??= [];
+    if (ctx.db.ledger.some((e) => e.key === key)) return;
+    ctx.db.ledger.push({ walletId, delta: -amount, key });
+  }`;
+  const GATEN = { kind: 'deterministic', repairDepth: 2, bestOfN: 3 };
+
+  // (a) every candidate breaks the seam → NO-REGRESS revert (original kept, repairs=0, reverts=1)
+  let files = { withdraw: original };
+  let r = await runObligationContract({ surfaces: ['withdraw'], files, prompts: { withdraw: 'b' }, skeleton: QUOTA, gate: GATEN, rebuild: async () => seamBreaking });
+  ok(r.repairs === 0 && r.reverts === 1 && files.withdraw === original, `seam-breaking fix REVERTED (no-regress): repairs=${r.repairs} reverts=${r.reverts} originalKept=${files.withdraw === original}`);
+
+  // (b) a clean fix is accepted
+  files = { withdraw: original };
+  r = await runObligationContract({ surfaces: ['withdraw'], files, prompts: { withdraw: 'b' }, skeleton: QUOTA, gate: GATEN, rebuild: async () => cleanFix });
+  ok(r.repairs === 1 && r.reverts === 0 && files.withdraw === cleanFix, `clean fix ACCEPTED: repairs=${r.repairs} reverts=${r.reverts}`);
+
+  // (c) best-of-N picks the clean fix out of a mixed pool (seam-breaking, clean, seam-breaking)
+  files = { withdraw: original };
+  const pool = [seamBreaking, cleanFix, seamBreaking]; let k = 0;
+  r = await runObligationContract({ surfaces: ['withdraw'], files, prompts: { withdraw: 'b' }, skeleton: QUOTA, gate: GATEN, rebuild: async () => pool[k++ % pool.length] });
+  ok(r.repairs === 1 && r.reverts === 0 && files.withdraw === cleanFix, `best-of-N selects the clean fix from a mixed pool: repairs=${r.repairs} winner=${files.withdraw === cleanFix ? 'clean' : 'other'}`);
+})();
+
 console.log(`\nobligation-contract-smoke: ${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

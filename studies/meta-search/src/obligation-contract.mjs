@@ -41,6 +41,7 @@
 
 import { scanOracleLeak } from './checker.mjs';
 import { adminScopedSurfaces, hasAdminGate } from './contract-gate.mjs';
+import { selectBestRepair, structurallyPlausible } from './best-of-n-repair.mjs';
 
 // ---- skeleton parsing (PUBLIC) --------------------------------------------------------------------
 // the leading lowercase verb of a surface name: deposit, withdraw, createWallet→create, executeRequest→execute.
@@ -244,6 +245,21 @@ function repairPrompt(originalPrompt, surface, currentCode, violations) {
   return parts.join('\n');
 }
 
+// Oracle-blind quality score for a candidate repair of `surface` (best-of-N selection + the no-regress floor).
+// Higher = better. Disqualifies a structurally-implausible candidate; rewards PRESERVING the declared seam
+// store(s) — a repair that DROPS a runConditions store (the integration-seam regression mode the probe found)
+// loses points; penalizes each remaining obligation violation. All inputs are public (verifySurface + the
+// skeleton-derived contract) → K3-safe.
+function obligationRepairScore(code, surface, contract) {
+  if (!structurallyPlausible(code, surface)) return -Infinity;
+  let s = 0;
+  for (const store of (contract.runConditions || [])) {
+    if (new RegExp(`ctx\\.db\\.${store}\\b`).test(code)) s += 2;     // seam-store preserved
+  }
+  s -= verifySurface(surface, code, contract).length;               // fewer obligation violations = higher
+  return s;
+}
+
 /**
  * Run the obligation-contract VERIFY+REPAIR pass over a built epic's surfaces. Mirrors the other gates'
  * signature so the harness composes it (… → contract → obligation → seam). Mutates `files` in place on repair.
@@ -259,10 +275,11 @@ function repairPrompt(originalPrompt, surface, currentCode, violations) {
  * @returns {Promise<{files, ranGate, kind, surfacesFlagged, violations, missing, invented, repairs, leak, detail}>}
  */
 export async function runObligationContract({ surfaces, files, prompts, skeleton, gate, rebuild, judgeInvoke }) {
-  const off = (extra = {}) => ({ files, ranGate: false, kind: gate?.kind || 'off', surfacesFlagged: 0, violations: 0, missing: 0, invented: 0, repairs: 0, leak: false, detail: [], ...extra });
+  const off = (extra = {}) => ({ files, ranGate: false, kind: gate?.kind || 'off', surfacesFlagged: 0, violations: 0, missing: 0, invented: 0, repairs: 0, reverts: 0, leak: false, detail: [], ...extra });
   if (!gate || gate.kind === 'off') return off();
   const maxRepairs = Math.max(0, gate.repairDepth || 0);
-  let surfacesFlagged = 0, violations = 0, missing = 0, invented = 0, repairs = 0;
+  const bestOfN = Math.max(1, gate.bestOfN || 1);   // >1 → best-of-N route-backs; original is the no-regress floor
+  let surfacesFlagged = 0, violations = 0, missing = 0, invented = 0, repairs = 0, reverts = 0;
   const detail = [];
 
   for (const surface of surfaces) {
@@ -288,14 +305,21 @@ export async function runObligationContract({ surfaces, files, prompts, skeleton
       if (pass === maxRepairs) break;                        // out of budget → ship (the oracle still grades it)
 
       const rp = repairPrompt(prompts[surface] || '', surface, files[surface], viols);
-      if (scanOracleLeak(rp)) return { files, ranGate: true, kind: gate.kind, surfacesFlagged, violations, missing, invented, repairs, leak: true, detail };
-      let code; try { code = await rebuild(surface, rp); } catch { code = ''; }
-      if (!code || !code.trim()) break;                      // repair build failed → keep current code
-      files[surface] = code;
+      if (scanOracleLeak(rp)) return { files, ranGate: true, kind: gate.kind, surfacesFlagged, violations, missing, invented, repairs, reverts, leak: true, detail };
+      // BEST-OF-N + NO-REGRESS: draw `bestOfN` route-backs over the cheap pool and keep the one that strictly
+      // out-scores the current code on the oracle-blind quality score (original = the no-regress floor). A
+      // repair that fixes the obligation but breaks the seam (drops a runConditions store) scores ≤ original →
+      // rejected (counted as a revert), so we never ship a regressing repair into a worst-of-K fitness.
+      const sel = await selectBestRepair({
+        surface, originalCode: files[surface], n: bestOfN, repairPrompt: rp, rebuild,
+        score: (c) => obligationRepairScore(c, surface, contract),
+      });
+      if (!sel.accepted) { reverts++; detail.push({ surface, pass, noRegress: true, src: sel.src }); break; }
+      files[surface] = sel.code;
       repairs++;
     }
   }
-  return { files, ranGate: true, kind: gate.kind, surfacesFlagged, violations, missing, invented, repairs, leak: false, detail };
+  return { files, ranGate: true, kind: gate.kind, surfacesFlagged, violations, missing, invented, repairs, reverts, leak: false, detail };
 }
 
 // ---- cheap-judge verify (a free-gateway model grades code-vs-contract; oracle-blind) ---------------
