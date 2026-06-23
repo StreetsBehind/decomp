@@ -5,6 +5,35 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-7 UPDATE (2026-06-22/23) — read this FIRST; it supersedes the Session-6 "NEXT = run the ladder"
+> line by adding a GATE in front of it.** An external review (`studies/meta-search/EXTERNAL-REVIEW-2026-06-22.md`,
+> merged via PR #2) was evaluated; its Recs 1–3 converged on "pin the win-condition ground rules before the next
+> climb." **Those ground rules are now PINNED + committed** (`f312106`) in
+> [`studies/meta-search/GROUND-RULES.md`](studies/meta-search/GROUND-RULES.md) + an `AMENDMENTS.md` entry — **void-rule:
+> touches NONE of the four frozen invariants** (weights / per-cell veto / δ-α / TEST-hash): **(1) route-pool
+> floor** = the deferred USER call, decided **extraction + best-of-3** — a draw is admissible iff `parse ∧
+> exports-surfaces` after extraction + best-of-3 re-sampling; below-floor (format-hazard) draws are EXCLUDED from
+> worst-of-K with the per-cell rate reported; runtime crashes stay ABOVE the floor (repair targets, Premise #2).
+> **(2) falsifiable (C)-trigger** = ex-ante 5 conditions (above-floor ∧ smoke-clean ∧ semantic ∧
+> survives-full-stack-across-zoo ∧ lever-menu-exhausted); thesis KILL only on a whole-obligation-class wall where
+> the routed baseline holds (hybrid inferior by >δ), SCOPE-SHRINK on isolated walls. **(3) metric alignment** =
+> archive/freeze/TEST all = raw-min worst-of-K=8 (the search proxy steers mutation only, never freezes) + a logged
+> **lever time-box** (the ladder run + ≤2 named levers; widening logged). **The runner now ENFORCES the floor:**
+> `coevo-rung1.mjs` gained an opt-in **`--floor`** flag (`722c438`; default OFF = byte-identical to before) that
+> drops below-floor draws from worst-of-K, reports the rate, and tags `POOL-DEGENERATE`; `LADDER-RUNBOOK.md`'s
+> command now carries `--floor --retry 3`. Validated (mock both ways; pre-flight GREEN — phase-neg1 manifest 14/14,
+> obligation 39/39, best-of-n 12/12, **run gates from inside `studies/meta-search/`**); frozen tree
+> `studies/build-gap` untouched (`1580944…`). **NOTE: `main` is 2 ahead of origin = UNPUSHED.**
+> **▶ NEXT SESSION = run the ladder as the now-floor-respecting DECISION GATE** per
+> [`LADDER-RUNBOOK.md`](studies/meta-search/LADDER-RUNBOOK.md) (turnkey): `coevo-rung1.mjs --ladder --repairgate
+> --shapegate --contractgate --obligation --bestofn 3 --seamgate --floor --retry 3 --k 8 --out
+> coevo-ladder-stack.json --dump studies/meta-search/runs/dump-ladder`. **$0** (free-gateway hybrid; baseline
+> spent), **multi-hour (6–15h)** → run in BACKGROUND / stage by depth row. Then read the rollup against
+> GROUND-RULES: PASS/FAIL = non-inferiority (δ=0.05) over admissible draws, `POOL-DEGENERATE` → route-pool-floor
+> finding, classify each failing cell's residual per Rule 2 (**extraction = named lever #1** if below-floor format
+> hazards dominate; this first pass is floor-WITHOUT-extraction = conservative). Freeze only when broadly
+> non-inferior._
+>
 > _**▶ SESSION-6 UPDATE (2026-06-20) — read this FIRST; it supersedes the Session-5 "NEXT = build the output-QA
 > stack" line below.** The model-agnostic output-QA stack the Session-5 head-to-head called for is **BUILT +
 > live-validated + COMMITTED** (`091ac92`→`afcac9d` on `main`, **9 ahead of origin = UNPUSHED**; frozen tree
