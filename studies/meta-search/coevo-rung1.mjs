@@ -45,6 +45,14 @@ const K = Math.max(1, parseInt(arg('k', '3'), 10) || 3);                  // wor
 const RETRY = Math.max(1, parseInt(arg('retry', '2'), 10) || 2);         // structural-retry attempts per cheap draw
 const REPAIR = Math.max(0, parseInt(arg('repair', '2'), 10));            // integration-gate model repairDepth (current membership gate)
 const BESTOFN = Math.max(1, parseInt(arg('bestofn', '1'), 10) || 1);    // obligation gate: best-of-N route-backs (1 = pure no-regress guard)
+// --floor enforces the GROUND-RULES.md Rule-1 ROUTE-POOL FLOOR on the worst-of-K: a draw is BELOW the floor iff
+// ≥1 required surface failed parse∧export (validate-surface) even after RETRY re-sampling → d.missingDraws>0.
+// Below-floor draws (format hazards: prose blob / syntax-glue / missing surface) are EXCLUDED from the worst-of-K
+// and their per-cell RATE is reported; a cell with NO admissible draw is flagged pool-degenerate (not a pass).
+// Runtime crashes that parse+export stay ABOVE the floor (tier-2 repair targets, Binding Premise #2). Opt-in:
+// default OFF → byte-identical to the pre-floor behavior. Extraction (the recovery lever) is unbuilt → this is
+// the conservative floor-without-extraction first pass.
+const FLOOR = has('floor');
 const CONC = Math.max(1, parseInt(arg('conc', '6'), 10) || 6);
 const CALL_TIMEOUT_MS = Math.max(10000, parseInt(arg('callTimeout', '120000'), 10) || 120000);
 // --seamgate swaps the membership-only integration-gate for the GENERALIZED seam-gate (src/seam-gate.mjs),
@@ -360,7 +368,7 @@ async function main() {
   const invoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : makeGatewayInvoke({ timeoutMs: CALL_TIMEOUT_MS });
 
   const gateName = `${REPAIRGATE ? 'repair+' : ''}${SHAPEGATE ? 'shape+' : ''}${CONTRACTGATE ? 'contract+' : ''}${OBLIGATION ? 'obligation+' : ''}${PERSISTGATE ? 'persist+' : ''}${has('seamgate') ? 'seam' : 'membership'}`;
-  console.log(`COEVO RUNG-1 — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — worst-of-K=${K} retry=${RETRY} gate=${gateName} gate.repair=${REPAIR} conc=${CONC} — ${ids.length} epics\n`);
+  console.log(`COEVO RUNG-1 — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — worst-of-K=${K} retry=${RETRY} gate=${gateName} gate.repair=${REPAIR} bestofn=${BESTOFN} floor=${FLOOR ? 'on' : 'off'} conc=${CONC} — ${ids.length} epics\n`);
   const out = { mock: MOCK, k: K, retry: RETRY, repair: REPAIR, generatedAt: null, epics: [] };
   const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
   const outName = arg('out', MOCK ? 'coevo-rung1-mock.json' : 'coevo-rung1.json');
@@ -384,15 +392,23 @@ async function main() {
       const rm = drawResidualMode(d);
       process.stdout.write(`  [${id}] draw ${k + 1}/${K}: raw{c ${(d.raw.crosscut * 100).toFixed(0)} i ${(d.raw.integration * 100).toFixed(0)}} ${repairSeg}${shapeSeg}${contractSeg}${obligationSeg}${persistSeg}→ final{c ${(d.final.crosscut * 100).toFixed(0)} i ${(d.final.integration * 100).toFixed(0)}} [${rm.mode}/${rm.cls}] ${d.gate.fired ? `gate[${d.gate.pairs}p ${d.gate.repairs}r]` : 'gate[no-op]'} ${d.missingDraws.length ? `MISSING:${d.missingDraws.join(',')}` : ''} routes:${d.routes.join('|') || '?'}\n`);
     }
+    // GROUND-RULES Rule 1 (--floor): drop below-floor draws (parse∧export failure → missingDraws>0) from the
+    // worst-of-K; gradeDraws is the admissible population the stats are computed over. Default OFF → gradeDraws
+    // == draws == byte-identical to the pre-floor behavior. pool-degenerate = FLOOR on AND no admissible draw.
+    const belowFloorN = draws.filter((d) => d.missingDraws.length > 0).length;
+    const admissible = draws.filter((d) => d.missingDraws.length === 0);
+    const poolDegenerate = FLOOR && admissible.length === 0;
+    const gradeDraws = (FLOOR && admissible.length) ? admissible : draws;
     const agg = {
       id, topology, surfaces: fx.order.length, K,
-      raw: { crosscut: stat(draws.map((d) => d.raw.crosscut)), integration: stat(draws.map((d) => d.raw.integration)) },
-      ...(REPAIRGATE ? { afterRepair: { crosscut: stat(draws.map((d) => d.afterRepair.crosscut)), integration: stat(draws.map((d) => d.afterRepair.integration)) } } : {}),
-      ...(SHAPEGATE ? { afterShape: { crosscut: stat(draws.map((d) => d.afterShape.crosscut)), integration: stat(draws.map((d) => d.afterShape.integration)) } } : {}),
-      ...(CONTRACTGATE ? { afterContract: { crosscut: stat(draws.map((d) => d.afterContract.crosscut)), integration: stat(draws.map((d) => d.afterContract.integration)) } } : {}),
-      ...(OBLIGATION ? { afterObligation: { crosscut: stat(draws.map((d) => d.afterObligation.crosscut)), integration: stat(draws.map((d) => d.afterObligation.integration)) } } : {}),
-      ...(PERSISTGATE ? { afterPersist: { crosscut: stat(draws.map((d) => d.afterPersist.crosscut)), integration: stat(draws.map((d) => d.afterPersist.integration)) } } : {}),
-      final: { crosscut: stat(draws.map((d) => d.final.crosscut)), integration: stat(draws.map((d) => d.final.integration)) },
+      floor: { on: FLOOR, belowFloor: belowFloorN, belowFloorRate: +(belowFloorN / K).toFixed(3), admissibleK: admissible.length, poolDegenerate },
+      raw: { crosscut: stat(gradeDraws.map((d) => d.raw.crosscut)), integration: stat(gradeDraws.map((d) => d.raw.integration)) },
+      ...(REPAIRGATE ? { afterRepair: { crosscut: stat(gradeDraws.map((d) => d.afterRepair.crosscut)), integration: stat(gradeDraws.map((d) => d.afterRepair.integration)) } } : {}),
+      ...(SHAPEGATE ? { afterShape: { crosscut: stat(gradeDraws.map((d) => d.afterShape.crosscut)), integration: stat(gradeDraws.map((d) => d.afterShape.integration)) } } : {}),
+      ...(CONTRACTGATE ? { afterContract: { crosscut: stat(gradeDraws.map((d) => d.afterContract.crosscut)), integration: stat(gradeDraws.map((d) => d.afterContract.integration)) } } : {}),
+      ...(OBLIGATION ? { afterObligation: { crosscut: stat(gradeDraws.map((d) => d.afterObligation.crosscut)), integration: stat(gradeDraws.map((d) => d.afterObligation.integration)) } } : {}),
+      ...(PERSISTGATE ? { afterPersist: { crosscut: stat(gradeDraws.map((d) => d.afterPersist.crosscut)), integration: stat(gradeDraws.map((d) => d.afterPersist.integration)) } } : {}),
+      final: { crosscut: stat(gradeDraws.map((d) => d.final.crosscut)), integration: stat(gradeDraws.map((d) => d.final.integration)) },
       routeDiversity: { distinct: new Set(draws.flatMap((d) => d.routes)).size, routes: [...new Set(draws.flatMap((d) => d.routes))] },
       gate: { firedAnyDraw: draws.some((d) => d.gate.fired), noOp: draws.every((d) => !d.gate.fired) },
       ...(REPAIRGATE ? { repair: { totalFreeIds: draws.reduce((s, d) => s + (d.repair.freeIds || 0), 0), totalRepairs: draws.reduce((s, d) => s + (d.repair.repairs || 0), 0), totalFixed: draws.reduce((s, d) => s + (d.repair.fixed || 0), 0), drawsFlagged: draws.filter((d) => d.repair.surfacesFlagged > 0).length, leakAny: draws.some((d) => d.repair.leak) } } : {}),
@@ -403,9 +419,9 @@ async function main() {
       // residualWorst = the FINAL-grade failure mode of the WORST draw (min integration, then min crosscut) + its
       // form/semantics class + a per-mode tally over all draws (the deliberation's headline readout).
       residualWorst: (() => {
-        const worst = [...draws].sort((a, b) => (a.final.integration - b.final.integration) || (a.final.crosscut - b.final.crosscut))[0];
+        const worst = [...gradeDraws].sort((a, b) => (a.final.integration - b.final.integration) || (a.final.crosscut - b.final.crosscut))[0];
         const rm = drawResidualMode(worst);
-        const tally = {}; for (const d of draws) { const m = drawResidualMode(d); tally[m.mode] = tally[m.mode] || { n: 0, cls: m.cls }; tally[m.mode].n++; }
+        const tally = {}; for (const d of gradeDraws) { const m = drawResidualMode(d); tally[m.mode] = tally[m.mode] || { n: 0, cls: m.cls }; tally[m.mode].n++; }
         return { mode: rm.mode, cls: rm.cls, worstFinal: { c: worst.final.crosscut, i: worst.final.integration }, modeTally: tally };
       })(),
       baseline: BASELINE[id] || null,
@@ -416,7 +432,11 @@ async function main() {
     // verdict: per-cell NON-INFERIORITY vs the SETTLED baseline worst-of-K=8 (FREEZE δ): the hybrid is
     // route-robustly non-inferior iff worst-of-K crosscut AND integration are each within δ of the baseline's
     // worst-of-K on that cell. (Baseline erodes — 10/17 cells <100% — so the bar is the measured vector, not 100%.)
-    if (agg.baseline) {
+    if (poolDegenerate) {
+      // GROUND-RULES Rule 1: no admissible draw in K → not scored as a pass; routes to the route-pool-floor finding.
+      agg.nonInf = agg.baseline ? { deltaC: null, deltaI: null, relOK: false, baselineSrc: agg.baseline.src } : null;
+      agg.verdict = 'POOL-DEGENERATE';
+    } else if (agg.baseline) {
       const b = agg.baseline;
       const relOK = agg.final.crosscut.worst >= b.c - DELTA && agg.final.integration.worst >= b.i - DELTA;
       agg.nonInf = { deltaC: +(agg.final.crosscut.worst - b.c).toFixed(3), deltaI: +(agg.final.integration.worst - b.i).toFixed(3), relOK, baselineSrc: b.src };
@@ -432,7 +452,7 @@ async function main() {
     const contractSummary = CONTRACTGATE ? `  | contract→ c ${(agg.afterContract.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterContract.integration.worst * 100).toFixed(0)}% (${agg.contract.totalRepairs}r/${agg.contract.drawsFlagged}d; admin-scoped ${JSON.stringify(agg.contract.adminScoped)})` : '';
     const obligationSummary = OBLIGATION ? `  | oblig→ c ${(agg.afterObligation.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterObligation.integration.worst * 100).toFixed(0)}% (${agg.obligation.totalMissing}m/${agg.obligation.totalInvented}o/${agg.obligation.totalRepairs}r/${agg.obligation.totalReverts}nr on ${agg.obligation.drawsFlagged}d; bestofn=${BESTOFN})` : '';
     const persistSummary = PERSISTGATE ? `  | persist→ c ${(agg.afterPersist.crosscut.worst * 100).toFixed(0)}% i ${(agg.afterPersist.integration.worst * 100).toFixed(0)}% (${agg.persist.totalRepairs}r/${agg.persist.drawsFlagged}d; stores ${JSON.stringify(agg.persist.stores)})` : '';
-    console.log(`  => ${id} [${topology}] worst-of-K  raw c ${(agg.raw.crosscut.worst * 100).toFixed(0)}% i ${(agg.raw.integration.worst * 100).toFixed(0)}%${repairSummary}${shapeSummary}${contractSummary}${obligationSummary}${persistSummary}  final c ${(agg.final.crosscut.worst * 100).toFixed(0)}% i ${(agg.final.integration.worst * 100).toFixed(0)}%  vs baseline ${agg.baseline ? `${(agg.baseline.c * 100).toFixed(0)}/${(agg.baseline.i * 100).toFixed(0)} (Δc${agg.nonInf.deltaC >= 0 ? '+' : ''}${agg.nonInf.deltaC} Δi${agg.nonInf.deltaI >= 0 ? '+' : ''}${agg.nonInf.deltaI})` : 'none'}  routes:${agg.routeDiversity.distinct}  ${agg.verdict}  (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
+    console.log(`  => ${id} [${topology}] worst-of-K  raw c ${(agg.raw.crosscut.worst * 100).toFixed(0)}% i ${(agg.raw.integration.worst * 100).toFixed(0)}%${repairSummary}${shapeSummary}${contractSummary}${obligationSummary}${persistSummary}  final c ${(agg.final.crosscut.worst * 100).toFixed(0)}% i ${(agg.final.integration.worst * 100).toFixed(0)}%  vs baseline ${agg.baseline ? `${(agg.baseline.c * 100).toFixed(0)}/${(agg.baseline.i * 100).toFixed(0)} (Δc${agg.nonInf.deltaC >= 0 ? '+' : ''}${agg.nonInf.deltaC} Δi${agg.nonInf.deltaI >= 0 ? '+' : ''}${agg.nonInf.deltaI})` : 'none'}  routes:${agg.routeDiversity.distinct}${FLOOR ? `  floor[bf ${agg.floor.belowFloor}/${K} adm ${agg.floor.admissibleK}${poolDegenerate ? ' DEGENERATE' : ''}]` : ''}  ${agg.verdict}  (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
     console.log(`     RESIDUAL WORST draw: ${agg.residualWorst.mode} [${agg.residualWorst.cls.toUpperCase()}]  (worst final c${(agg.residualWorst.worstFinal.c * 100).toFixed(0)}/i${(agg.residualWorst.worstFinal.i * 100).toFixed(0)}) — ${agg.residualWorst.cls === 'semantics' ? 'oracle-blind-UNREACHABLE → (C) boundary candidate' : agg.residualWorst.cls === 'form' ? 'form defect → a lever can reach it' : agg.residualWorst.cls}`);
     console.log(`     mode tally: ${Object.entries(agg.residualWorst.modeTally).map(([m, v]) => `${m}:${v.n}(${v.cls})`).join(', ')}`);
     console.log(`     attribution: ${agg.attribution.map((a) => `${a.layer}:${a.mechanism}`).join(', ')}\n`);
@@ -446,11 +466,19 @@ async function main() {
   console.log(`cells: ${out.epics.length} run, ${scored.length} with a baseline | NON-INFERIOR: ${nonInf.length}/${scored.length}  (δ=${DELTA})`);
   for (const e of out.epics) {
     const b = e.baseline;
-    const tag = !b ? 'NO-BASE' : e.nonInf.relOK ? 'PASS  ' : 'FAIL  ';
-    const bstr = b ? `base c${(b.c * 100).toFixed(0)}/i${(b.i * 100).toFixed(0)} → hyb c${(e.final.crosscut.worst * 100).toFixed(0)}/i${(e.final.integration.worst * 100).toFixed(0)} (Δc${e.nonInf.deltaC >= 0 ? '+' : ''}${e.nonInf.deltaC} Δi${e.nonInf.deltaI >= 0 ? '+' : ''}${e.nonInf.deltaI})` : '(no baseline)';
-    console.log(`  ${tag} ${e.id.padEnd(14)} ${bstr}  [residual ${e.residualWorst.mode}/${e.residualWorst.cls}]`);
+    const tag = !b ? 'NO-BASE' : e.floor?.poolDegenerate ? 'DEGEN ' : e.nonInf.relOK ? 'PASS  ' : 'FAIL  ';
+    const floorStr = FLOOR ? ` {bf ${e.floor.belowFloor}/${e.K}}` : '';
+    const bstr = !b ? '(no baseline)'
+      : e.floor?.poolDegenerate ? `base c${(b.c * 100).toFixed(0)}/i${(b.i * 100).toFixed(0)} → NO admissible draw (below-floor ${e.floor.belowFloor}/${e.K})`
+      : `base c${(b.c * 100).toFixed(0)}/i${(b.i * 100).toFixed(0)} → hyb c${(e.final.crosscut.worst * 100).toFixed(0)}/i${(e.final.integration.worst * 100).toFixed(0)} (Δc${e.nonInf.deltaC >= 0 ? '+' : ''}${e.nonInf.deltaC} Δi${e.nonInf.deltaI >= 0 ? '+' : ''}${e.nonInf.deltaI})`;
+    console.log(`  ${tag} ${e.id.padEnd(14)}${floorStr} ${bstr}  [residual ${e.residualWorst.mode}/${e.residualWorst.cls}]`);
   }
-  out.rollup = { cellsRun: out.epics.length, scored: scored.length, nonInferior: nonInf.length, delta: DELTA, failing: scored.filter((e) => !e.nonInf?.relOK).map((e) => e.id) };
+  if (FLOOR) {
+    const degen = out.epics.filter((e) => e.floor?.poolDegenerate).map((e) => e.id);
+    const meanBF = out.epics.length ? +(out.epics.reduce((s, e) => s + (e.floor?.belowFloorRate || 0), 0) / out.epics.length).toFixed(3) : 0;
+    console.log(`floor (GROUND-RULES Rule 1): mean below-floor rate ${meanBF} | pool-degenerate ${degen.length}${degen.length ? ` [${degen.join(', ')}]` : ''}`);
+  }
+  out.rollup = { cellsRun: out.epics.length, scored: scored.length, nonInferior: nonInf.length, delta: DELTA, failing: scored.filter((e) => !e.nonInf?.relOK).map((e) => e.id), ...(FLOOR ? { floor: { on: true, poolDegenerate: out.epics.filter((e) => e.floor?.poolDegenerate).map((e) => e.id), belowFloorRateByCell: Object.fromEntries(out.epics.map((e) => [e.id, e.floor?.belowFloorRate ?? null])) } } : {}) };
   flush();
   console.log(`\nwrote ${path.relative(ROOT, outFile)}`);
 }

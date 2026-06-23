@@ -12,6 +12,7 @@
 ```
 node studies/meta-search/coevo-rung1.mjs --ladder \
   --repairgate --shapegate --contractgate --obligation --bestofn 3 --seamgate \
+  --floor --retry 3 \
   --k 8 --out coevo-ladder-stack.json --dump studies/meta-search/runs/dump-ladder
 ```
 
@@ -19,8 +20,22 @@ node studies/meta-search/coevo-rung1.mjs --ladder \
 - The flags are the **full output-QA stack** in compose order: repair → shape → contract → **obligation
   (verify+repair, best-of-N=3 with the no-regress floor)** → seam. Each gate grades an `after<Gate>` point so
   every lever's worst-of-K delta is attributable.
+- **`--floor` enforces the [`GROUND-RULES.md`](GROUND-RULES.md) Rule-1 route-pool floor** (pinned 2026-06-22):
+  a draw is below-floor iff ≥1 required surface fails `parse∧export` (`validate-surface`) even after `--retry`
+  re-sampling → it is **excluded from the worst-of-K**, the per-cell below-floor RATE is reported, and a cell
+  with no admissible draw is tagged `POOL-DEGENERATE` (not a pass). Runtime crashes that parse+export stay
+  ABOVE the floor (repair targets). **Extraction (the floor's other recovery lever) is unbuilt** → this run is
+  the conservative **floor-without-extraction** first pass; extraction is named lever #1 in the GROUND-RULES
+  Rule-3 time-box, built only if below-floor format hazards dominate the failing cells.
+- `--retry 3` aligns the structural re-sampling with the pinned best-of-3 floor recovery (default is 2).
 - `--k 8` matches the baseline's statistic (worst-of-K=8 across the route zoo = the model-agnosticism test).
 - `--dump` saves each draw's raw surfaces for offline residual diagnosis ($0, optional).
+
+> **Verdict now reads against GROUND-RULES.** Per-cell `PASS`/`FAIL` is non-inferiority vs the settled baseline
+> (δ=0.05) over **admissible (above-floor) draws**; `POOL-DEGENERATE` cells route to the route-pool-floor
+> finding; classify each failing cell's residual per GROUND-RULES Rule 2 ((C) only if above-floor ∧ smoke-clean
+> ∧ semantic ∧ survives-the-stack-across-the-zoo ∧ lever-menu-exhausted). The rollup prints a `floor:` summary
+> line (mean below-floor rate + the pool-degenerate cell list).
 
 **Run it in the BACKGROUND** (`run_in_background: true`) — it flushes `runs/coevo-ladder-stack.json` after every
 cell, so partial results survive an interrupt and you can watch progress.
