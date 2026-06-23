@@ -420,3 +420,30 @@ this entry closes that gap). Disposition: a codex×opus deliberation CONVERGED
 > here*). §6b is exactly such an amendment. Recommend either (a) a one-line clarification in `CLAUDE.md`'s
 > "Frozen — do not edit" section pointing at this ledger's void-rule, or (b) if strict immutability of DESIGN.md
 > is preferred, moving the §6b text out of DESIGN.md into this ledger. Left for the research lead's call.
+
+## 2026-06-22 — GROUND-RULES pre-registration (route-pool floor + falsifiable (C)-trigger + metric alignment)
+
+Resolves three deferred research-lead calls, prompted by the external review
+([`EXTERNAL-REVIEW-2026-06-22.md`](EXTERNAL-REVIEW-2026-06-22.md), Recs 1–3). Full text:
+[`GROUND-RULES.md`](GROUND-RULES.md). Floor knob decided by the research lead = **extraction + best-of-3**.
+
+- **Route-pool floor (the deferred USER call — RUN-FOR-DAYS §4 / PHASE-NEG1 §3–4 / STATE.md Session-3).**
+  PINNED: a draw is admissible iff `parse ∧ exports-required-surfaces` (`validate-surface`) **after
+  deterministic extraction + best-of-3 re-sampling of the same pool**; below-floor draws are excluded from
+  worst-of-K with the per-cell below-floor rate reported; a cell with no admissible draw is flagged
+  `pool-degenerate`. Runtime crashes are ABOVE the floor (tier-2 repair targets, Premise #2). Re-sampling the
+  same pool is not model-selection (Premise #1). This **completes** a pre-registration the freeze deliberately
+  left open ("softening the raw-min statistic = a USER win-condition call"); it is **not** a change to a frozen
+  value.
+- **Falsifiable (C)-trigger.** PINNED: an ex-ante 5-condition test (above-floor ∧ smoke-clean ∧ semantic ∧
+  survives-full-stack-across-zoo ∧ lever-menu-exhausted); thesis **KILL** only on a whole-obligation-class wall
+  where the routed baseline holds and the hybrid is inferior by >δ, **SCOPE-SHRINK** on isolated walls,
+  **CONTINUE** otherwise. Operationalizes the existing δ=0.05 non-inferiority veto; adds no constant.
+- **Metric alignment.** RESTATED: archive-gate + freeze + sequestered-TEST all = raw-min worst-of-K=8 (already
+  frozen); the search proxy (median-lift) steers mutation only and never touches a freeze/archive decision.
+  Plus a logged **lever time-box** (the ladder run + ≤2 named admissible levers; widening logged here).
+
+**Void-rule: touches NONE of the four void-triggering invariants** (weights vector / per-cell veto definition /
+parity δ-α / committed TEST-hash). Rule 1 completes a deferred pre-registration; Rules 2–3 operationalize frozen
+quantities. **Nothing voided.** Apparatus follow-up (additive, not pre-registration): tighten
+`src/label-draw.mjs`'s `route-incompetence` bucket to fire only after extraction + best-of-3 also fail.
