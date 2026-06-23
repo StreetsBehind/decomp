@@ -20,16 +20,27 @@
 > stack is demonstrably load-bearing (repair lifted approval-d1 **c14→71**; obligation lifted membership-d2
 > **c83→92/i50→100**) but the **dominant gating axis = integration/the SEAM on the 3 non-membership topologies** —
 > membership integration recovers to 80–100 (its gate fires), approval/lifecycle/quota stall at **i42–63 (Δi −.50)**.
-> Membership is at the bar (2 PASS, 3 small crosscut misses); the work is the other three. **▶ NEXT (recommended,
-> NOT yet ratified / NOT yet logged in `AMENDMENTS.md` — the user has not picked; log the lever-menu re-pointing
-> per Rule 3 only when a lever is chosen):** re-point the ≤2 named levers off extraction onto **Lever A =
-> generalize the seam/integration recovery past membership** (the 8-cell Δi −.50 axis; pure (B); do FIRST — it
-> also sharpens the approval (C)-diagnosis: if it lifts lifecycle/quota integration but leaves approval stuck,
-> approval is genuinely semantic) and **Lever B = the approval `approve→execute`/idempotency obligation as an
-> inject+verify contract** (the genuine (C)-boundary crux — lifts approval OR yields the program's first
-> evidence-based (C)). No-spend alternative: a **stationarity re-run** of the same ladder ($0, ~12h) to confirm
-> which FAILs are stable vs gateway route-luck (the approval/quota fails were large + consistent across all 4
-> depths → read as systematic, not tails). **Conceptual note (user asked where AUTONOMOUS evolution kicks in):**
+> Membership is at the bar (2 PASS, 3 small crosscut misses); the work is the other three. **▶ NEXT — RATIFIED
+> 2026-06-23 (lever chosen + logged): LEVER A FIRST.** A codex×opus deliberation CONVERGED
+> (`runs/deliberations/20260623T201830Z/`) and the user ratified; the Rule-3 lever-menu re-pointing **is now
+> logged in [`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md)** (extraction → Lever A, then Lever B). **Lever
+> A = a structural, surfaces-only generalized seam/integration-recovery gate** over approval+lifecycle+quota (the
+> 8-cell Δi −.50 axis; pure (B)). **Lever B (after A) = the approval `approve→execute`/idempotency obligation as
+> an inject+verify contract** (the (C)-boundary crux). **A is FORCED first, not merely preferred (Rule 2(e)):** a
+> (C) verdict needs the lever menu *exhausted*, and A is a named untried admissible (B) lever → **B-first cannot
+> produce a Rule-2-valid (C)**; A also has higher EV (pure (B), 8 cells) and sharpens the approval diagnosis (if A
+> lifts lifecycle/quota but approval stays collapsed+smoke-clean, approval is *isolated* on
+> approve→execute/idempotency). **COMMITTED admissibility guard (pre-registered before the run):** A is admissible
+> iff its inputs are confined to the generated surfaces themselves (call-graph/seam reachability, exported
+> signatures, smoke-execution traces) with **no literal of intended behavior** (no "approval precedes execution",
+> no per-topology correct-wiring table, no conservation identity) — else A is oracle-shaped/inadmissible (Premise
+> #2) and **B goes first by elimination**. **Decision tree (post-A worst-of-K integration on the Δi −.50 axis):**
+> lifecycle+quota rise within δ=0.05 of baseline → (B) seam confirmed → CONTINUE; lifecycle+quota lift but
+> approval stays i42–50+smoke-clean → approval isolated → clean B/(C) test (baseline holds 100 → ≥SCOPE-SHRINK if
+> it walls); nothing lifts → A mis-built/inadmissible, NOT (C). **Stationarity re-run = NOT a prerequisite** — the
+> −.50 collapse is consistent across all 4 depths (systematic, not a worst-of-K tail), and the A-run is itself a
+> fresh worst-of-K=8 draw over the route zoo on that exact axis → it doubles as the stationarity check at $0
+> marginal. **Conceptual note (user asked where AUTONOMOUS evolution kicks in):**
 > the current phase is **hand-building the genes (levers) + characterizing the fitness** — the MAP-Elites search
 > is BUILT but deliberately NOT loose on the live fitness (gated on the Phase-−1 variance characterization + a
 > pre-committed GO/HALT rule; raw-min worst-of-K over the non-stationary pool is too noisy to optimize directly →

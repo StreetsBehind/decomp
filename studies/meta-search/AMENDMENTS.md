@@ -447,3 +447,64 @@ Resolves three deferred research-lead calls, prompted by the external review
 parity δ-α / committed TEST-hash). Rule 1 completes a deferred pre-registration; Rules 2–3 operationalize frozen
 quantities. **Nothing voided.** Apparatus follow-up (additive, not pre-registration): tighten
 `src/label-draw.mjs`'s `route-incompetence` bucket to fire only after extraction + best-of-3 also fail.
+
+## 2026-06-23 — Rule-3 lever-menu re-pointing: extraction → Lever A (structural seam-recovery), then Lever B
+
+Logs the GROUND-RULES **Rule 3** time-box lever-menu change forced by the decision-gate ladder result
+([`LADDER-RESULTS.md`](LADDER-RESULTS.md)). Disposition arrived at via a codex×opus deliberation that
+**CONVERGED** (`runs/deliberations/20260623T201830Z/` — transcript + manifest; the codex side conceded the
+key Rule-2(e) correction, both stress-tested the call to convergence).
+
+**Trigger.** The ladder ran NON-INFERIOR **2/17** (δ=0.05) vs the settled routed baseline → not a freeze, and
+**Rule 2 is unmet on every cell** (no (C)-confirmed). **Rule 1 deprioritizes extraction by data:** mean
+below-floor rate **0.096, 0 pool-degenerate** cells — the gating worst-of-K draw is above-floor real-but-broken
+code in every failing cell, so recovering format garbage cannot lift it. Extraction (the pre-registered Rule-3
+named lever #1) is therefore not load-bearing on this ladder.
+
+**Re-pointing (the time-boxed ≤2 named admissible levers).** Pre-registered set was **{extraction,
+shape-gate-depth}**. New set, in order:
+
+- **Lever A (first) — a structural, surfaces-only generalized seam/integration-recovery gate** over the three
+  non-membership topologies (approval + lifecycle + quota). Targets the dominant gating axis: the 8-cell
+  integration collapse (Δi ≈ −.50), pure (B). The membership integration-gate proves the *mechanism* exists;
+  the work is generalizing it past membership **without a topology-specific branch**.
+- **Lever B (second) — the approval `approve→execute` / idempotency obligation as an inject+verify contract.**
+  The (C)-boundary crux: a *form* contract the obligation-gate can enforce (→ (B), reachable) or a genuine
+  *semantic* (C) wall (→ the program's first evidence-based (C)).
+
+**Why A is forced first, not merely preferred (Rule 2(e)).** A (C) verdict requires the admissible lever menu
+to be **exhausted**, and A is a named, untried, admissible (B) lever. So **B-first cannot produce a Rule-2-valid
+(C)** no matter how cleanly it runs — on a "B did not help" you must still run A before any (C) adjudication. A
+is therefore the only order on the (C) path, and it also carries the higher EV (pure (B) over 8 cells; A may
+move them GO-side without ever needing a (C) call). A-first **sharpens** the later approval diagnosis (if A
+lifts lifecycle+quota integration but approval stays collapsed and smoke-clean, approval is *isolated* on
+approve→execute/idempotency); under Rule 2 changing the stack underneath B is lever-exhaustion, not contamination.
+
+**COMMITTED pre-registered admissibility discriminator for A (must hold to keep A admissible; fixed BEFORE the
+run to prevent post-hoc reclassification — the failure mode Rule 2 guards against).** *A is admissible iff its
+inputs are confined to the generated surfaces themselves* — call-graph / seam reachability, exported-surface
+signatures, smoke-execution traces of what the cheap draw actually wired — *and contain **no literal of intended
+behavior*** (no "approval must precede execution", no per-topology correct-wiring table, no conservation
+identity). If closing a seam requires writing down what the topology *should* do, that is the oracle → **A is
+oracle-shaped and inadmissible (Premise #2)**, and **B becomes the first admissible lever by elimination.** This
+is the same surfaces-only test the membership integration-gate already passes; A must pass it on three more
+topologies.
+
+**Pre-registered decision tree (the falsifiable signal A produces — post-A worst-of-K integration on the 8-cell
+Δi −.50 axis):**
+
+- lifecycle+quota integration **rise within δ=0.05 of baseline** → residual was (B) seam, confirmed → **CONTINUE**
+  (possibly near-freeze on those cells);
+- lifecycle+quota lift but **approval stays i42–50 + smoke-clean** → approval is now *isolated* on
+  approve→execute/idempotency → sets the clean B/(C) test (B then satisfies 2(e); baseline holds 100 on approval
+  → at least **SCOPE-SHRINK** if it walls, **KILL** only if the whole separation-of-duties class walls);
+- **nothing lifts** → A is mis-built or fails the surfaces-only test (inadmissible) → **not (C)**.
+
+**Stationarity re-run = not a prerequisite.** The −.50 collapse is consistent across all 4 depths (systematic,
+not a worst-of-K tail), and the A-run is *itself* a fresh worst-of-K=8 draw over the route zoo on that exact
+axis — so it doubles as the stationarity check at zero marginal cost.
+
+**Void-rule: touches NONE of the four void-triggering invariants** (weights vector / per-cell veto definition /
+parity δ-α / committed TEST-hash). This is a **Rule-3-logged change to the time-boxed lever menu** — the box is
+unchanged in size (≤2 named levers); only the named candidates are re-pointed, with the deprioritization
+grounded in the Rule-1 data above. **Nothing voided.**
