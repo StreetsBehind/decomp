@@ -5,6 +5,39 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-8 UPDATE (2026-06-23) — read this FIRST; the Session-7 "NEXT = run the ladder" gate is now RUN.**
+> The floor-respecting 17-cell decision-gate ladder ([`LADDER-RUNBOOK.md`](studies/meta-search/LADDER-RUNBOOK.md))
+> ran to completion (~12h45m, **$0**, exit 0; artifact `runs/coevo-ladder-stack.json` + `runs/dump-ladder/`
+> [both gitignored — the durable record is the writeup], full writeup
+> [`LADDER-RESULTS.md`](studies/meta-search/LADDER-RESULTS.md)). **VERDICT: NON-INFERIOR 2/17 (δ=0.05) vs the
+> SETTLED routed baseline → NOT a freeze; NOT a (C)-kill.** Read against GROUND-RULES: **(Rule 1 floor)** mean
+> below-floor rate **0.096, pool-degenerate 0** → the worst-of-K gating draw is above-floor *real code* in every
+> failing cell → **extraction (the pre-registered named lever #1) is DEPRIORITIZED by the data** (recovering
+> format garbage cannot lift a worst-of-K already gated by broken-but-present code). **(Rule 2 (C)-trigger)** NO
+> cell is (C)-confirmed (condition (e) unmet — lever menu not exhausted): residual partition = **11/15 failing
+> cells (B)** (seam / tenancy / over-&-under-authz / coding-bug) + **4/15 semantics (C)-candidates** (approval-d1/
+> d3/d4 `approve→execute`/idempotency, quota-d4 conservation). **Structural read (reproduces HEAD-TO-HEAD):** the
+> stack is demonstrably load-bearing (repair lifted approval-d1 **c14→71**; obligation lifted membership-d2
+> **c83→92/i50→100**) but the **dominant gating axis = integration/the SEAM on the 3 non-membership topologies** —
+> membership integration recovers to 80–100 (its gate fires), approval/lifecycle/quota stall at **i42–63 (Δi −.50)**.
+> Membership is at the bar (2 PASS, 3 small crosscut misses); the work is the other three. **▶ NEXT (recommended,
+> NOT yet ratified / NOT yet logged in `AMENDMENTS.md` — the user has not picked; log the lever-menu re-pointing
+> per Rule 3 only when a lever is chosen):** re-point the ≤2 named levers off extraction onto **Lever A =
+> generalize the seam/integration recovery past membership** (the 8-cell Δi −.50 axis; pure (B); do FIRST — it
+> also sharpens the approval (C)-diagnosis: if it lifts lifecycle/quota integration but leaves approval stuck,
+> approval is genuinely semantic) and **Lever B = the approval `approve→execute`/idempotency obligation as an
+> inject+verify contract** (the genuine (C)-boundary crux — lifts approval OR yields the program's first
+> evidence-based (C)). No-spend alternative: a **stationarity re-run** of the same ladder ($0, ~12h) to confirm
+> which FAILs are stable vs gateway route-luck (the approval/quota fails were large + consistent across all 4
+> depths → read as systematic, not tails). **Conceptual note (user asked where AUTONOMOUS evolution kicks in):**
+> the current phase is **hand-building the genes (levers) + characterizing the fitness** — the MAP-Elites search
+> is BUILT but deliberately NOT loose on the live fitness (gated on the Phase-−1 variance characterization + a
+> pre-committed GO/HALT rule; raw-min worst-of-K over the non-stationary pool is too noisy to optimize directly →
+> would rank route-luck as gene quality, per Deliberation #2). Evolution *composes/tunes human-supplied genes*; it
+> does not yet invent them (Lever A is hand-built; the search later finds its best deployment across the cell
+> grid). Frozen invariants (weights/veto/δ-α/TEST-hash) untouched; `main` == origin/main (Session-7 GROUND-RULES
+> commits pushed); `LADDER-RESULTS.md` + this banner committed this session._
+>
 > _**▶ SESSION-7 UPDATE (2026-06-22/23) — read this FIRST; it supersedes the Session-6 "NEXT = run the ladder"
 > line by adding a GATE in front of it.** An external review (`studies/meta-search/EXTERNAL-REVIEW-2026-06-22.md`,
 > merged via PR #2) was evaluated; its Recs 1–3 converged on "pin the win-condition ground rules before the next
