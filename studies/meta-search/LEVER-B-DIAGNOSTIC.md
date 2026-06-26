@@ -262,10 +262,36 @@ the hybrid walls). The diagnostic is the lever-eval metric, not the freeze/TEST 
 2026-06-25). The running multi-pass collection enlarges the thin sole-residual subset (n=2,3) for an even more
 robust read.
 
-## Multi-pass collection (the pre-registered fallback) — RUNNING
+## Multi-pass collection + combined rerun (the pre-registered fallback) — RESULT (2026-06-26)
 
-`collect-multipass.mjs` (build-only, $0 free gateway) is accumulating fresh raw draws of the named cells
-(approval-d2/d3/d4, quota-d3/d4 × k=32) into `runs/dump-multipass/` to enlarge the thin sole-residual subset
-(approval n=2–4) and surface drift-free quota draws. Resumable + incremental; condition the partial collection
-anytime with `node diag-lever-b.mjs --dumps dump-multipass --k 32` (add `--repair` for the across-zoo read). The
-combined rerun (enlarged subset × the option-3 behavioural detector) is the clean Rule-2 (C) adjudication.
+`collect-multipass.mjs` collected **32 fresh draws/cell** (build-only, $0) into `runs/dump-multipass/`. The
+combined rerun (`diag-lever-b.mjs --dumps dump-multipass --k 32 --repair --behavioural --reps 3 --bestofn 2`,
+**uncontended**, oracle-measured; `runs/diag-lever-b-multipass.json`) is the clean, larger-n Rule-2 read. It
+**confirms and sharpens — and partly CORRECTS — the 16-draw result.**
+
+| cell | sole-residual n | relaxed n | sem-cleared (repair across zoo) | read |
+|---|---|---|---|---|
+| approval-d2 | 11/32 | 14/32 | **1/18** | (B) traction is a THIN tail (~5%), not the small-sample 3/7 |
+| approval-d3 | 6/32 | 17/32 | **0/18** | robust (C)-leaning (far more route samples) |
+| approval-d4 | 0/32 | 14/32 | **0/14** | robust (C)-leaning (sole-residual empty → relaxed read) |
+| quota-d3/d4 | 0/32 | **0/32** | (empty) | detection inert on all 32 draws → (B) drift, robustly confirmed |
+
+**The correction:** the earlier d2 **3/7** was small-sample optimism. On the larger uncontended sample the
+approval `approve→execute`/idempotency obligation is **largely unrepairable across the zoo at ALL depths** —
+d2 clears ~**1/18 (5%)**, d3 **0/18**, d4 **0/14** — with only a thin nonzero (B) tail at d2. So:
+- the **(C)-leaning is broader and more robust** than the 16-draw read (d3/d4 unanimous failure now across 18+14
+  draws × 3 reps × 2 routes; d2 nearly so);
+- d2's nonzero clear keeps it **SCOPE-SHRINK, not a whole-class KILL** (the system *can* occasionally repair
+  shallow approval semantics) — but the win on approval semantics is thin even at d2;
+- **quota conservation = (B) container-drift is now robustly confirmed** (Lever B detection fires on 0/32 quota
+  draws; the conservation oracle-failures ride on the Map/Array ledger drift, not a missing obligation);
+- approval-d4's **sole-residual subset is empty (0/32)** — its above-floor draws all co-mix tenancy/authz form
+  residuals the conservative deterministic conditioning can't strip — so d4's clean (C) read still leans on the
+  relaxed (detection-fires) subset; a fuller multi-pass or a model-stack conditioning would sharpen it.
+
+**Net:** the program's reliability gap on the approval approve→execute/idempotency obligation is **deep, broad,
+and robust** to a large uncontended sample and to the maximally-sensitive behavioural lever — the strongest
+evidence-based (C)-leaning the program has produced. It remains a **lever-eval signal**, not a thesis verdict:
+the formal SCOPE-SHRINK adjudication is the **live worst-of-K ladder vs the SETTLED baseline** (LADDER-RUNBOOK.md,
+`--semantic --behavioural`; Rule 2 inferior-vs-baseline). Artifacts: `runs/diag-lever-b-multipass.json`,
+`runs/dump-multipass/`.

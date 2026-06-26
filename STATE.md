@@ -51,10 +51,13 @@
 > option-3 comparison RESULT: it CONFIRMS + STRENGTHENS the d3/d4 approval (C)-leaning** — under
 > maximally-sensitive admissible enforcement the approve→execute/idempotency obligation fails UNANIMOUSLY across
 > the zoo (d3 0/9, d4 0/11 cleared; `afterSem==baseSem` dominant: the cheap pool writes a behaviourally-rejected-
-> yet-still-wrong gate even re-prompted with the declared obligation). **d2 retains (B) traction** (Ad7 cleared
-> 5→0) → the class is **depth-graded, not a flat wall → any (C) is SCOPE-SHRINK, never KILL**. (d2's clear-count
-> 3/7→1/9 is confounded by gateway contention with the concurrent collector + a larger union denominator — not a
-> clean delta; the robust result is d3/d4.) **Rule 2(e) for d3/d4 approval is now (near-)satisfied** (named lever
+> yet-still-wrong gate even re-prompted with the declared obligation). **CORRECTION from the enlarged uncontended
+> rerun (32 draws/cell, `runs/diag-lever-b-multipass.json`): the (C)-leaning is BROADER + more robust than the
+> 16-draw read** — d3 **0/18**, d4 **0/14**, and **d2 clears only ~1/18 (~5%)** (the earlier d2 3/7 was
+> small-sample optimism). The approval approve→execute/idempotency obligation is **largely unrepairable across the
+> zoo at ALL depths**; d2's thin nonzero (B) tail keeps it **SCOPE-SHRINK, not a whole-class KILL**. (Quota
+> conservation = (B) container-drift robustly confirmed: Lever B detection fires on 0/32 quota draws.) **Rule 2(e)
+> for d3/d4 approval is now (near-)satisfied** (named lever
 > menu exhausted). **▶ NEXT: the formal (C) adjudication = the live worst-of-K ladder with `--semantic` (+ option
 > 3) vs the SETTLED baseline** (inferior-vs-baseline → SCOPE-SHRINK if the baseline holds + the hybrid walls on
 > the deep approval cells; $0, ~12–16h, USER call on the commit), after the multi-pass firms the subset. **Turnkey
