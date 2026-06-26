@@ -30,6 +30,7 @@ import { scanOracleLeak } from './checker.mjs';
 import {
   runIntegrationGate, baseStores, storeStyle, hasInit, writeStatements, surgicalInitRepair,
 } from './integration-gate.mjs';
+import { runContainerRecon } from './container-recon.mjs';
 
 // ---- seam profiles: writer/reader roles + the declared store, per topology (PUBLIC signals only) --------
 // Each profile is detected from the skeleton's declared shared store and the surface verbs. Verbs mirror the
@@ -163,16 +164,28 @@ function repairPrompt(originalPrompt, issue, writerWriteStmts, currentCode) {
  * (bit-identical); the other topologies run the generalized Mode-A/Mode-B detection on the declared store.
  * Signature mirrors runIntegrationGate so the evaluator/harness can swap it in directly.
  */
-export async function runSeamGate({ surfaces, files, prompts, skeleton, baseModel = '', gate, rebuild, judgeInvoke }) {
-  if (!gate || gate.kind === 'off') return { files, ranGate: false, kind: 'off', topology: null, pairs: 0, mismatches: 0, repairs: 0, leak: false };
+export async function runSeamGate({ surfaces, files, prompts, skeleton, baseModel = '', gate, rebuild, judgeInvoke, verify }) {
+  if (!gate || gate.kind === 'off') return { files, ranGate: false, kind: 'off', topology: null, pairs: 0, mismatches: 0, repairs: 0, leak: false, recon: null };
   const profile = resolveSeamProfile(skeleton, surfaces);
-  if (!profile) return { files, ranGate: false, kind: gate.kind, topology: null, pairs: 0, mismatches: 0, repairs: 0, leak: false };
 
-  // membership → the existing, proven gate, verbatim (reproduces every prior membership result).
-  if (profile.delegate) {
+  // membership → the existing, proven gate, verbatim (reproduces every prior membership result; runs BEFORE the
+  // Lever-A recon pass, so the membership path stays byte-identical to P2a/P2b/P2c/head-to-head).
+  if (profile && profile.delegate) {
     const r = await runIntegrationGate({ surfaces, files, prompts, skeleton, baseModel, gate, rebuild, judgeInvoke });
-    return { ...r, topology: 'membership' };
+    return { ...r, topology: 'membership', recon: null };
   }
+
+  // LEVER A (A1 + A2) — deterministic, surfaces-only container-representation reconciliation across ALL
+  // non-base seam stores (container-recon.mjs). Runs for every non-membership topology, independent of whether
+  // a single seam profile resolves (the dump shows the gating drift is on per-concern stores the single-store
+  // profile resolution misses entirely — approval-d3 `payoutApprovals`, lifecycle-d2 `orderTransitions`). $0,
+  // no model. Disable via gate.reconcile===false (A/B attribution). Default ON for the deterministic gate.
+  let recon = null;
+  if (gate.kind === 'deterministic' && gate.reconcile !== false) {
+    recon = await runContainerRecon({ surfaces, files, skeleton, baseModel, verify });
+  }
+
+  if (!profile) return { files, ranGate: !!recon, kind: gate.kind, topology: null, pairs: 0, mismatches: 0, repairs: 0, leak: false, recon };
 
   const pairs = seamPairsFor(profile);
   const baseSet = baseStores(baseModel);
@@ -207,11 +220,11 @@ export async function runSeamGate({ surfaces, files, prompts, skeleton, baseMode
       const target = issue.surface === 'writer' ? writer : reader;
       const writeStmts = writeStatements(files[writer], [profile.store]);
       const rp = repairPrompt(prompts[target] || '', issue, writeStmts, files[target]);
-      if (scanOracleLeak(rp)) return { files, ranGate: true, kind: gate.kind, topology: profile.topology, pairs: pairs.length, mismatches, repairs, leak: true };
+      if (scanOracleLeak(rp)) return { files, ranGate: true, kind: gate.kind, topology: profile.topology, pairs: pairs.length, mismatches, repairs, leak: true, recon };
       let code; try { code = await rebuild(target, rp); } catch { code = ''; }
       if (!code || !code.trim()) break;
       files[target] = code; repairs++;
     }
   }
-  return { files, ranGate: true, kind: gate.kind, topology: profile.topology, pairs: pairs.length, mismatches, repairs, leak: false };
+  return { files, ranGate: true, kind: gate.kind, topology: profile.topology, pairs: pairs.length, mismatches, repairs, leak: false, recon };
 }

@@ -5,6 +5,47 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-9 UPDATE (2026-06-24) — read this FIRST; supersedes the Session-8 "NEXT = LEVER A FIRST" line.
+> Lever A is BUILT, $0-validated, and the ladder RAN with it — and the result reframes the program.** STEP 1
+> (live-rebuild replay, `replay-seam.mjs`, $0): the Mode-B model route-back gap is CONFIRMED — both the seam-gate's
+> and shape-gate's model route-backs (already in the ladder) move the container drift **0pp**; the gate was
+> resolving the WRONG store; the drift is structural cross-surface data-model divergence the program had already
+> rejected fixing naively (`shape-gate.mjs:103-112`). STEP 2: built **Lever A = `src/container-recon.mjs`**
+> (deterministic, surfaces-only: object↔Map reconciliation + a guarded structural-flatten with a revert
+> post-condition; wired into `seam-gate.mjs` non-membership path → membership byte-identical; P0 5/5 GREEN,
+> smokes 16/16 + 22/22, frozen tree untouched). The user RATIFIED building the guarded flatten. STEP 3: re-ran
+> the EXACT floor ladder with Lever A (`coevo-ladder-A.{json,log}`, `dump-ladder-A/`; ~16h, **$0**, exit 0):
+> **NON-INFERIOR 1/17** (prior was 2/17). **The load-bearing finding (record: [`LADDER-RESULTS-A.md`](studies/meta-search/LADDER-RESULTS-A.md)):
+> Lever A's deterministic effect is BELOW the worst-of-K=8 NON-STATIONARY-POOL NOISE FLOOR** — its $0 same-draws
+> causal effect FLIPS SIGN across draw sets (+3 cells/0-regress on the prior draws; +1/−1 net-wash, incl. a −6
+> regression, on this run's draws). Lever A is correctly built, admissible, and load-bearing on the clean
+> object↔Map / idiom-1 seam class it targets (lifecycle-d1 oblig i50→final i100 live), but the seam-bug class is
+> the gating worst-of-K residual on only a MINORITY of draws → its signal is swamped. The 1/17 rollup is
+> dominated by route variance (a membership cell PASS→crash on a fresh draw), NOT a Lever-A regression. This is
+> the program's BAR-MISMATCH / Deliberation-#2 concern, now demonstrated on a concrete lever. **NOT a freeze; NOT
+> a (C)-kill** (broken code is (B) by Premise #2; lever menu not exhausted). **▶ NEXT — codex×opus deliberation
+> CONVERGED + USER-RATIFIED (the plan; execution deferred to a NEW SESSION), transcript
+> `runs/deliberations/20260624T202607Z/`:** the open half of the thesis is **reliability parity** (cost dominance
+> ~established: hybrid $0 vs settled baseline $27–64). Two thesis-level corrections drive the next move: **(1)
+> Phase-2 owned hardware is NOT a measurement fix for reliability — it's a Premise-1 VIOLATION in disguise**
+> (collapsing to one stationary local model = route-selection-as-fix; Phase-2 realizes the cost ECONOMICS, a
+> separate experiment, never launders non-stationarity out of the RELIABILITY claim); **(2) the (C)-verdict is
+> variance-ROBUST** — a lever-LIFT needs the *min* to move (variance-fragile → why Lever A was illegible), but a
+> (C)-verdict needs *every above-floor route to FAIL* the invariant (a universal quantifier; non-stationarity
+> changes WHICH route is worst, it cannot manufacture unanimous semantic correctness) → **the reliability
+> question IS reachable on the current noisy free-gateway instrument via a unanimous-failure read.** **THE
+> RATIFIED NEXT PLAN (new session, in order):** (1) **ratify + log in `AMENDMENTS.md`** (GROUND-RULES Rule-3 USER
+> call — user-approved this session): same-draws/conditioned diagnostics are admissible **for lever-evaluation
+> ONLY**; raw worst-of-K=8 stays the freeze/TEST statistic. (2) **Build Lever B** (approve→execute/idempotency +
+> quota conservation as **inject+verify**) and run a **$0 CONDITIONED diagnostic** on the existing
+> `dump-ladder`/`dump-ladder-A` draws — conditioned to draws above-floor ∧ smoke-clean ∧ whose SOLE post-stack
+> residual is the named semantic class (**approval-d2/d3/d4, quota-d3/d4**); **report DETECTION (deterministic,
+> clean) and REPAIR-across-zoo (model-routed) SEPARATELY**. Endpoints: repair succeeds on some route → (B), keep
+> the lever; repair fails on ALL above-floor smoke-clean routes on the conditioned subset → the variance-robust
+> (C) signal, Rule 2(d) populated honestly. (3) Only then graduate to a live worst-of-K ladder. (4) **Fallback if
+> the conditioned subset is empty / n≤1:** pre-registered free-gateway **multi-pass** collection targeting those
+> residuals — **NEVER Phase-2.** Frozen invariants untouched; apparatus UNCOMMITTED (user has not asked to commit)._
+>
 > _**▶ SESSION-8 UPDATE (2026-06-23) — read this FIRST; the Session-7 "NEXT = run the ladder" gate is now RUN.**
 > The floor-respecting 17-cell decision-gate ladder ([`LADDER-RUNBOOK.md`](studies/meta-search/LADDER-RUNBOOK.md))
 > ran to completion (~12h45m, **$0**, exit 0; artifact `runs/coevo-ladder-stack.json` + `runs/dump-ladder/`

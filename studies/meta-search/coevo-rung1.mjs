@@ -270,6 +270,9 @@ async function runHybridOnce(fx, invoke, tag = null) {
     surfaces: fx.order, files, prompts, skeleton: fx.skeleton, baseModel: fx.preamble, gate: gateCfg,
     rebuild: rebuildFn,
     judgeInvoke: (a) => invoke(a),
+    // Lever-A (container-recon) no-regress guard: a deterministic transform ships only if the surface still
+    // passes validate-surface (parse∧exports) — the floor predicate. seam-gate ignores `verify` for membership.
+    verify: (surface, code) => isValidSurface(code, surface),
   });
   const finalGrade = await evaluateEpic({ mode: 'isolated', files: { ...files }, testsPath: fx.testsPath });
 

@@ -99,3 +99,101 @@ Detection-only ($0): Mode-A surgical init applied, Mode-B *model* route-back NOT
 on the gating draws — the deterministic init does not move these particular residuals). The attribution of
 *residual class* is robust (it is the oracle's `why` on the dumped code); the split of the drift cells between
 "existing Mode-B repair already handles it" vs "Lever A must strengthen it" is what step 1 above resolves.
+
+---
+
+## STEP 1 RESULT (2026-06-23, live-rebuild replay, `replay-seam.mjs`, $0 free gateway) — Mode-B gap CONFIRMED
+
+Replayed the EXACT gating drift draws through the GENERALIZED seam-gate with a **live** free-gateway route-back
+(the same config the ladder used: `{kind:'deterministic', repairDepth:2}`). Result table:
+
+| cell/draw | profile resolved | gate detect | live route-back | grade Δ | drift residual after live gate |
+|---|---|---|---|---|---|
+| lifecycle-d3/d3 | `transitions` (w3/r3) | mism 1, rep 2 | rewrote advanceDoc+getPublic | **i25→25, c67→67 (0pp)** | `transitions.get`, **`articleTransitions.set`** still throw |
+| lifecycle-d2/d8 | `transitions` (w2/r2) | mism 1, rep 2 | rewrote advanceDoc+getPublic | **i25→25, c60→60 (0pp)** | **`orderTransitions.has`** still throws |
+| approval-d3/d2  | `approvals` (w3/r3)   | **mism 0, rep 0** | — (nothing detected) | **i33→33, c90→90 (0pp)** | **`payoutApprovals.get`** still throws |
+| lifecycle-d1/d7 | `transitions` (w1/r1) | mism 1, rep 2 | rewrote advanceDoc+getPublic | **i50→50 (0pp)** | residual `Doc is not published` (NO `is not a function`) |
+
+**Three load-bearing conclusions:**
+
+1. **The Mode-B *model* route-back does NOT close container drift — CONFIRMED.** On lifecycle-d2/d3 the live
+   gate rewrote surfaces with a real model and moved the grade **0pp**; the `.get/.set/.has is not a function`
+   drift survives. So a deterministic A1 does **not** duplicate existing machinery — that machinery
+   demonstrably fails on this exact residual. *(Second confirmation: the ladder ALSO ran `--shapegate`, whose
+   model-routed shape-repair targets the same class — and the drift still survived the full ladder.)*
+
+2. **The bigger gap is store RESOLUTION + COVERAGE, not just style coercion.** The actually-broken stores
+   (`orderTransitions`, `articleTransitions`, `payoutApprovals`) are NOT the single store the gate resolves
+   (`transitions`, `approvals`). `resolveSeamProfile` returns ONE declared store and mis-pairs writers/readers
+   by index, so it is **blind** to the real seam on these multi-store topologies (approval-d3: **mism 0**).
+
+3. **lifecycle-d1 is DISAMBIGUATED → NOT container drift.** Its residual is `Doc is not published`
+   (ordering/published-state) with NO `is not a function` → it belongs to the Lever-B/ordering bucket, not A1.
+
+**What the dumped code shows about the residual (read directly):** the drift is **genuine cross-surface
+data-model divergence**, not a clean container-type flip — and the program ALREADY assessed+rejected a naive
+deterministic map↔array rewrite (`src/shape-gate.mjs:103-112`: "irreducibly SEMANTIC … a mechanical rewrite
+that guessed the key-field would risk a net-negative … until there is >n=1 evidence"):
+- **quota-d1/d1 (`Wallet not found`) — CLEAN, deterministically fixable:** `createWallet` writes
+  `ctx.db.wallets[id] = wallet` (**object-property** style) while `withdraw`/`deposit` read
+  `ctx.db.wallets.get(id)` (Map; base store pre-seeded as a Map). Both existing gates MISS it (shape-gate only
+  inspects *method calls*, not `X[k]=`; seam-gate resolves `ledger`, not `wallets`). Fix = `X[k]=v` →
+  `X.set(k,v)`. **Mechanical, surfaces-only, no key-field guess.**
+- **lifecycle-d2/d3, approval-d3 — STRUCTURAL divergence, NOT safely deterministic:** e.g. lifecycle-d2
+  `createOrder` uses `orderTransitions` as a **Map<id, t[]>** while `advanceOrder`/`getFulfilled` use it as a
+  **flat Array** (and `advanceOrder` overwrites the Map with an array); approval-d3 `approvePayout` uses
+  `payoutApprovals` as a flat Array while `approveRelease` uses `.get`/`.put` (invalid). Reconciling these needs
+  a key-field/grouping guess = the very net-negative the program's hard rule forbids.
+
+---
+
+## STEP 2 RESULT (2026-06-23) — Lever A built + $0-validated; reaches 3 cells, ZERO regressions
+
+**Built:** `src/container-recon.mjs`, wired as a deterministic pre-pass into `runSeamGate` (non-membership path
+only; membership delegates earlier → byte-identical). Two layers, both surfaces-only, no model:
+- **(safe core)** object↔Map write/read reconciliation (`X[k]=v`→`X.set`, `X[k]`→`X.get`) + init-type matching,
+  on canonically-Map stores — fixes the class all existing gates miss (quota-d1 `wallets`).
+- **(guarded structural-flatten, RATIFIED 2026-06-23)** Map-of-arrays → flat-array on a store the PUBLIC
+  contract declares an **array** (or strong array consensus): collapses `if(!X.has(k))X.set(k,[]); X.get(k).push(rec)`
+  → `X ??= []; X.push(rec)` (idiom-1, no key-field guess) and the read idioms `X.get(k)||[]`→`X.filter(e=>e.K===k)`
+  (key K derived from the surfaces' OWN record literals). **STRUCTURAL POST-CONDITION:** if any map method on the
+  declared-array store survives the rewrite (a read-modify-write *writeback* `X.set(k, arr)`, or an invalid `.put`),
+  the whole surface transform is **reverted** — a safe miss, honoring "a false repair is worse than a miss."
+
+Validation bundle GREEN: `gates/container-recon-smoke.mjs` 16/16, seam-gate smoke 22/22 (membership
+bit-identical, `recon=null`), **P0 5/5 GREEN**, frozen tree `studies/build-gap/` untouched. The live ladder path
+(`coevo-rung1.mjs`) wires the `validate-surface` no-regress guard into the seam-gate call.
+
+**$0 causal replay (`diag-lever-a.mjs`, deterministic recon OFF vs ON over the committed ladder draws,
+worst-of-K=8, floor-admissible):**
+
+```
+quota-d1     worst-of-K integ  OFF 0%  → ON 25%   ▲ +25pp   (object-write→Map.set wallet seam)
+lifecycle-d2 worst-of-K integ  OFF 25% → ON 50%   ▲ +25pp   (idiom-1 flatten of createOrder)
+lifecycle-d4 worst-of-K integ  OFF 38% → ON 44%   ▲ +6pp    (idiom-1 flatten)
+all 9 others                               0pp
+LEVER-A $0 CAUSAL SUMMARY: 3 cells lifted, 0 regressed, 14 transforms applied
+```
+
+**Read:** Lever A causally lifts **3 cells, zero regressions**. The guarded flatten doubled-plus the reach (1→3)
+over the safe core. The cells it does NOT reach — **lifecycle-d3 `advanceDoc` (RMW writeback) and approval-d3
+`approveRelease` (invalid `.put`)** — are exactly the read-modify-write / genuinely-broken cases the
+post-condition reverts as safe misses; they need a true semantic restructuring (the program-rejected
+net-negative) or the model route-back (which STEP 1 showed fails). So Lever A is **correctly built, admissible,
+and load-bearing on the reachable seam class**; the unreachable residual is route-incompetence on cross-surface
+data-model consistency ((B) by Premise #2, not (C)). Lifts are partial-to-cell (lifecycle-d2 25→50, not →100)
+because those draws carry OTHER residuals (ordering = Lever B; `getOrDefault` coding-bug = repair-gate) on top
+of the seam. **→ proceed to STEP 3 (the exact floor ladder) with Lever A in the stack** — the pre-registered
+decision-tree GO signal (lifecycle+quota integration rise) is partially met at $0.
+
+---
+
+**Decision (on-script, $0-validated before the 12h ladder):** build A as the **SAFE** deterministic transforms
+only — multi-store seam coverage + Mode-A across ALL non-base stores + **object↔Map write-style reconciliation**
+(`X[k]=v`→`X.set`), each **smoke-no-regress-guarded** (a transform ships only if the surface's own smoke errors
+do not increase — honors "a false repair is worse than a miss"). The structural map-of-arrays↔flat-array flatten
+is left OUT (program-rejected; net-negative risk). Then a **$0 dump-replay over all 12 non-membership cells**
+measures causal lift BEFORE paying for the ladder. Per the AMENDMENTS.md 2026-06-23 decision tree, cells that the
+SAFE lever cannot reach (the structural-divergence lifecycle/approval drift) are a legitimate pre-registered
+outcome ("A mis-built / fails surfaces-only on those → NOT (C)"), and the run cleanly isolates *reachable*
+(quota-wallet style) from *unreachable-without-restructuring* drift.
