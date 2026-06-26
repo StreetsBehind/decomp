@@ -1,6 +1,19 @@
 # LADDER RUNBOOK — full-stack hybrid worst-of-K=8 across the 17-cell DEV ladder
 
-> **Turnkey handoff (prepared 2026-06-20).** Everything below is wired, mock-verified, and committed. This is
+> **▶ SESSION-10 UPDATE (2026-06-26) — the stack now carries Lever A + Lever B + option 3; this is the
+> Rule-2-VALID (C) adjudication ladder.** Since the Session-8 run the stack gained: **Lever A** (deterministic
+> container-recon, already inside `--seamgate`), **Lever B** (`--semantic` — the semantic-obligation verify+repair
+> for approve→execute/idempotency + conservation), and **option 3** (`--behavioural` — Lever B's behavioural
+> verify, admissible-under-constraints per `runs/deliberations/20260626T040021Z/`). The $0 conditioned diagnostic
+> ([`LEVER-B-DIAGNOSTIC.md`](LEVER-B-DIAGNOSTIC.md)) established a **variance-robust (C)-leaning at deep approval
+> cells** (d3/d4 fail the approval semantic obligation unanimously across the zoo under maximally-sensitive
+> admissible enforcement) with **(B) traction at approval-d2** (depth-graded → SCOPE-SHRINK, never KILL). **This
+> ladder is the FORMAL adjudication of that (C)-leaning vs the SETTLED baseline** (Rule 2's inferior-vs-baseline
+> test). Run it with `--semantic --behavioural` (the command below is updated). Pre-registered reading in
+> "After the run". Frozen tree untouched; the new flags default OFF = byte-identical.
+
+> **Turnkey handoff (prepared 2026-06-20; command updated 2026-06-26).** Everything below is wired, mock-verified,
+> and committed. This is
 > the program's **progress metric toward freeze-readiness**: does the full model-agnostic output-QA stack make
 > the hybrid's worst-of-K **per-cell non-inferior** to the SETTLED routed all-frontier baseline across the
 > whole ladder? Run it, read the rollup, classify the residuals (A/B/(C)), decide the next lever or a (C)
@@ -11,15 +24,22 @@
 
 ```
 node studies/meta-search/coevo-rung1.mjs --ladder \
-  --repairgate --shapegate --contractgate --obligation --bestofn 3 --seamgate \
+  --repairgate --shapegate --contractgate --obligation --bestofn 3 --seamgate --semantic --behavioural \
   --floor --retry 3 \
-  --k 8 --out coevo-ladder-stack.json --dump studies/meta-search/runs/dump-ladder
+  --k 8 --out coevo-ladder-stack-B.json --dump studies/meta-search/runs/dump-ladder-B
 ```
 
 - `--ladder` = the full 17 cells (membership d1–d5, approval/lifecycle/quota d1–d4) — the SETTLED baseline's cells.
 - The flags are the **full output-QA stack** in compose order: repair → shape → contract → **obligation
-  (verify+repair, best-of-N=3 with the no-regress floor)** → seam. Each gate grades an `after<Gate>` point so
-  every lever's worst-of-K delta is attributable.
+  (verify+repair, best-of-N=3 with the no-regress floor)** → seam (incl. **Lever A** container-recon) →
+  **semantic (Lever B verify+repair)** with the **behavioural** verify (option 3) ON. Each gate grades an
+  `after<Gate>` point (incl. `afterSemantic`) so every lever's worst-of-K delta is attributable.
+- **`--semantic` (Lever B)** verifies+repairs the SEMANTIC obligations the obligation gate skips (approval
+  approve→execute/idempotency; quota conservation/keyed-idempotency), derived from the PUBLIC skeleton. **`--behavioural`
+  (option 3)** adds Lever B's behavioural verify (composes the candidate's own create→approve→execute, asserts
+  the declared SoD + idempotency clauses) — required for a **Rule-2-VALID (C)** on approval (Rule 2(e):
+  structural-only is not lever-menu-exhausted). The frozen oracle stays the sole success measure.
+- **`--out`/`--dump` use the `-B` suffix** so this run does not clobber the Session-8/9 ladder artifacts.
 - **`--floor` enforces the [`GROUND-RULES.md`](GROUND-RULES.md) Rule-1 route-pool floor** (pinned 2026-06-22):
   a draw is below-floor iff ≥1 required surface fails `parse∧export` (`validate-surface`) even after `--retry`
   re-sampling → it is **excluded from the worst-of-K**, the per-cell below-floor RATE is reported, and a cell
@@ -86,16 +106,26 @@ instrument; this run is the **progress check** that tells you whether to keep bu
    proves it; or just start the run — it self-reports the route zoo per draw and `usd:0`.
 2. Frozen instrument GREEN: `node studies/meta-search/p0.mjs` → 5/5, K8 29/30 bit-identical.
 3. Lever smokes GREEN: `node studies/meta-search/gates/obligation-contract-smoke.mjs` (39/39),
-   `node studies/meta-search/gates/best-of-n-repair-smoke.mjs` (12/12).
+   `node studies/meta-search/gates/best-of-n-repair-smoke.mjs` (12/12), **`gates/semantic-obligation-smoke.mjs`
+   (24/24)** (Lever B), **`gates/behaviour-verify-smoke.mjs` (8/8)** (option 3, incl. the disk-deletion-invariance
+   admissibility check), `gates/container-recon-smoke.mjs` (16/16) + `gates/seam-gate-smoke.mjs` (22/22) (Lever A).
 4. Baseline present: `baseline-settled-vector.json` (committed) or `runs/routed-baseline-settled.json`.
 
 ## After the run
 
-1. Write `LADDER-RESULTS.md`: the rollup (`X/17` non-inferior), per-cell Δ, and the residual class of each
+1. Write `LADDER-RESULTS-B.md`: the rollup (`X/17` non-inferior), per-cell Δ, and the residual class of each
    FAILING cell (form → which lever; semantics → (C)-candidate; missing-draw → extraction).
-2. **Decide:** (a) if failures are mostly form/missing → the next lever (shape-gate depth / extraction /
-   per-surface decomposition) — keep building **(B)**; (b) if a cell's residual survives the full stack across
-   routes and is pure semantics → a **(C)** finding (scope-shrink — a valid kill-result, not a failure to fix).
+2. **Decide — the pre-registered approval-(C) read (the reason for this run):** the $0 diagnostic already showed
+   approval **d3/d4** semantics fail unanimously across the zoo under the full stack + option 3 (Rule 2(e)
+   exhausted). On this live ladder apply Rule 2's **inferior-vs-baseline** test: if **approval-d3/d4 are
+   `worst-of-K < baseline − δ`** (the SETTLED baseline holds where the hybrid walls) → **SCOPE-SHRINK** (claim
+   the win only on the topologies/depths that pass — `d2` retains (B) traction, so it is NOT a whole-class KILL).
+   If the baseline ALSO erodes there (non-inferiority passes) → the cell is not a capability gap → **CONTINUE**.
+   **KILL only if an ENTIRE obligation class/seam-family walls-and-is-inferior** (not the case — d2 holds).
+3. **Other cells:** (a) form/missing failures → the next lever (shape-gate depth / extraction) — keep building
+   **(B)**; quota conservation failures are the **(B) container-drift** class (Lever-B-inert; LEVER-B-DIAGNOSTIC.md),
+   not (C). (b) any pure-semantics cell that survives the full stack+option-3 across routes AND is inferior →
+   a **(C)** finding (scope-shrink).
 3. Only when the hybrid is broadly non-inferior across the ladder do you **freeze** a champion and run the
    once-only co-measured head-to-head / sequestered TEST (COEVOLUTION-SPEC §6).
 

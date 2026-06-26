@@ -34,6 +34,7 @@ import { runContractGate } from './src/contract-gate.mjs';
 import { runPersistenceGate } from './src/persistence-gate.mjs';
 import { runRepairGate } from './src/repair-gate.mjs';
 import { runObligationContract } from './src/obligation-contract.mjs';
+import { runSemanticObligation, makeBehaviouralRunner } from './src/semantic-obligation.mjs';
 
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
@@ -92,6 +93,22 @@ const REPAIRGATE = has('repairgate');
 // conservation/legal-transition — are left to the oracle, never flagged). With it on we grade an extra point —
 // afterObligation — so this lever's worst-of-K crosscut delta is attributable separately from shape/contract/seam.
 const OBLIGATION = has('obligation');
+// --semantic runs LEVER B (src/semantic-obligation.mjs) as the LAST gate (after the seam-gate): it verifies the
+// SEMANTIC cross-cutting obligations the obligation-contract gate deliberately skips — approval approve→execute
+// ordering + execute-idempotency and quota conservation/keyed-idempotency — derived FROM THE PUBLIC SKELETON's
+// declared rules (admissible; never the oracle), and routes a best-of-N model repair on a miss. The
+// LEVER-B-DIAGNOSTIC.md $0 conditioned diagnostic found (B) traction at approval-d2 + a (C)-leaning residual at
+// d3/d4; this flag graduates it to the live worst-of-K for the inferior-vs-baseline adjudication. Default OFF =
+// byte-identical. With it on we grade an extra point — afterSemantic — for separate worst-of-K attribution.
+const SEMANTIC = has('semantic');
+// --behavioural (with --semantic): turn ON Lever B's OPTION-3 behavioural verify (admissible-under-constraints,
+// runs/deliberations/20260626T040021Z/) — composes the candidate's own create→approve→execute in a shared ctx
+// and asserts the declared SoD + idempotency clauses, catching structurally-present-but-semantically-wrong gates
+// the structural detector misses. Required for a Rule-2-VALID (C) on the approval semantic class (Rule 2(e): the
+// structural-only (C)-leaning is not lever-menu-exhausted without it). The frozen oracle stays the sole success
+// measure; the property only gates+verifies the repair loop. Default OFF = byte-identical to --semantic alone.
+const BEHAVIOURAL = has('behavioural');
+const behaviouralRunner = BEHAVIOURAL ? makeBehaviouralRunner({ timeoutMs: 10000 }) : undefined;
 // --dump <dir>: write each draw's RAW built surface files to <dir>/<tag>/ for offline diagnosis (why a gate
 // did/didn't fire on a worst route). Diagnostic only; no effect on grading. $0.
 const DUMP = arg('dump', null);
@@ -274,6 +291,14 @@ async function runHybridOnce(fx, invoke, tag = null) {
     // passes validate-surface (parse∧exports) — the floor predicate. seam-gate ignores `verify` for membership.
     verify: (surface, code) => isValidSurface(code, surface),
   });
+  // LEVER B (only with --semantic): the LAST gate, after the seam-gate. Verifies the SEMANTIC obligations
+  // (approve→execute/idempotency, conservation/keyed-idempotency) the obligation gate skips; best-of-N model
+  // repair on a miss. Deterministic detection + oracle-blind. Grades afterSemantic for separate worst-of-K.
+  let semanticRes = null, afterSemanticGrade = null;
+  if (SEMANTIC) {
+    semanticRes = await runSemanticObligation({ surfaces: fx.order, files, prompts, skeleton: fx.skeleton, gate: { ...gateCfg, behavioural: BEHAVIOURAL }, rebuild: rebuildFn, behaviouralRunner });
+    afterSemanticGrade = await evaluateEpic({ mode: 'isolated', files: { ...files }, testsPath: fx.testsPath });
+  }
   const finalGrade = await evaluateEpic({ mode: 'isolated', files: { ...files }, testsPath: fx.testsPath });
 
   return {
@@ -283,6 +308,7 @@ async function runHybridOnce(fx, invoke, tag = null) {
     ...(CONTRACTGATE ? { afterContract: gradeRec(afterContractGrade) } : {}),
     ...(OBLIGATION ? { afterObligation: gradeRec(afterObligationGrade) } : {}),
     ...(PERSISTGATE ? { afterPersist: gradeRec(afterPersistGrade) } : {}),
+    ...(SEMANTIC ? { afterSemantic: gradeRec(afterSemanticGrade) } : {}),
     final: gradeRec(finalGrade),
     gate: { fired: gateRes.pairs > 0, pairs: gateRes.pairs, mismatches: gateRes.mismatches, repairs: gateRes.repairs, leak: gateRes.leak },
     ...(REPAIRGATE ? { repair: { ran: repairRes.ranGate, surfacesFlagged: repairRes.surfacesFlagged, freeIds: repairRes.freeIds, repairs: repairRes.repairs, fixed: repairRes.fixed, leak: repairRes.leak, detail: repairRes.detail } } : {}),
@@ -290,6 +316,7 @@ async function runHybridOnce(fx, invoke, tag = null) {
     ...(CONTRACTGATE ? { contract: { ran: contractRes.ranGate, adminScoped: contractRes.adminScoped, surfacesFlagged: contractRes.surfacesFlagged, repairs: contractRes.repairs, leak: contractRes.leak, detail: contractRes.detail } } : {}),
     ...(OBLIGATION ? { obligation: { ran: obligationRes.ranGate, surfacesFlagged: obligationRes.surfacesFlagged, violations: obligationRes.violations, missing: obligationRes.missing, invented: obligationRes.invented, repairs: obligationRes.repairs, reverts: obligationRes.reverts, leak: obligationRes.leak, detail: obligationRes.detail } } : {}),
     ...(PERSISTGATE ? { persist: { ran: persistRes.ranGate, stores: persistRes.stores, surfacesFlagged: persistRes.surfacesFlagged, violations: persistRes.violations, repairs: persistRes.repairs, leak: persistRes.leak, detail: persistRes.detail } } : {}),
+    ...(SEMANTIC ? { semantic: { ran: semanticRes.ranGate, surfacesFlagged: semanticRes.surfacesFlagged, violations: semanticRes.violations, repairs: semanticRes.repairs, reverts: semanticRes.reverts, leak: semanticRes.leak, byObligation: semanticRes.byObligation, detail: semanticRes.detail } } : {}),
     routes,
     missingDraws: Object.entries(perSurface).filter(([, v]) => !v.valid).map(([s]) => s),
   };
@@ -370,7 +397,7 @@ async function main() {
     : (arg('epics', 'membership-d1,lifecycle-d1,quota-d1,approval-d1')).split(',').map((s) => s.trim()).filter(Boolean);
   const invoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : makeGatewayInvoke({ timeoutMs: CALL_TIMEOUT_MS });
 
-  const gateName = `${REPAIRGATE ? 'repair+' : ''}${SHAPEGATE ? 'shape+' : ''}${CONTRACTGATE ? 'contract+' : ''}${OBLIGATION ? 'obligation+' : ''}${PERSISTGATE ? 'persist+' : ''}${has('seamgate') ? 'seam' : 'membership'}`;
+  const gateName = `${REPAIRGATE ? 'repair+' : ''}${SHAPEGATE ? 'shape+' : ''}${CONTRACTGATE ? 'contract+' : ''}${OBLIGATION ? 'obligation+' : ''}${PERSISTGATE ? 'persist+' : ''}${has('seamgate') ? 'seam' : 'membership'}${SEMANTIC ? (BEHAVIOURAL ? '+semantic·beh' : '+semantic') : ''}`;
   console.log(`COEVO RUNG-1 — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — worst-of-K=${K} retry=${RETRY} gate=${gateName} gate.repair=${REPAIR} bestofn=${BESTOFN} floor=${FLOOR ? 'on' : 'off'} conc=${CONC} — ${ids.length} epics\n`);
   const out = { mock: MOCK, k: K, retry: RETRY, repair: REPAIR, generatedAt: null, epics: [] };
   const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
@@ -392,8 +419,9 @@ async function main() {
       const contractSeg = CONTRACTGATE ? `→ contract{c ${(d.afterContract.crosscut * 100).toFixed(0)} i ${(d.afterContract.integration * 100).toFixed(0)} ${d.contract.surfacesFlagged}f/${d.contract.repairs}r${d.contract.leak ? ' LEAK' : ''}} ` : '';
       const obligationSeg = OBLIGATION ? `→ oblig{c ${(d.afterObligation.crosscut * 100).toFixed(0)} i ${(d.afterObligation.integration * 100).toFixed(0)} ${d.obligation.surfacesFlagged}f/${d.obligation.missing}m/${d.obligation.invented}o/${d.obligation.repairs}r${d.obligation.reverts ? `/${d.obligation.reverts}nr` : ''}${d.obligation.leak ? ' LEAK' : ''}} ` : '';
       const persistSeg = PERSISTGATE ? `→ persist{c ${(d.afterPersist.crosscut * 100).toFixed(0)} i ${(d.afterPersist.integration * 100).toFixed(0)} ${d.persist.surfacesFlagged}f/${d.persist.repairs}r${d.persist.leak ? ' LEAK' : ''}} ` : '';
+      const semanticSeg = SEMANTIC ? `→ sem{c ${(d.afterSemantic.crosscut * 100).toFixed(0)} i ${(d.afterSemantic.integration * 100).toFixed(0)} ${d.semantic.surfacesFlagged}f/${d.semantic.repairs}r${d.semantic.reverts ? `/${d.semantic.reverts}nr` : ''}${d.semantic.leak ? ' LEAK' : ''}} ` : '';
       const rm = drawResidualMode(d);
-      process.stdout.write(`  [${id}] draw ${k + 1}/${K}: raw{c ${(d.raw.crosscut * 100).toFixed(0)} i ${(d.raw.integration * 100).toFixed(0)}} ${repairSeg}${shapeSeg}${contractSeg}${obligationSeg}${persistSeg}→ final{c ${(d.final.crosscut * 100).toFixed(0)} i ${(d.final.integration * 100).toFixed(0)}} [${rm.mode}/${rm.cls}] ${d.gate.fired ? `gate[${d.gate.pairs}p ${d.gate.repairs}r]` : 'gate[no-op]'} ${d.missingDraws.length ? `MISSING:${d.missingDraws.join(',')}` : ''} routes:${d.routes.join('|') || '?'}\n`);
+      process.stdout.write(`  [${id}] draw ${k + 1}/${K}: raw{c ${(d.raw.crosscut * 100).toFixed(0)} i ${(d.raw.integration * 100).toFixed(0)}} ${repairSeg}${shapeSeg}${contractSeg}${obligationSeg}${persistSeg}${semanticSeg}→ final{c ${(d.final.crosscut * 100).toFixed(0)} i ${(d.final.integration * 100).toFixed(0)}} [${rm.mode}/${rm.cls}] ${d.gate.fired ? `gate[${d.gate.pairs}p ${d.gate.repairs}r]` : 'gate[no-op]'} ${d.missingDraws.length ? `MISSING:${d.missingDraws.join(',')}` : ''} routes:${d.routes.join('|') || '?'}\n`);
     }
     // GROUND-RULES Rule 1 (--floor): drop below-floor draws (parse∧export failure → missingDraws>0) from the
     // worst-of-K; gradeDraws is the admissible population the stats are computed over. Default OFF → gradeDraws

@@ -508,3 +508,55 @@ axis — so it doubles as the stationarity check at zero marginal cost.
 parity δ-α / committed TEST-hash). This is a **Rule-3-logged change to the time-boxed lever menu** — the box is
 unchanged in size (≤2 named levers); only the named candidates are re-pointed, with the deprioritization
 grounded in the Rule-1 data above. **Nothing voided.**
+
+## 2026-06-25 — Rule-3 metric refinement: same-draws / conditioned diagnostics admissible for LEVER-EVALUATION ONLY
+
+Logs the GROUND-RULES **Rule 3** metric-alignment refinement forced by the Lever-A ladder result
+([`LADDER-RESULTS-A.md`](LADDER-RESULTS-A.md)) and ratified by the user (2026-06-24). Disposition arrived at via
+a codex×opus deliberation that **CONVERGED** (`runs/deliberations/20260624T202607Z/` — brief + manifest; both
+sides stress-tested the call to a stable two-yes convergence).
+
+**Trigger (the demonstrated instrument failure).** The Lever-A ladder showed a *deterministic, correctly-built,
+admissible* lever's causal effect is **below the worst-of-K=8 non-stationary-pool noise floor**: its $0
+same-draws A/B effect **flips sign across draw sets** (+25/+25/+6pp on `dump-ladder`'s draws; a net wash with a
+−6pp regression on `dump-ladder-A`'s draws). Raw worst-of-K=8 over the free gateway is a min over an
+unbounded-below non-stationary pool, so it is dominated by *whichever bug is worst on the worst route* — it
+cannot resolve a deterministic lever whose target bug-class is the gating residual on only a minority of draws.
+This is the BAR-MISMATCH / Deliberation-#2 concern, now demonstrated on a concrete lever.
+
+**The refinement (the metric the freeze deliberately left as a USER win-condition call).** Same-draws /
+conditioned **$0 diagnostics are admissible as the LEVER-EVALUATION metric** — the only stable causal measure of
+a deterministic transform (it holds the draws fixed so the *whole* signal is isolated from cross-run route
+variance). **Raw worst-of-K=8 remains the archive-insertion gate, the freeze statistic, and the
+sequestered-TEST statistic, unchanged** (already frozen — RUN-FOR-DAYS §4 / GROUND-RULES Rule 3). This only
+*adds a diagnostic layer below* the frozen statistic; the discipline is restated exactly: **the proxy/diagnostic
+steers lever development, worst-of-K decides freeze/archive/TEST, and the diagnostic never touches a
+freeze/archive/TEST decision.**
+
+**The variance-robustness asymmetry that makes the reliability question reachable on the noisy instrument.** A
+lever-**LIFT** measurement needs the **min** to move → variance-*fragile* (why Lever A was illegible). A
+**(C)-verdict** measurement (Rule 2(d)) needs **every above-floor route to FAIL** the semantic invariant → a
+*universal quantifier*, variance-*robust*: non-stationarity changes *which* route is worst, it cannot
+manufacture unanimous semantic correctness across the zoo. So the reliability claim **is** adjudicable on the
+current noisy free-gateway instrument via a **unanimous-failure read**, without taming the pool.
+
+**Phase-2 is NOT a measurement fix for reliability (a binding constraint, not a preference).** Collapsing to one
+stationary local model to get a clean signal **is route-selection-as-fix in disguise** → a **Premise-1
+violation** (it would make the reliability claim true for one model, exactly the win condition the thesis
+forbids). Phase-2 *realizes the fixed-cost economics* — a separate, necessary experiment — but it may never
+launder non-stationarity out of the RELIABILITY claim. **The fallback for an empty conditioned subset is
+free-gateway multi-pass collection, never Phase-2.**
+
+**Operational consequence (the ratified next step, this is apparatus, not pre-registration).** Build **Lever B**
+(approval `approve→execute`/idempotency + quota conservation as inject+verify) and run a **$0 CONDITIONED
+diagnostic** on the existing `dump-ladder` / `dump-ladder-A` draws — conditioned to draws above-floor (Rule 1) ∧
+smoke-clean (Rule 2(b)) ∧ whose *sole* post-stack residual is the named semantic class (`LEVER-A-SCOPE.md`:
+approval-d2/d3/d4, quota-d3/d4) — **reporting DETECTION (deterministic, clean) and REPAIR-across-zoo
+(model-routed) SEPARATELY**. Endpoints: repair succeeds on some above-floor route → **(B)**, keep the lever;
+repair fails on **all** above-floor smoke-clean routes on the conditioned subset → the variance-robust **(C)**
+signal, Rule 2(d) populated honestly. Only then a live worst-of-K ladder.
+
+**Void-rule: touches NONE of the four void-triggering invariants** (weights vector / per-cell veto definition /
+parity δ-α / committed TEST-hash). It restates and *operationalizes* the already-frozen raw-min worst-of-K=8
+(adds a diagnostic layer strictly below it; the frozen statistic is unchanged in role and value). **Nothing
+voided.**

@@ -5,6 +5,63 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-10 UPDATE (2026-06-25) — read this FIRST; executes the Session-9 ratified plan (Lever B + the $0
+> conditioned diagnostic). The result is the program's first evidence-based (C)-boundary characterization.**
+> (1) **Amendment logged** ([`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md) 2026-06-25): same-draws/conditioned
+> diagnostics are admissible for **lever-evaluation only**; raw worst-of-K=8 stays the freeze/TEST statistic; the
+> variance-robustness asymmetry (a lever-LIFT needs the *min* to move = variance-fragile; a (C)-verdict needs
+> *every* above-floor route to FAIL = a universal quantifier = variance-robust) makes reliability adjudicable on
+> the noisy free gateway; **Phase-2 is ruled out as a reliability fix (it is a Premise-1 violation)**. (2)
+> **Lever B BUILT** = `src/semantic-obligation.mjs` — inject+verify for the SEMANTIC obligations the settled stack
+> only injects (approval `approve→execute`/idempotency, quota conservation/keyed-idempotency); admissibility is the
+> obligation-contract basis (reads the PUBLIC skeleton's DECLARED rule, never the oracle; `scanOracleLeak` on every
+> repair prompt). Smoke **24/24**, **P0 5/5 GREEN bit-identical**, frozen tree untouched; wired into the live
+> ladder as opt-in **`coevo-rung1.mjs --semantic`** (default OFF = byte-identical). (3) **$0 CONDITIONED DIAGNOSTIC**
+> ([`LEVER-B-DIAGNOSTIC.md`](studies/meta-search/LEVER-B-DIAGNOSTIC.md); `diag-lever-b.mjs`, detection $0
+> deterministic + repair $0 free gateway). **THREE load-bearing findings:** **(a) quota conservation is NOT a (C)
+> wall — it is the container-drift (B) bug** (Lever B's detection is INERT on all quota draws: the code HAS the
+> conservation guard; the Map/Array ledger drift corrupts the balance the guard reads → re-attributes
+> LEVER-A-SCOPE's "conservation (C) candidate" to Lever A's unreachable read-modify-write class). **(b) The approval
+> `approve→execute`/idempotency obligation is PARTIALLY repairable, depth-graded:** Lever B's model route-back
+> CLEARS it on some routes at **approval-d2** (3/7 relaxed draws, 1 full-pass to 100% → **(B) traction is real**;
+> cheap-model semantics ARE repairable, against any flat-(C) reading), but at **d3/d4 it survives the lever across
+> the entire sampled zoo** (0/8, 0/9 cleared → the program's first **variance-robust (C)-leaning** signal). **(c)
+> Two (C)-shaped sub-modes:** *repair-fires-but-oracle-semantics-survive* (the cheap pool writes a
+> structurally-present but semantically-WRONG SoD/approval gate even when handed the declared obligation), and a
+> *detection gap* (mechanism-present-but-wrong draws a deterministic presence-verify structurally cannot flag — the
+> admissibility ceiling of a deterministic semantic verify). **This is a LEVER-EVALUATION signal, NOT a confirmed
+> thesis-(C)** (Rule 2 forbids auto-(C); the verdict is rendered on the LIVE worst-of-K vs the settled baseline,
+> inferior-vs-baseline deciding SCOPE-SHRINK vs CONTINUE). **▶ NEXT (ratified plan step 3 + fallbacks, USER call on
+> the 12–16h commit):** (i) run the **live worst-of-K ladder with `--semantic`** to confirm the d2 (B) lift and
+> adjudicate the d3/d4 (C)-leaning residual against the baseline ($0, ~12–16h, background); (ii) pre-registered
+> **free-gateway MULTI-PASS** (never Phase-2) to enlarge the thin approval sole-residual subset (n=2–4) and to
+> collect drift-free quota draws that isolate conservation; (iii) optional Lever-B detection refinement (a
+> behavioural/property verify — check admissibility first). Apparatus UNCOMMITTED (user has not asked to commit)._
+>
+> _**▶ SESSION-10 ADDENDUM (2026-06-26) — both fallbacks executed; option 3 STRENGTHENS the (C)-leaning.** (2)
+> Multi-pass collection (`collect-multipass.mjs`, $0 free gateway) is RUNNING — accumulating fresh raw draws of
+> the named cells into `runs/dump-multipass/` to enlarge the thin subset; resumable, condition anytime with
+> `diag-lever-b.mjs --dumps dump-multipass`. (3) Option-3 admissibility deliberation CONVERGED
+> (`runs/deliberations/20260626T040021Z/`): a behavioural/property verify is **admissible-under-constraints** (the
+> cut is PROVENANCE not method; 7-point conjunction incl. disk-deletion-invariance + property-never-the-final-score),
+> and crucially **the structural-only (C)-leaning was NOT Rule-2-valid** (Rule 2(e) unmet: option 3 untried). So
+> option 3 was BUILT (`gates/lib/behaviour-run.mjs` + `verifyBehavioural`/`makeBehaviouralRunner` + behaviour-aware
+> repair in `semantic-obligation.mjs`, wired `diag-lever-b --behavioural` / smoke 8/8 / structural path
+> byte-identical / **P0 5/5 GREEN** / all 7 constraints met incl. disk-deletion-invariance demonstrated). **The
+> option-3 comparison RESULT: it CONFIRMS + STRENGTHENS the d3/d4 approval (C)-leaning** — under
+> maximally-sensitive admissible enforcement the approve→execute/idempotency obligation fails UNANIMOUSLY across
+> the zoo (d3 0/9, d4 0/11 cleared; `afterSem==baseSem` dominant: the cheap pool writes a behaviourally-rejected-
+> yet-still-wrong gate even re-prompted with the declared obligation). **d2 retains (B) traction** (Ad7 cleared
+> 5→0) → the class is **depth-graded, not a flat wall → any (C) is SCOPE-SHRINK, never KILL**. (d2's clear-count
+> 3/7→1/9 is confounded by gateway contention with the concurrent collector + a larger union denominator — not a
+> clean delta; the robust result is d3/d4.) **Rule 2(e) for d3/d4 approval is now (near-)satisfied** (named lever
+> menu exhausted). **▶ NEXT: the formal (C) adjudication = the live worst-of-K ladder with `--semantic` (+ option
+> 3) vs the SETTLED baseline** (inferior-vs-baseline → SCOPE-SHRINK if the baseline holds + the hybrid walls on
+> the deep approval cells; $0, ~12–16h, USER call on the commit), after the multi-pass firms the subset. **Turnkey
+> command + pre-registered decision tree: [`LADDER-RUNBOOK.md`](studies/meta-search/LADDER-RUNBOOK.md)** (updated
+> 2026-06-26 with `--semantic --behavioural`). Record: [`LEVER-B-DIAGNOSTIC.md`](studies/meta-search/LEVER-B-DIAGNOSTIC.md).
+> Frozen tree intact; **apparatus COMMITTED this session** (Session-10)._
+>
 > _**▶ SESSION-9 UPDATE (2026-06-24) — read this FIRST; supersedes the Session-8 "NEXT = LEVER A FIRST" line.
 > Lever A is BUILT, $0-validated, and the ladder RAN with it — and the result reframes the program.** STEP 1
 > (live-rebuild replay, `replay-seam.mjs`, $0): the Mode-B model route-back gap is CONFIRMED — both the seam-gate's
