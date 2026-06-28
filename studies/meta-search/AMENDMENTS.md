@@ -560,3 +560,121 @@ signal, Rule 2(d) populated honestly. Only then a live worst-of-K ladder.
 parity δ-α / committed TEST-hash). It restates and *operationalizes* the already-frozen raw-min worst-of-K=8
 (adds a diagnostic layer strictly below it; the frozen statistic is unchanged in role and value). **Nothing
 voided.**
+
+## 2026-06-27 — Rule-3 logging debt paid: option-3 (behavioural verify) + the obligation-INJECT lever logged retroactively
+
+Logs two GROUND-RULES **Rule 3** lever-menu widenings that were BUILT and run before being logged here — a
+gap surfaced by a whole-program meta-audit this session (the prior entry was **2026-06-25**; option-3 was built
+2026-06-26 and inject 2026-06-27). Rule 3 requires every widening of the time-boxed lever menu to be logged
+**before** any (C)/SCOPE-SHRINK promotion rests on it; this entry closes that debt so the pending run-C verdict
+is not procedurally tainted. No new live result is claimed here — this is bookkeeping.
+
+**(1) Option 3 — behavioural/property verify (a refinement of Lever B's verify method, NOT a new menu slot).**
+`gates/lib/behaviour-run.mjs` + `verifyBehavioural`/`makeBehaviouralRunner` in `src/semantic-obligation.mjs`
+(wired `coevo-rung1.mjs --behavioural`, `diag-lever-b.mjs --behavioural`). It composes the *candidate's own*
+create→approve→execute in a shared context and asserts the declared SoD/idempotency obligation behaviourally,
+rather than by structural presence. Admissibility was settled by a codex×opus deliberation
+(`runs/deliberations/20260626T040021Z/`) under a **7-point conjunction**: verbatim-paraphrase of one named
+skeleton clause only; scope = named-clauses-only; Lever-B-seeded / zero-value inputs; no oracle import;
+`scanOracleLeak` on every prompt; disk-deletion-invariance demonstrated; and — load-bearing — the property
+**gates/verifies repair but is NEVER the final keep/discard score** (the frozen oracle remains the sole success
+measure). Smoke 8/8; the structural path is byte-identical with the flag off; P0 5/5 GREEN. This is a *method*
+refinement inside the already-logged **Lever B** slot (2026-06-23 entry), not a third menu lever.
+
+**(2) Inject — the obligation-INJECT half (the last named admissible lever under Rule 2(e)).**
+`coevo-rung1.mjs --inject` (default OFF = byte-identical) appends each surface's **skeleton-DECLARED** obligation
+(`semanticRules`→`injectBlock` from `src/semantic-obligation.mjs`: approve→execute / execute-idempotency /
+conservation / keyed-idempotency) to that surface's FIRST build prompt — i.e. it supplies the obligation at
+**authorship time** (the M-coh-2/M-coh-2.5 mechanism), the admissible complement to Lever B's post-hoc
+verify+repair. Admissible: skeleton-derived only, never the oracle; validated inject-smoke 39/39
+(`gates/inject-smoke.mjs`), Lever B 24/24, P0 5/5 GREEN, frozen tree untouched. This is the **named, admissible,
+previously-unbuilt lever** whose existence is why LADDER-RESULTS-B is CONTINUE rather than a confirmed
+SCOPE-SHRINK; the inject-ON ladder (run C) is the experiment that exhausts Rule 2(e) for the approve→execute
+class.
+
+**Honest menu accounting (the epicycle-risk the audit flagged).** The pre-registered box was the ladder + **≤2
+named levers {extraction, shape-gate-depth}** (GROUND-RULES Rule 3). It was re-pointed to **{Lever A, Lever B}**
+on 2026-06-23 (logged). Option-3 sits **inside** Lever B (verify method); inject is the **authorship-time half**
+of the same approve→execute obligation Lever B verifies — so the menu is honestly read as **2 levers (A, B) with
+B split into inject+verify**, not 4 independent slots. **Recommended HARD CAP (flagged for PI ratification, NOT
+self-enacted here):** the already-named successor — *"a frontier-AUTHORED seam scaffold injected as CODE"* — is
+**not** another cheap-coder lever: it moves authoring of the hard seam out of the cheap coder, which violates the
+binding premise *"cheap models do ALL the coding."* It is therefore the **thesis BOUNDARY** = the SCOPE-SHRINK
+terminus, and must not be built as a parity path. If inject walls unanimously with the baseline holding i100,
+the honest verdict is SCOPE-SHRINK on approve→execute, not "one more lever."
+
+**Void-rule: touches NONE of the four void-triggering invariants** (weights vector / per-cell veto definition /
+parity δ-α / committed TEST-hash). This is a Rule-3-logged record of menu widenings already constrained to the
+surfaces/skeleton-only admissibility tests; the freeze/archive/TEST statistic is unchanged. **Nothing voided.**
+
+## 2026-06-28 — PRE-REGISTRATION: the "strong injection" (TERMINAL lever) admissibility spec
+
+Pre-registers the admissibility of the **strong injection** — the frontier/skeleton-derived obligation
+**primitive injected as CODE** — BEFORE it is built or laddered, per GROUND-RULES Rule 2 (no post-hoc
+reclassification) and Rule 3 (log every menu change). **User-ratified 2026-06-28.** Disposition converged via a
+codex×opus deliberation that reached two-sided convergence in 4 turns
+(`runs/deliberations/20260628T145619Z/` — transcript + brief; gpt-5.5 conceded its within-zoo "surface-split"
+discriminator was logically incompatible with the frozen worst-of-K/δ statistic and adopted opus's null-wiring
+ablation). **Trigger:** run C (prompt-inject) FAILED to clear approve→execute (all 5 cells; approval i50–63 vs
+baseline i100) → the *authoring-when-told* hypothesis is exhausted at the prompt level; the PI elected to
+escalate to the strong form rather than declare SCOPE-SHRINK now.
+
+**The hypothesis under test (narrower than the prior levers).** Strong injection tests the **WIRING** hypothesis
+— *can cheap models correctly WIRE a frontier/skeleton-derived obligation primitive across surfaces* — which is
+strictly weaker than the **AUTHORING** hypothesis run C already falsified. Any WIN is reported as a wiring-level
+result, with the authoring claim recorded as already lost (anti-laundering).
+
+**The pre-registered spec (10 clauses + a build-time GO/NO-GO):**
+
+1. **Admissible object.** A generic, importable approve→execute / idempotency guard/decorator generated **only**
+   from public skeleton `semanticRules`, injected into the build-orchestration/harness layer — NOT a candidate
+   surface edit, NOT an edit to the frozen skeleton on disk. Additive, default-OFF byte-identical.
+2. **Forbidden content.** No hidden grader/oracle code, oracle fixture values, per-surface business literals,
+   per-cell wiring tables, candidate-specific patches, or any literal derived from `epics/*/tests.mjs`.
+   `scanOracleLeak` passes on the generated code AND prompts; verdicts disk-deletion-invariant.
+3. **Cheap-coded boundary.** Surface implementation files stay 100% cheap-authored; candidates must still wire
+   their create/approve/execute handlers, state locations, ids, roles, status transitions, audit/idempotency
+   stores into the primitive. No hand-fixing candidate outputs.
+4. **Default-off invariance.** Injection disabled ⇒ byte-identical outputs/scores to the prior stack.
+5. **Hypothesis label.** Tests the *wiring* hypothesis (weaker than the prompt-falsified *authoring* hypothesis);
+   any WIN is a wiring-level win.
+6. **Parity verdict (frozen statistic), PER CELL.** Approval reaches parity iff worst-of-K integration ≥
+   baseline − δ (δ=0.05) across K=8, evaluated **per cell d1–d4**; the class verdict aggregates per Rule 2 (KILL
+   only if the whole class is walled-and-inferior; SCOPE-SHRINK if isolated cells wall; WIN reported per cell).
+   No proxy, no softening.
+7. **Load-bearing discriminator — NULL-WIRING ABLATION (measurement-only, never scored / never shipped).**
+   Mechanically auto-wire the primitive using **only** exported-signature matching / call-graph reachability /
+   smoke-trace observed shapes (the same surfaces-only inputs Lever A is held to). FORBIDDEN: reading surface
+   prose/obligations, semantic-identifier pattern-matching (a var named `requester` ≠ "the requester"), any
+   per-surface/per-cell table; `scanOracleLeak`-clean, disk-deletion-invariant, **reviewed before the run**.
+   Readings: null-wiring passes **clean** ⇒ **SCOPE-SHRINK** (the scaffold/harness absorbed the seam),
+   *regardless of* worst-of-K; passes **via leak** ⇒ ablation **VOID** (rebuild — do not let a leaky probe
+   mislabel a real win); **non-constructible** (no mechanical bind exists without semantic adaptation) ⇒ use the
+   **PERTURBATION ADJUNCT** (corrupt one wiring element of a parity-passing cheap route — swap an id, drop the
+   non-requester check — and confirm the frozen invariant breaks ⇒ the cheap wiring carried real semantic
+   content); null-wiring **fails clean** while cheap wiring reaches Clause-6 parity ⇒ **WIN-on-class**.
+8. **Outcome classes (TERMINAL; reliability-half only; no further cheap-coder lever).** WIN-on-class = Clause-6
+   parity ∧ null-wiring fails (per cell). SCOPE-SHRINK = parity but null-wiring passes clean, OR isolated cells
+   wall. near-KILL = the whole class walls unanimously while the baseline holds i100. All three are
+   **reliability-half** verdicts on the wiring hypothesis; cost dominance is reported separately and remains
+   unproven. No post-hoc re-opening of the lever menu for approve→execute after this result (epicycle guard).
+9. **Provenance.** Deterministic skeleton-derived generation first ($0). Escalate to a **live frontier-authored**
+   primitive ONLY if the public rule cannot be mechanically compiled without discretionary design choices (the
+   state-transition graph, the role-separation predicate, the idempotency-key derivation, or audit-growth
+   semantics); log the ambiguity, prompt, output, and frontier tokens. Under live authoring, Clause 7 is
+   **mandatory** (the seam is then frontier-written).
+10. **Cost.** Book the primitive as one-time frontier orchestration cost amortized over the explicit reuse set;
+    live-frontier tokens add to the hybrid orchestration side. The lever changes **no coding tokens**, so it can
+    only make the (already adverse at N=5, conjunctively-required) cost half **harder** — report cost dominance
+    with AND without this amortization. **A clean reliability WIN-on-class is NOT a thesis win.**
+
+**Build-time GO/NO-GO (opus's stated reversal condition).** If code review finds the null-wiring ablation
+(Clause 7) cannot be built leak-clean AND the perturbation adjunct cannot substitute, then Clause 7 has no
+admissible discriminator → **do not run the lever**; time-box it out and log the structural-only (C)-leaning as
+the verdict rather than running an uninterpretable ladder.
+
+**Void-rule: touches NONE of the four void-triggering invariants** (weights vector / per-cell veto definition /
+parity δ-α / committed TEST-hash). It pre-registers an admissibility envelope for one terminal lever, all of it
+constrained to the surfaces/skeleton-only inputs; the frozen worst-of-K=8 statistic remains the sole success
+measure (the null-wiring ablation is diagnostic-only and never enters a freeze/archive/TEST score). **Nothing
+voided.**

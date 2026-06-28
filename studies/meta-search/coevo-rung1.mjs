@@ -34,7 +34,8 @@ import { runContractGate } from './src/contract-gate.mjs';
 import { runPersistenceGate } from './src/persistence-gate.mjs';
 import { runRepairGate } from './src/repair-gate.mjs';
 import { runObligationContract } from './src/obligation-contract.mjs';
-import { runSemanticObligation, makeBehaviouralRunner } from './src/semantic-obligation.mjs';
+import { runSemanticObligation, makeBehaviouralRunner, semanticRules, injectBlock as injectSemanticBlock } from './src/semantic-obligation.mjs';
+import { obligationScaffold, scaffoldAddendum, SCAFFOLD_KEY } from './src/obligation-scaffold.mjs';
 
 const HERE = path.dirname(url.fileURLToPath(import.meta.url));
 const ROOT = path.resolve(HERE, '..', '..');
@@ -109,6 +110,28 @@ const SEMANTIC = has('semantic');
 // measure; the property only gates+verifies the repair loop. Default OFF = byte-identical to --semantic alone.
 const BEHAVIOURAL = has('behavioural');
 const behaviouralRunner = BEHAVIOURAL ? makeBehaviouralRunner({ timeoutMs: 10000 }) : undefined;
+// --inject runs the OBLIGATION-CONTRACT INJECT (A) half for the SEMANTIC obligations (the missing complement to
+// Lever B's verify+repair (B) half) — GROUND-RULES Rule-3 named lever, the one admissible move left after the
+// Session-11 ladder confirmed the approve→execute/idempotency (C)-leaning LIVE (LADDER-RESULTS-B.md). It surfaces
+// each surface's DECLARED semantic obligation (approve→execute / execute-idempotency / conservation /
+// keyed-idempotency, from semanticRules(skeleton)) as an addendum to that surface's FIRST build prompt — i.e. it
+// moves the obligation to AUTHORSHIP TIME, the M-coh-2/M-coh-2.5 mechanism (the frontier skeleton carries the
+// typed obligation up front), as opposed to the conditional post-hoc repair the diagnostic already tested. The
+// honest test = inject-ON vs inject-OFF final worst-of-K on the approval cells: does upfront authorship guidance
+// lift the seam the cheap pool cannot author when only re-prompted? Admissible (skeleton-derived only; the same
+// parseCrosscutRules basis Lever B uses; never the oracle). NOTE: with --inject ON, `raw` is itself built WITH
+// the obligation surfaced, so the per-gate afterX attribution is inject-contaminated — read the FINAL worst-of-K
+// vs the settled baseline (inject's real endpoint), not the per-gate deltas. Default OFF = byte-identical.
+const INJECT = has('inject');
+// --inject-code (the STRONG INJECTION; terminal lever, pre-registered AMENDMENTS.md 2026-06-28). Where --inject
+// hands the cheap coder the obligation TEXT and lets it AUTHOR the gate (run C falsified that), --inject-code has
+// the FRONTIER/SKELETON author the enforcement PRIMITIVE (obligation-scaffold.mjs, deterministic from the PUBLIC
+// declared rules) and asks the cheap coder only to WIRE it: the primitive is injected as an extra build module
+// (_obligation.mjs) the surfaces import, plus a per-surface authorship-time addendum. Tests the strictly weaker
+// WIRING hypothesis. Admissible (skeleton-derived only; never the oracle; surface files stay cheap-authored).
+// Default OFF = byte-identical. The Clause-7 null-wiring ablation (gates/null-wiring-ablation.mjs) is the
+// separate WIN-vs-SCOPE-SHRINK discriminator, run offline — never part of this scored path.
+const INJECTCODE = has('inject-code');
 // --dump <dir>: write each draw's RAW built surface files to <dir>/<tag>/ for offline diagnosis (why a gate
 // did/didn't fire on a worst route). Diagnostic only; no effect on grading. $0.
 const DUMP = arg('dump', null);
@@ -187,12 +210,15 @@ async function pool(items, n, fn) {
   return out;
 }
 
-function isValidSurface(code, surface, timeoutMs = 8000) {
+function isValidSurface(code, surface, scaffold = null, timeoutMs = 8000) {
   const VALIDATE = path.join(BUILD_GAP, 'lib', 'validate-surface.mjs');
   if (!code || code.length < 10) return Promise.resolve(false);
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'coevo-'));
   const f = path.join(dir, `${surface}.mjs`);
   fs.writeFileSync(f, code);
+  // --inject-code: co-write the injected obligation primitive so a surface that wires `import './_obligation.mjs'`
+  // resolves under ISOLATED single-surface validation (the epic sandbox already co-locates it at grade time).
+  if (scaffold) fs.writeFileSync(path.join(dir, `${SCAFFOLD_KEY}.mjs`), scaffold);
   return new Promise((resolve) => {
     const child = spawn(process.execPath, [VALIDATE, f, surface], { stdio: 'ignore', env: { ...process.env, NODE_OPTIONS: '' } });
     let done = false;
@@ -209,21 +235,33 @@ async function runHybridOnce(fx, invoke, tag = null) {
   const files = {}; const prompts = {}; const perSurface = {}; const routes = [];
   const gateCfg = { kind: 'deterministic', repairDepth: REPAIR, bestOfN: BESTOFN };
 
+  // --inject-code (STRONG injection): generate the frontier/skeleton-derived obligation PRIMITIVE once per epic
+  // from the PUBLIC declared rules. '' (no-op, byte-identical) for non-applicable topologies. The surfaces wire
+  // it via `import './_obligation.mjs'`; it is co-located at every grade (see below) and in isolated validation.
+  const injectCodeRules = INJECTCODE ? semanticRules(fx.skeleton) : null;
+  const scaffoldSrc = INJECTCODE ? obligationScaffold(injectCodeRules) : '';
+
   const drawSurface = async (prompt, surface) => {
     let attempts = 0, lastTokens = 0, route = null, valid = false, text = '';
     for (let a = 1; a <= RETRY; a++) {
       attempts = a;
       let g; try { g = await invoke({ prompt, system: SYS_ONE, model: null }); } catch { continue; }
       lastTokens = g.outputTokens || 0; if (g.route) route = g.route;
-      const ok = await isValidSurface(g.text, surface);
+      const ok = await isValidSurface(g.text, surface, scaffoldSrc || null);
       if (ok) { valid = true; text = g.text; break; }
       text = g.text || text;
     }
     return { text, attempts, valid, tokens: lastTokens, route };
   };
 
+  // INJECT (A) half: the skeleton-derived semantic obligations applicable to each surface, surfaced at
+  // AUTHORSHIP time. Computed once per epic from the PUBLIC skeleton (admissible). Empty string when --inject is
+  // off or the surface has no applicable semantic obligation → buildPrompt is byte-identical.
+  const injectRules = INJECT ? semanticRules(fx.skeleton) : null;
   await pool(fx.order, CONC, async (surface) => {
-    const buildPrompt = chunkPrompt(fx.preamble, fx.skeleton, fx.surfaces[surface]);
+    let buildPrompt = chunkPrompt(fx.preamble, fx.skeleton, fx.surfaces[surface]);
+    if (INJECT) { const add = injectSemanticBlock(surface, injectRules, fx.order); if (add) buildPrompt += '\n' + add; }
+    if (INJECTCODE) { const addc = scaffoldAddendum(surface, injectCodeRules); if (addc) buildPrompt += '\n' + addc; }
     prompts[surface] = buildPrompt;
     const r = await drawSurface(buildPrompt, surface);
     files[surface] = r.valid ? r.text : (r.text || '');
@@ -238,6 +276,11 @@ async function runHybridOnce(fx, invoke, tag = null) {
     fs.mkdirSync(rawDir, { recursive: true });
     for (const [s, code] of Object.entries(files)) fs.writeFileSync(path.join(rawDir, `${s}.mjs`), code || '');
   }
+
+  // --inject-code: from here on every grade co-locates the injected primitive beside the surfaces, so a wired
+  // `import './_obligation.mjs'` resolves. It is invisible to the oracle (epic-run-one loads only EXPECTS) and the
+  // deterministic gates skip it (they iterate fx.order). Placed after the raw DUMP so it is not dumped as a surface.
+  if (scaffoldSrc) files[SCAFFOLD_KEY] = scaffoldSrc;
 
   const rawGrade = await evaluateEpic({ mode: 'isolated', files: { ...files }, testsPath: fx.testsPath });
 
@@ -289,7 +332,7 @@ async function runHybridOnce(fx, invoke, tag = null) {
     judgeInvoke: (a) => invoke(a),
     // Lever-A (container-recon) no-regress guard: a deterministic transform ships only if the surface still
     // passes validate-surface (parse∧exports) — the floor predicate. seam-gate ignores `verify` for membership.
-    verify: (surface, code) => isValidSurface(code, surface),
+    verify: (surface, code) => isValidSurface(code, surface, scaffoldSrc || null),
   });
   // LEVER B (only with --semantic): the LAST gate, after the seam-gate. Verifies the SEMANTIC obligations
   // (approve→execute/idempotency, conservation/keyed-idempotency) the obligation gate skips; best-of-N model
@@ -397,9 +440,9 @@ async function main() {
     : (arg('epics', 'membership-d1,lifecycle-d1,quota-d1,approval-d1')).split(',').map((s) => s.trim()).filter(Boolean);
   const invoke = MOCK ? makeMockInvoke({}, { text: 'export function __noop(){ return null; }', outputTokens: 700, usd: 0 }) : makeGatewayInvoke({ timeoutMs: CALL_TIMEOUT_MS });
 
-  const gateName = `${REPAIRGATE ? 'repair+' : ''}${SHAPEGATE ? 'shape+' : ''}${CONTRACTGATE ? 'contract+' : ''}${OBLIGATION ? 'obligation+' : ''}${PERSISTGATE ? 'persist+' : ''}${has('seamgate') ? 'seam' : 'membership'}${SEMANTIC ? (BEHAVIOURAL ? '+semantic·beh' : '+semantic') : ''}`;
-  console.log(`COEVO RUNG-1 — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — worst-of-K=${K} retry=${RETRY} gate=${gateName} gate.repair=${REPAIR} bestofn=${BESTOFN} floor=${FLOOR ? 'on' : 'off'} conc=${CONC} — ${ids.length} epics\n`);
-  const out = { mock: MOCK, k: K, retry: RETRY, repair: REPAIR, generatedAt: null, epics: [] };
+  const gateName = `${REPAIRGATE ? 'repair+' : ''}${SHAPEGATE ? 'shape+' : ''}${CONTRACTGATE ? 'contract+' : ''}${OBLIGATION ? 'obligation+' : ''}${PERSISTGATE ? 'persist+' : ''}${has('seamgate') ? 'seam' : 'membership'}${SEMANTIC ? (BEHAVIOURAL ? '+semantic·beh' : '+semantic') : ''}${INJECT ? '+inject(A)' : ''}${INJECTCODE ? '+injectCode' : ''}`;
+  console.log(`COEVO RUNG-1 — ${MOCK ? 'MOCK (zero spend)' : 'LIVE'} — worst-of-K=${K} retry=${RETRY} gate=${gateName} gate.repair=${REPAIR} bestofn=${BESTOFN} floor=${FLOOR ? 'on' : 'off'} inject=${INJECT ? 'on' : 'off'} injectCode=${INJECTCODE ? 'on' : 'off'} conc=${CONC} — ${ids.length} epics\n`);
+  const out = { mock: MOCK, k: K, retry: RETRY, repair: REPAIR, inject: INJECT, injectCode: INJECTCODE, generatedAt: null, epics: [] };
   const outDir = path.join(HERE, 'runs'); fs.mkdirSync(outDir, { recursive: true });
   const outName = arg('out', MOCK ? 'coevo-rung1-mock.json' : 'coevo-rung1.json');
   const outFile = path.join(outDir, outName.endsWith('.json') ? outName : `${outName}.json`);

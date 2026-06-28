@@ -34,6 +34,10 @@ If frontier isn't worth paying for on the requirements that matter, then a **che
 harness** can match it — and the lever is to *supply the obligations*, not to buy a bigger model. This is
 the premise the [frozen skeleton](/findings/frozen-skeleton-plus-retry.md) then pays off.
 
+**Scope boundary (2026-06-28).** This lever reaches the *stateless, per-surface* obligations above; it does NOT
+reach the *stateful, cross-surface* `approve→execute`/idempotency seam, where supplying the declaration (even in
+the build prompt) is a null — see [the obligation-supply boundary](/findings/obligation-supply-boundary-stateful-seam.md).
+
 # Citations
 [1] studies/build-gap/RESULTS.md (this repo)
 [2] docs/REPORT-2026-06-16.md §7.1 (this repo)

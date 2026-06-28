@@ -321,6 +321,9 @@ export function makeBehaviouralRunner({ buildGapDir, timeoutMs = 10000 } = {}) {
     const dir = fs.mkdtempSync(pathM.join(os.tmpdir(), 'beh-'));
     try {
       for (const s of [create, approve, exec]) fs.writeFileSync(pathM.join(dir, `${s}.mjs`), files[s] || '');
+      // --inject-code: co-locate the injected obligation primitive so a wired surface's `import './_obligation.mjs'`
+      // resolves in the behavioural sandbox too (no-op when files._obligation is absent → structural path unchanged).
+      if (files['_obligation']) fs.writeFileSync(pathM.join(dir, '_obligation.mjs'), files['_obligation'] || '');
       return await new Promise((resolve) => {
         const child = spawn(process.execPath, [runner, dir, create, approve, exec], { stdio: ['ignore', 'pipe', 'ignore'], env: { ...process.env, NODE_OPTIONS: '' } });
         let outBuf = ''; let done = false;

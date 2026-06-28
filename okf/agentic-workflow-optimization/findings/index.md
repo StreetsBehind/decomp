@@ -16,6 +16,7 @@ results the program can *contribute* to the field.
 * [Frozen-skeleton + retry = bare opus at $0](frozen-skeleton-plus-retry.md) - The harness that closes the gap; skeleton fixes cohesion, retry fixes reliability, both necessary.
 * [The size × harness crossover](size-harness-crossover.md) - The bar erodes with epic size while the contender stays flat — cheap+harness beats frontier per dollar above ~9 surfaces.
 * [The skeleton double dissociation](skeleton-double-dissociation.md) - Shape buys integration, obligations buy uniformity; only both yield a cohesive epic — attribution/conformance made concrete.
+* [The obligation-supply boundary](obligation-supply-boundary-stateful-seam.md) - Supplying the obligation clears stateless crosscuts but is a null for the stateful approve→execute seam; that seam needs enforcing code in the skeleton.
 
 # The negatives & cautions
 

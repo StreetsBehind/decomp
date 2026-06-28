@@ -5,6 +5,148 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-12 (2026-06-28) — read this FIRST. The STRONG INJECTION (the terminal lever) is BUILT +
+> PRE-REGISTERED + VALIDATED + GO; the ladder is PENDING; apparatus COMMITTED this session.** Run C (the
+> prompt-level inject `--inject`) was a NULL ([`LADDER-RESULTS-C.md`](studies/meta-search/LADDER-RESULTS-C.md):
+> all four approval cells wall i50–63 vs baseline i100; the `lifecycle-d1` no-op control swung ≥60pp on route
+> noise) → the "authoring-when-told" hypothesis is exhausted at the prompt level. The user elected the strong
+> injection; a codex×opus deliberation CONVERGED on the admissible design + a pre-registration
+> ([`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md) §2026-06-28; transcript `runs/deliberations/20260628T145619Z/`):
+> a DETERMINISTIC skeleton-derived **generic** obligation primitive (`src/obligation-scaffold.mjs`) injected as an
+> extra build module (`_obligation.mjs`) that the cheap coder must **WIRE** — the strictly weaker WIRING
+> hypothesis, NOT a frontier-authored surface — wired opt-in `coevo-rung1.mjs --inject-code` (default OFF =
+> byte-identical). The WIN-vs-SCOPE-SHRINK discriminator is the Clause-7 NULL-WIRING ABLATION
+> (`gates/null-wiring-ablation.mjs`): a mechanical auto-wiring is **non-constructible leak-clean** here (the
+> field-level binding needs forbidden semantic-identifier matching) → the **perturbation adjunct** is operative
+> (neutralize one binding in the known primitive, re-grade; flip pass→fail ⇒ cheap wiring load-bearing ⇒ WIN; no
+> flip ⇒ SCOPE-SHRINK). VALIDATED: **P0 5/5 GREEN**, inject-code-smoke 32/32, ablation-smoke 19/19, inject-smoke
+> 39/39 (no regression), real-oracle co-location confirmed, fail-closed `scanOracleLeak` at generation, **frozen
+> tree untouched**. GO/NO-GO review = **GO** (only the null-wiring conjunct of opus's NO-GO trigger holds; the
+> perturbation adjunct substitutes and is leak-clean). OKF updated (new confirmed finding
+> `obligation-supply-boundary-stateful-seam`). **▶ NEXT: run the 5-cell inject-code ladder**
+> (`--epics approval-d1,approval-d2,approval-d3,approval-d4,lifecycle-d1 --repairgate --shapegate --contractgate
+> --obligation --bestofn 3 --seamgate --semantic --behavioural --inject-code --floor --retry 3 --k 8`; $0, ~5h) →
+> per-cell parity (Clause 6) anchored to baseline i100 + the null-wiring ablation (Clause 7) on parity-passing
+> routes → WIN-on-class / SCOPE-SHRINK / near-KILL. **Reliability-half only — a clean WIN is NOT a thesis win**
+> (the cost half is unmoved, on a free-gateway proxy, adverse at N=5, and this lever adds frontier orchestration
+> cost with zero coding-token savings). Design/handoff: [`STRONG-INJECT-PLAN.md`](studies/meta-search/STRONG-INJECT-PLAN.md)._
+>
+> _**▶ SESSION-11 UPDATE (2026-06-27) — read this FIRST; it executes the Session-10 "NEXT = the live worst-of-K
+> ladder with `--semantic` + option 3" and supersedes that line.** The formal (C)-adjudication ladder RAN
+> ([`LADDER-RUNBOOK.md`](studies/meta-search/LADDER-RUNBOOK.md) turnkey command, full stack = repair+shape+
+> contract+obligation+bestofn3+seam[Lever A]+**semantic[Lever B]**+**behavioural[option 3]**, floor+retry3, K=8;
+> ~14h, **$0**, exit 0; record [`LADDER-RESULTS-B.md`](studies/meta-search/LADDER-RESULTS-B.md); artifacts
+> `runs/coevo-ladder-stack-B.json` + `runs/dump-ladder-B/` gitignored). **VERDICT: NON-INFERIOR 5/17 (δ=0.05) vs
+> the SETTLED routed all-frontier baseline — the BEST of the three ladder runs** (Session-8 2/17, Session-9 1/17,
+> now 5/17; the semantic/behavioural levers + full stack lifted it and produced the clearest obligation wins yet:
+> `lifecycle-d1` 80/0→**100/100**, `lifecycle-d3` 73/100→87/100, `quota-d1` parity). Floor clean (mean below-floor
+> 0.059, **pool-degenerate 0** → gating draws are above-floor real code; extraction stays deprioritized). **NOT
+> freeze-ready** (12/17 fail) and **NOT a (C)-KILL.** The 12 fails partition cleanly: **8 are (B) output-QA
+> targets** + **4 are the approve→execute/idempotency semantic class** (approval d1–d4). **LOAD-BEARING FINDING:
+> the approve→execute/idempotency wall is now LIVE-instrument-confirmed, not just the $0 conditioned diagnostic** —
+> reading the per-draw integration fails (and correcting the classifier under-count: `Request/Payout/Release/Expense
+> not approved` + `status advanced to executed` are ALL the approve→execute class) shows the semantic class fails
+> on **~6/8 draws in every approval cell d1–d4**, with the worst-of-K integration **among the semantic draws ALONE
+> at i43–50 vs a SETTLED baseline holding i100** (even the worst of 8 routed-frontier routes gets it right). So the
+> hybrid is genuinely inferior by 50–67pp *because of the semantic class* — repairing the incidental (B) crash
+> draws would not lift these cells. Lever B (`--semantic`) + option 3 (`--behavioural`) are IN the stack and do not
+> clear it → the variance-robust unanimous-failure read holds on the REAL worst-of-K. **BUT it is CONTINUE, not a
+> confirmed (C)-scope-shrink — Rule 2(e) is NOT exhausted:** one named, admissible, unbuilt lever remains, the
+> obligation **INJECT half** (`injectBlock`, exported+smoke-tested, not in the build path) — move authoring of the
+> approve→execute idempotency state-machine OUT of the cheap coder and INTO the frozen skeleton/orchestration layer
+> (the M-coh-2/M-coh-2.5 result applied to a new seam; Premise-1 + Premise-3 faithful). **Quota conservation
+> re-confirmed (B) container-drift** (Lever B detection fired 0/8 here; the failures are balance corruption from the
+> Map/Array ledger drift on the read-modify-write seam, NOT a conservation-arithmetic (C) wall) → Lever A's unreached
+> read-modify-write class. **▶ NEXT (CONTINUE): build the obligation-INJECT half for approve→execute/idempotency**
+> (targets the live-confirmed (C)-leaning AND is the orchestration-layer move the thesis predicts; $0), in parallel
+> with the (B) work-list (repair-gate crash robustness on WebCrypto/const-assignment; the quota read-modify-write
+> container reconciliation; tenancy/seam depth). If the inject lever is built and approve→execute STILL walls
+> unanimously with the baseline holding → THEN Rule 2(e) is exhausted → honest **SCOPE-SHRINK** (claim the win on
+> the obligation classes the hybrid holds; flag approve→execute as requiring frontier/skeleton authorship). Frozen
+> tree untouched; apparatus UNCOMMITTED (this run added only the gitignored artifact + the writeup)._
+>
+> _**▶ SESSION-11 ADDENDUM (2026-06-27) — the obligation-INJECT (A) half is BUILT + validated + the inject ladder is
+> RUNNING (user chose "build the inject half").** Wired as opt-in **`coevo-rung1.mjs --inject`** (default OFF =
+> byte-identical build/grade path; run-meta gains an additive `inject` field): it appends each surface's
+> skeleton-DECLARED semantic obligation (`semanticRules`→`injectBlock` from `src/semantic-obligation.mjs`,
+> approve→execute / execute-idempotency / conservation / keyed-idempotency) to that surface's **FIRST** build prompt
+> — i.e. it surfaces the obligation at **AUTHORSHIP time** (the M-coh-2/M-coh-2.5 mechanism: the frontier skeleton
+> carries the typed obligation up front), the admissible complement to Lever B's post-hoc verify+repair and the one
+> named lever left untried (Rule 2(e)). Admissible (skeleton-derived only; never the oracle). Validated:
+> **inject-smoke 39/39** (`gates/inject-smoke.mjs` — addendum fires on execute/spend surfaces, is `''` for
+> non-applicable surfaces + no-semantic topologies = byte-identical, no oracle leak), Lever B 24/24, mock both-ways
+> clean (header `inject=on/off`), **P0 5/5 GREEN** (the new flag is isolated to the harness driver; P0 unaffected),
+> frozen tree (`build-gap`/DESIGN/FREEZE) untouched. **The inject-ON ladder is RUNNING — NARROWED to the 5 cells
+> that answer the experiment** (`--epics approval-d1,approval-d2,approval-d3,approval-d4,lifecycle-d1` + the same
+> `--semantic --behavioural --inject --floor --retry 3 --k 8` stack; $0, **~5h** not ~14h — the other 12 cells only
+> re-confirm known classifications, per the Session-9 lesson that a full ladder is a noisy instrument for one
+> lever; `lifecycle-d1` is the inject-no-op control). Artifacts `runs/coevo-ladder-stack-C.json` +
+> `runs/dump-ladder-C/`, log `runs/coevo-ladder-C.log`. Note: inject is a BUILD-time intervention so it can't be
+> replay-conditioned on existing dumps (unlike Lever B's verify+repair) → a fresh-draw run is the correct
+> instrument; narrowing the cells is the cost fix. **The experiment:
+> inject-ON (this run) vs inject-OFF (`LADDER-RESULTS-B.md`) FINAL worst-of-K on the approval cells** — does
+> authorship-time obligation guidance lift the approve→execute seam (B-d1–d4 sat at i50/50/33/44 vs baseline i100)
+> the cheap pool could not author when only re-prompted? Read the FINAL worst-of-K vs the settled baseline (with
+> `--inject` ON, `raw` is itself inject-built, so per-gate afterX deltas are inject-contaminated — final-vs-baseline
+> is the endpoint). If approval still walls unanimously with the baseline holding → Rule 2(e) exhausted at the
+> prompt-inject level → honest SCOPE-SHRINK (escalation candidate: a frontier-AUTHORED seam scaffold injected as
+> code, the stronger M-coh-2.5 form). If it lifts → (B) traction, CONTINUE._
+>
+> _**▶ SESSION-11 INJECT RESULT (2026-06-27, `LADDER-RESULTS-C.md`) — the prompt-level inject is a NULL; the
+> approve→execute seam still walls.** All four approval cells still FAIL with `--inject` ON (integration i50–63 vs
+> baseline i100; d3/d4 worst-of-K residual STILL approval/idempotency semantics; `status advanced to executed`
+> across all four). **The `lifecycle-d1` inject-NO-OP control settles attribution:** it declares no Lever-B
+> obligation (`semanticRules→NONE` → byte-identical build) yet swung **100/100 → 40/25** (−75pp integration) from
+> route noise alone — LARGER than the approval upticks (d3 +17, d4 +19), so those upticks are NOT a credible inject
+> lift (3rd worst-of-K non-stationarity sighting after VOID-92/92 + Lever A; per-lever LIFT is illegible here). The
+> variance-ROBUST read is the legitimate one and inject FAILS it: injecting the obligation at AUTHORSHIP time (not
+> just post-hoc re-prompt) does not clear the seam — consistent with + strengthening LEVER-B-DIAGNOSTIC. **Verdict:
+> the PROMPT-level lever menu is exhausted; Rule 2(e) leaves ONE thesis-faithful unbuilt lever — the
+> frontier-AUTHORED seam scaffold (the STRONG inject: the skeleton PROVIDES the approve→execute idempotency
+> mechanism as importable code authored from the PUBLIC contract; the cheap surface calls it).** This strong lever
+> is BOTH the genuine final (C)-test AND the candidate PRODUCT FIX (they converge — "frontier authors the seam,
+> cheap wires the rest" = M-coh-2.5 working as designed). **▶ NEXT = a USER call (substantial, admissibility-
+> sensitive build):** (1) build the strong inject (clears → thesis holds with the orchestration layer authoring the
+> seam; still walls → Rule 2(e) genuinely exhausted → clean (C)/SCOPE-SHRINK), or (2) declare the SCOPE-SHRINK now
+> on the cumulative evidence (diagnostic unanimity + B live-confirmation + C prompt-null) and pivot. Apparatus
+> UNCOMMITTED; frozen tree untouched._
+>
+> _**▶ SESSION-11 CLOSE (2026-06-28) — USER CHOSE option (1): build the strong inject. Deferred to a NEW SESSION;
+> recon done + design pinned = turnkey in [`STRONG-INJECT-PLAN.md`](studies/meta-search/STRONG-INJECT-PLAN.md).**
+> That plan captures the recon (the `behaviour-run.mjs` execution model: shared `ctx={session,db:{}}`, db starts
+> empty, `create→approve→exec`, idempotency=audit-no-grow; the PUBLIC declared shapes incl. the diverse-template
+> caveat) + the design of **`src/seam-author.mjs`** (deterministic substitution of behaviourally-failing
+> execute-family surfaces with a canonical execute authored from the PUBLIC contract + shapes discovered from the
+> cheap pool's OWN create/approve surfaces, surfaces-only à la Lever A; guarded by a behavioural+smoke REVERT =
+> "false repair worse than a miss"; oracle-blind) + the validate→wire(`--seamauthor`, default OFF
+> byte-identical)→P0→measure(narrowed approval ladder → `LADDER-RESULTS-D.md`) plan + the pre-registered verdict
+> logic. **▶ NEXT SESSION = execute STRONG-INJECT-PLAN.md.** Nothing running; apparatus UNCOMMITTED; frozen tree
+> untouched._
+>
+> _**▶ STATUS NOTE (2026-06-27, post-audit) — run C's verdict is PENDING; the narrative above leads the data.** A
+> whole-program meta-audit this session (10-agent workflow: 5 readers + 4 adversarial drift-critics + synthesis)
+> verified that the inject-ON ladder C is **alive but only ~1 of 5 cells in** (`runs/coevo-ladder-C.log` small,
+> node process live, started 19:55; `coevo-ladder-stack-C.json` writes incrementally and holds **1 of 5** cells —
+> approval-d1 done, runner now in approval-d2). Early data point (1 cell, do NOT over-read): even with **inject ON**,
+> approval-d1 came back **FAIL, final i50 vs baseline i100** (Δi −0.5) — consistent with the predicted wall, but its
+> worst draw is a form/authz draw, so the clean inject-vs-no-inject read needs all 5 cells. **The
+> CONTINUE-vs-SCOPE-SHRINK call on approve→execute is therefore NOT YET RENDERED** — do not bank the Session-11 SCOPE-SHRINK framing until C
+> finishes and is read as **inject-ON vs inject-OFF FINAL worst-of-K on the 5 cells, anchored to the baseline
+> holding i100**. The audit confirmed the science is sound (variance-robust universal-failure read, clean floor,
+> oracle-blind admissibility, honest (C)→(B) quota down-attribution) but flagged drift on three fronts, with three
+> corrections now APPLIED: (i) this pending-note; (ii) the cost "~established" **overclaim corrected** to
+> conditional-on-unmet-parity (the win is conjunctive and the cost half has had ZERO movement since 2026-06-20 — it
+> is on a free-gateway proxy and adverse at N=5); (iii) the **Rule-3 logging debt paid** — option-3 + inject now
+> logged in `AMENDMENTS.md` (2026-06-27). Two further corrections are **PI calls, NOT self-enacted**: hard-cap the
+> lever menu at inject (the named "frontier-AUTHORED-code" successor is the thesis BOUNDARY = SCOPE-SHRINK, since it
+> violates "cheap models do ALL the coding" — not another parity lever); and unblock the WIN's cost half (run the
+> deferred live-spend / co-measured integration head-to-head — no one is currently running the measurement that
+> could settle that half). Standing caveat the audit re-surfaced: this rig adjudicates a **WALL** (universal-failure
+> read) but **not a LIFT/PARITY** (a correct deterministic lever sat below the worst-of-K noise floor with
+> sign-flipping effect), so the 2/17→1/17→5/17 headline is confounded by draw-variance + baseline erosion and must
+> not be read as a causal lever-lift; reliability PARITY — half the WIN — may be unmeasurable on this rig as
+> instrumented._
+>
 > _**▶ SESSION-10 UPDATE (2026-06-25) — read this FIRST; executes the Session-9 ratified plan (Lever B + the $0
 > conditioned diagnostic). The result is the program's first evidence-based (C)-boundary characterization.**
 > (1) **Amendment logged** ([`AMENDMENTS.md`](studies/meta-search/AMENDMENTS.md) 2026-06-25): same-draws/conditioned
@@ -86,7 +228,11 @@
 > a (C)-kill** (broken code is (B) by Premise #2; lever menu not exhausted). **▶ NEXT — codex×opus deliberation
 > CONVERGED + USER-RATIFIED (the plan; execution deferred to a NEW SESSION), transcript
 > `runs/deliberations/20260624T202607Z/`:** the open half of the thesis is **reliability parity** (cost dominance
-> ~established: hybrid $0 vs settled baseline $27–64). Two thesis-level corrections drive the next move: **(1)
+> NOT established — directionally-evidenced only [hybrid $0 vs settled baseline $27–64], but CONDITIONAL on the
+> still-unmet parity, on the free-gateway PROXY (an upper bound for the Phase-2 owned-hardware substrate the
+> fixed-cost thesis needs), and adverse at N=5 where the only reliable author costs MORE than the all-frontier
+> bar — "**not demonstrated at any N yet**" per the win-condition § M-coh below / `docs/PROPOSAL-HYBRID.md`:118-128;
+> corrected 2026-06-27 post-audit from an earlier "~established" overclaim). Two thesis-level corrections drive the next move: **(1)
 > Phase-2 owned hardware is NOT a measurement fix for reliability — it's a Premise-1 VIOLATION in disguise**
 > (collapsing to one stationary local model = route-selection-as-fix; Phase-2 realizes the cost ECONOMICS, a
 > separate experiment, never launders non-stationarity out of the RELIABILITY claim); **(2) the (C)-verdict is
