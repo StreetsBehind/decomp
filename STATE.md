@@ -5,7 +5,38 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
-> _**▶ SESSION-12 (2026-06-28) — read this FIRST. The STRONG INJECTION (the terminal lever) is BUILT +
+> _**▶ SESSION-12 RESULT (2026-06-28) — read this FIRST; it supersedes the "ladder PENDING" line just below.
+> The STRONG-INJECTION ladder RAN → VERDICT: SCOPE-SHRINK on approve→execute (reliability-half). Rule 2(e) is
+> EXHAUSTED; the cheap-coder lever menu is CLOSED for approve→execute.** Run D (`--inject-code`, the pre-registered
+> 5-cell terminal ladder, full stack + Lever A + Lever B + behavioural + the strong injection, floor+retry3, K=8;
+> **$0**, ~5.2h, exit 0; record [`LADDER-RESULTS-D.md`](studies/meta-search/LADDER-RESULTS-D.md); artifacts
+> `runs/coevo-ladder-stack-D.json` + `runs/dump-ladder-D/` gitignored). **All four approval cells wall** (worst-of-K
+> integration i50/75/50/69 vs the SETTLED all-frontier baseline holding i100; floor clean, 0 below-floor/0
+> pool-degenerate). It is a **stronger null than run C**: the cheap pool **did** wire the frontier-authored primitive
+> (8/8 approval draws import `_obligation.mjs` + call `enforceExecute`) — so this is not blindness — yet the seam
+> still walls. The **pre-registered Clause-7 perturbation adjunct is decisive** (`gates/null-wiring-ablation.mjs` on
+> 6 parity-passing wired routes): neutralizing the primitive's admin / SoD / idempotency bindings flips **ZERO**
+> obligation-oracle tests on every route ⇒ the injected primitive is **causally INERT** — the routes that pass
+> approve→execute pass by their **own** re-implementation, and the worst routes **botch the wiring** outright
+> (`enforceExecute is not defined`). Per Clause 8 this is **SCOPE-SHRINK** (no Clause-6 parity ⇒ WIN-on-class
+> impossible; whole class walls + wiring-is-a-no-op), at near-KILL strength on the reliability half. The
+> **no-op control** (`lifecycle-d1`, inject-code verified no-op, 0/8 wired) swung **−50pp** (i100→i50) on route
+> noise — *larger* than every approval uptick vs run B (+0/+25/+17/+25) → the upticks are inside the noise floor,
+> the variance-robust read is the null (4th non-stationarity sighting). **Honest scope:** the SCOPE-SHRINK rests on
+> the variance-robust Clause-7 inert-primitive + the prior conditioned diagnostic, NOT the noise-floored worst-of-K;
+> per [[incompetence-is-the-target]] the worst-of-K is partly wiring-botch + (B), so this is **not** a clean semantic
+> capability-(C). **Reliability-half ONLY — NOT a thesis verdict**: the cost half is unmeasured, on a free-gateway
+> proxy, adverse at N=5, and this lever ADDS frontier orchestration cost with zero coding-token savings (it makes the
+> conjunctive cost half *harder*). The named successor — a frontier-AUTHORED *surface* replacing the cheap gate —
+> violates "cheap models do ALL the coding" ⇒ it IS the thesis boundary / this SCOPE-SHRINK, not another lever
+> (epicycle guard + the 2026-06-27 hard cap). OKF finding `obligation-supply-boundary-stateful-seam` flipped to the
+> confirmed SCOPE-SHRINK. **▶ NEXT (a PI direction call, NOT a lever):** (1) claim the bounded reliability result —
+> the hybrid holds reliability on the obligation classes a surface/the median route can author; approve→execute/
+> idempotency is flagged as requiring frontier authorship of the seam; OR (2) unblock the WIN's **cost half** (the
+> deferred live-spend / co-measured integration head-to-head — no one is running the measurement that could settle
+> the conjunctive win's open half). Apparatus + records COMMITTED this session; frozen tree untouched._
+>
+> _**▶ SESSION-12 (2026-06-28) — the STRONG INJECTION (the terminal lever) is BUILT +
 > PRE-REGISTERED + VALIDATED + GO; the ladder is PENDING; apparatus COMMITTED this session.** Run C (the
 > prompt-level inject `--inject`) was a NULL ([`LADDER-RESULTS-C.md`](studies/meta-search/LADDER-RESULTS-C.md):
 > all four approval cells wall i50–63 vs baseline i100; the `lifecycle-d1` no-op control swung ≥60pp on route
