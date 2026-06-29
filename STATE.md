@@ -5,6 +5,33 @@
 > still correct about their *findings* — only their headline framing is superseded. See "How the history
 > fits" below.)
 >
+> _**▶ SESSION-12 COST-HALF + CO-MEASURED CONFIRMATION (2026-06-29) — read this FIRST; closes the thesis's
+> open cost half after the reliability-half SCOPE-SHRINK below.** With the reliability half characterized, the
+> **cost half was answerable at $0** ([`COST-HALF.md`](studies/meta-search/COST-HALF.md)): both arms pay the
+> identical $0.395 opus skeleton anchor and the hybrid codes on the free gateway ($0), so the hybrid is cheaper on
+> **every** cell BY CONSTRUCTION — the cost DIRECTION was never the open question; the binding gate is reliability
+> parity. The user authorized a live co-measured confirmation; rather than `head-to-head.mjs --settled` (whose
+> hybrid arm runs only the OBSOLETE membership-only integration-gate), each arm ran via its **own validated
+> runner**: a **FRESH** SETTLED routed-frontier baseline (`routed-baseline.mjs --settled --k 8`, LIVE, **$57.97
+> real surface-coding spend**; the $0.395 skeleton is cached bookkeeping, not re-spent) co-analyzed against the
+> run-B full-stack hybrid ($0). **VERDICT ([`HEAD-TO-HEAD-D.md`](studies/meta-search/HEAD-TO-HEAD-D.md)): the §7
+> conjunctive battery WIN still FAILS — 6/17 cost-AND-reliability wins, 3.8× cheaper ($25.64 vs $6.71), but
+> reliability-inferior on 11/17 cells incl. all four approval cells.** The hybrid is a strong cost/reliability
+> **TRADE** that wins outright where it holds reliability (and on lifecycle-d1 BEATS the frontier at half the
+> cost), NOT a conjunctive dominator. **METHODOLOGICAL FINDING: the fixed-policy frontier baseline is ITSELF
+> non-stationary** — 10/17 cells drifted ≥10pp vs the Jun-20 baseline-of-record (preserved as
+> `runs/routed-baseline-settled-jun20.json`); both worst-of-K arms are noisy (2 of the 6 wins are the baseline
+> eroding *down to* the hybrid). **BUT the approve→execute SCOPE-SHRINK anchor is ROBUST** — the frontier held
+> **i100 on all four approval cells in BOTH baseline runs** while the hybrid walls i33–50. **Cost note correction:
+> my pre-spend "~$11" estimate was WRONG (a misattribution of the $64.61 figure); the real spend was $57.97, within
+> the authorized $64.61-class.** Both thesis halves now characterized + co-measured = **SCOPE-SHRINK** (cost
+> dominance is structural but conjunctively-gated on the unmet reliability parity; free-gateway proxy + adverse-at-
+> N=5 caveats stand). **▶ NEXT: nothing running; the cheap-vs-frontier thesis has reached an honest, co-measured
+> close on this DEV ladder** — the hybrid wins on the obligation classes a surface/median route can author, loses
+> on the approve→execute seam (needs frontier authorship) + the (B) form/seam/container residuals. Onward options
+> are a PI call (e.g. the sequestered-TEST falsification of the bounded claim; Phase-2 owned-hardware cost
+> economics; or further (B) lever work on the form/seam residuals — NOT the closed approve→execute menu)._
+>
 > _**▶ SESSION-12 RESULT (2026-06-28) — read this FIRST; it supersedes the "ladder PENDING" line just below.
 > The STRONG-INJECTION ladder RAN → VERDICT: SCOPE-SHRINK on approve→execute (reliability-half). Rule 2(e) is
 > EXHAUSTED; the cheap-coder lever menu is CLOSED for approve→execute.** Run D (`--inject-code`, the pre-registered
